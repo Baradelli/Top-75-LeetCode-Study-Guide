@@ -108,6 +108,7 @@ The focus is to turn each exercise into a quick review resource, so later you ca
 10. [Container With Most Water](./10-container-with-most-water/README.en.md)
 11. [Sum of Two Integers](./11-sum-of-two-integers/README.en.md)
 12. [Number of 1 Bits](./12-number-of-1-bits/README.en.md)
+13. [Counting Bits](./13-counting-bits/README.en.md)
 
 ## Pattern for the next ones
 
