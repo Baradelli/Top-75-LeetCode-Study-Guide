@@ -107,6 +107,7 @@ O foco é transformar cada exercício em um material rápido de revisão, para q
 9. [3Sum](./9-three-sum/README.pt.md)
 10. [Container With Most Water](./10-container-with-most-water/README.pt.md)
 11. [Sum of Two Integers](./11-sum-of-two-integers/README.pt.md)
+12. [Number of 1 Bits](./12-number-of-1-bits/README.pt.md)
 
 ## Padrão para os próximos
 
