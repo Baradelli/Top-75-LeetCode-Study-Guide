@@ -105,6 +105,7 @@ O foco é transformar cada exercício em um material rápido de revisão, para q
 7. [Find Minimum in Rotated Sorted Array](./7-find-minimum-in-rotated-sorted-array/README.pt.md)
 8. [Search in Rotated Sorted Array](./8-search-in-rotated-sorted-array/README.pt.md)
 9. [3Sum](./9-three-sum/README.pt.md)
+10. [Container With Most Water](./10-container-with-most-water/README.pt.md)
 
 ## Padrão para os próximos
 
