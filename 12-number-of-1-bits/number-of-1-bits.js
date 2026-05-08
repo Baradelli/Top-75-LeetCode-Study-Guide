@@ -4,7 +4,7 @@ var hammingWeight = function (n) {
   while (n !== 0) {
     const lastBit = n & 1;
     count += lastBit;
-    n = n >> 1;
+    n = n >>> 1;
   }
 
   return count;

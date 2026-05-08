@@ -63,6 +63,14 @@ node 1-two-sum/two-sum.js
 node 2-best-time-to-buy-and-sell-stock/best-time-to-buy-and-sell-stock.js
 ```
 
+## Material extra
+
+Para os problemas de manipulação de bits, existe um guia complementar focado nos próprios exemplos do projeto:
+
+- [Guia Prático de Manipulação de Bits em JavaScript](./auxiliares/guia-manipulacao-bits-javascript.pt.md)
+
+Esse guia é útil porque manipulação de bits não costuma fazer parte do dia a dia, então ter uma referência conectada aos exercícios ajuda bastante na revisão.
+
 ## Como ler o resultado
 
 Quando você rodar um arquivo:
