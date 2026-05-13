@@ -130,6 +130,7 @@ O foco é transformar cada exercício em um material rápido de revisão, para q
 24. [Decode Ways](./24-decode-ways/README.pt.md)
 25. [Unique Paths](./25-unique-paths/README.pt.md)
 26. [Jump Game](./26-jump-game/README.pt.md)
+27. [Clone Graph](./27-clone-graph/README.pt.md)
 
 ## Padrão para os próximos
 
