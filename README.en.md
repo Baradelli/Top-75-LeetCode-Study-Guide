@@ -122,6 +122,7 @@ The focus is to turn each exercise into a quick review resource, so later you ca
 15. [Reverse Bits](./15-reverse-bits/README.en.md)
 16. [Climbing Stairs](./16-climb-stairs/README.en.md)
 17. [Coin Change](./17-coin-change/README.en.md)
+18. [Longest Increasing Subsequence](./18-longest-increasing-subsequence/README.en.md)
 
 ## Pattern for the next ones
 
