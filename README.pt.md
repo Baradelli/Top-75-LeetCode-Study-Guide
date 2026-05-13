@@ -119,6 +119,7 @@ O foco é transformar cada exercício em um material rápido de revisão, para q
 13. [Counting Bits](./13-counting-bits/README.pt.md)
 14. [Missing Number](./14-missing-number/README.pt.md)
 15. [Reverse Bits](./15-reverse-bits/README.pt.md)
+16. [Climbing Stairs](./16-climb-stairs/README.pt.md)
 
 ## Padrão para os próximos
 

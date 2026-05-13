@@ -120,6 +120,7 @@ The focus is to turn each exercise into a quick review resource, so later you ca
 13. [Counting Bits](./13-counting-bits/README.en.md)
 14. [Missing Number](./14-missing-number/README.en.md)
 15. [Reverse Bits](./15-reverse-bits/README.en.md)
+16. [Climbing Stairs](./16-climb-stairs/README.en.md)
 
 ## Pattern for the next ones
 
