@@ -132,6 +132,7 @@ The focus is to turn each exercise into a quick review resource, so later you ca
 25. [Unique Paths](./25-unique-paths/README.en.md)
 26. [Jump Game](./26-jump-game/README.en.md)
 27. [Clone Graph](./27-clone-graph/README.en.md)
+28. [Course Schedule](./28-course-schedule/README.en.md)
 
 ## Pattern for the next ones
 
