@@ -130,6 +130,7 @@ The focus is to turn each exercise into a quick review resource, so later you ca
 23. [House Robber II](./23-house-robber-2/README.en.md)
 24. [Decode Ways](./24-decode-ways/README.en.md)
 25. [Unique Paths](./25-unique-paths/README.en.md)
+26. [Jump Game](./26-jump-game/README.en.md)
 
 ## Pattern for the next ones
 
