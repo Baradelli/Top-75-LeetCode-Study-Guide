@@ -4,13 +4,13 @@
 - [English](./README.en.md)
 
 This repository is organized to help you study the **Top 75 LeetCode Questions** in a clean and repeatable way.
-It currently includes **21 organized problems** with explanations in both languages.
+It currently includes **22 organized problems** with explanations in both languages.
 It also includes auxiliary bit manipulation guides:
 - [Bit Manipulation Guide in English](./auxiliares/guia-manipulacao-bits-javascript.en.md)
 - [Guia Prático de Manipulação de Bits em JavaScript](./auxiliares/guia-manipulacao-bits-javascript.pt.md)
 
 Este repositório foi organizado para ajudar no estudo das **Top 75 LeetCode Questions** de forma simples e consistente.
-Atualmente ele inclui **21 problemas organizados** com explicações nos dois idiomas.
+Atualmente ele inclui **22 problemas organizados** com explicações nos dois idiomas.
 Também inclui guias auxiliares de manipulação de bits:
 - [Guia Prático de Manipulação de Bits em JavaScript](./auxiliares/guia-manipulacao-bits-javascript.pt.md)
 - [Bit Manipulation Guide in English](./auxiliares/guia-manipulacao-bits-javascript.en.md)

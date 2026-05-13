@@ -125,6 +125,7 @@ O foco é transformar cada exercício em um material rápido de revisão, para q
 19. [Longest Common Subsequence](./19-longest-common-subsequence/README.pt.md)
 20. [Word Break](./20-word-break/README.pt.md)
 21. [Combination Sum IV](./21-combination-sum-4/README.pt.md)
+22. [House Robber](./22-house-robber/README.pt.md)
 
 ## Padrão para os próximos
 
