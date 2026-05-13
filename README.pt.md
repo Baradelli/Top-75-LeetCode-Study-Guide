@@ -128,6 +128,7 @@ O foco é transformar cada exercício em um material rápido de revisão, para q
 22. [House Robber](./22-house-robber/README.pt.md)
 23. [House Robber II](./23-house-robber-2/README.pt.md)
 24. [Decode Ways](./24-decode-ways/README.pt.md)
+25. [Unique Paths](./25-unique-paths/README.pt.md)
 
 ## Padrão para os próximos
 
