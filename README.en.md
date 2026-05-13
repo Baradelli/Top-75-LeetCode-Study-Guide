@@ -124,6 +124,7 @@ The focus is to turn each exercise into a quick review resource, so later you ca
 17. [Coin Change](./17-coin-change/README.en.md)
 18. [Longest Increasing Subsequence](./18-longest-increasing-subsequence/README.en.md)
 19. [Longest Common Subsequence](./19-longest-common-subsequence/README.en.md)
+20. [Word Break](./20-word-break/README.en.md)
 
 ## Pattern for the next ones
 
