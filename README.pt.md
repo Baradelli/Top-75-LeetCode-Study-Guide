@@ -122,6 +122,7 @@ O foco é transformar cada exercício em um material rápido de revisão, para q
 16. [Climbing Stairs](./16-climb-stairs/README.pt.md)
 17. [Coin Change](./17-coin-change/README.pt.md)
 18. [Longest Increasing Subsequence](./18-longest-increasing-subsequence/README.pt.md)
+19. [Longest Common Subsequence](./19-longest-common-subsequence/README.pt.md)
 
 ## Padrão para os próximos
 
