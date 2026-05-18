@@ -133,6 +133,7 @@ The focus is to turn each exercise into a quick review resource, so later you ca
 26. [Jump Game](./26-jump-game/README.en.md)
 27. [Clone Graph](./27-clone-graph/README.en.md)
 28. [Course Schedule](./28-course-schedule/README.en.md)
+29. [Pacific Atlantic Water Flow](./29-pacific-atlantic-water-flow/README.en.md)
 
 ## Pattern for the next ones
 

@@ -132,6 +132,7 @@ O foco é transformar cada exercício em um material rápido de revisão, para q
 26. [Jump Game](./26-jump-game/README.pt.md)
 27. [Clone Graph](./27-clone-graph/README.pt.md)
 28. [Course Schedule](./28-course-schedule/README.pt.md)
+29. [Pacific Atlantic Water Flow](./29-pacific-atlantic-water-flow/README.pt.md)
 
 ## Padrão para os próximos
 
