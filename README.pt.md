@@ -135,6 +135,7 @@ O foco é transformar cada exercício em um material rápido de revisão, para q
 29. [Pacific Atlantic Water Flow](./29-pacific-atlantic-water-flow/README.pt.md)
 30. [Number of Islands](./30-number-of-islands/README.pt.md)
 31. [Longest Consecutive Sequence](./31-longest-consecutive-sequence/README.pt.md)
+32. [Alien Dictionary](./32-alien-dictionary/README.pt.md)
 
 ## Padrão para os próximos
 
