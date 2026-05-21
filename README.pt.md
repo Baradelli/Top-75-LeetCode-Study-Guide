@@ -138,6 +138,7 @@ O foco é transformar cada exercício em um material rápido de revisão, para q
 32. [Alien Dictionary](./32-alien-dictionary/README.pt.md)
 33. [Graph Valid Tree](./33-graph-valid-tree/README.pt.md)
 34. [Number of Connected Components in an Undirected Graph](./34-number-of-connected-components-ai-an-undirected-graph/README.pt.md)
+35. [Insert Interval](./35-insert-interval/README.pt.md)
 
 ## Padrão para os próximos
 
