@@ -135,6 +135,7 @@ The focus is to turn each exercise into a quick review resource, so later you ca
 28. [Course Schedule](./28-course-schedule/README.en.md)
 29. [Pacific Atlantic Water Flow](./29-pacific-atlantic-water-flow/README.en.md)
 30. [Number of Islands](./30-number-of-islands/README.en.md)
+31. [Longest Consecutive Sequence](./31-longest-consecutive-sequence/README.en.md)
 
 ## Pattern for the next ones
 
