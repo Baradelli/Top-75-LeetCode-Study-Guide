@@ -133,6 +133,7 @@ O foco é transformar cada exercício em um material rápido de revisão, para q
 27. [Clone Graph](./27-clone-graph/README.pt.md)
 28. [Course Schedule](./28-course-schedule/README.pt.md)
 29. [Pacific Atlantic Water Flow](./29-pacific-atlantic-water-flow/README.pt.md)
+30. [Number of Islands](./30-number-of-islands/README.pt.md)
 
 ## Padrão para os próximos
 
