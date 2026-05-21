@@ -137,6 +137,7 @@ O foco é transformar cada exercício em um material rápido de revisão, para q
 31. [Longest Consecutive Sequence](./31-longest-consecutive-sequence/README.pt.md)
 32. [Alien Dictionary](./32-alien-dictionary/README.pt.md)
 33. [Graph Valid Tree](./33-graph-valid-tree/README.pt.md)
+34. [Number of Connected Components in an Undirected Graph](./34-number-of-connected-components-ai-an-undirected-graph/README.pt.md)
 
 ## Padrão para os próximos
 

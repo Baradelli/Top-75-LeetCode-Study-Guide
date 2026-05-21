@@ -138,6 +138,7 @@ The focus is to turn each exercise into a quick review resource, so later you ca
 31. [Longest Consecutive Sequence](./31-longest-consecutive-sequence/README.en.md)
 32. [Alien Dictionary](./32-alien-dictionary/README.en.md)
 33. [Graph Valid Tree](./33-graph-valid-tree/README.en.md)
+34. [Number of Connected Components in an Undirected Graph](./34-number-of-connected-components-ai-an-undirected-graph/README.en.md)
 
 ## Pattern for the next ones
 
