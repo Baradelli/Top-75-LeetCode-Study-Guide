@@ -141,6 +141,7 @@ The focus is to turn each exercise into a quick review resource, so later you ca
 34. [Number of Connected Components in an Undirected Graph](./34-number-of-connected-components-ai-an-undirected-graph/README.en.md)
 35. [Insert Interval](./35-insert-interval/README.en.md)
 36. [Merge Intervals](./36-merge-intervals/README.en.md)
+37. [Non-overlapping Intervals](./37-non-overlapping-intervals/README.en.md)
 
 ## Pattern for the next ones
 
