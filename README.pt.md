@@ -145,6 +145,7 @@ O foco é transformar cada exercício em um material rápido de revisão, para q
 39. [Meeting Rooms II](./39-meeting-rooms-2/README.pt.md)
 40. [Reverse Linked List](./40-reverse-linked-list/README.pt.md)
 41. [Linked List Cycle](./41-linked-list-cycle/README.pt.md)
+42. [Merge Two Sorted Lists](./42-merge-two-sorted-lists/README.pt.md)
 
 ## Padrão para os próximos
 
