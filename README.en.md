@@ -27,6 +27,12 @@ linked-list/
     reverse-linked-list.js
     README.pt.md
     README.en.md
+
+matrix/
+  46-set-matrix-zeroes/
+    set-matrix-zeroes.js
+    README.pt.md
+    README.en.md
 ```
 
 ## What exists in each folder
@@ -169,6 +175,10 @@ The focus is to turn each exercise into a quick review resource, so later you ca
 43. [Merge k Sorted Lists](./linked-list/43-merge-k-sorted-lists/README.en.md)
 44. [Remove Nth Node From End of List](./linked-list/44-remove-nth-node-from-end-of-list/README.en.md)
 45. [Reorder List](./linked-list/45-reorder-list/README.en.md)
+
+### Matrix
+
+46. [Set Matrix Zeroes](./matrix/46-set-matrix-zeroes/README.en.md)
 
 ## Pattern for the next ones
 
