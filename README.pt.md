@@ -148,6 +148,7 @@ O foco é transformar cada exercício em um material rápido de revisão, para q
 42. [Merge Two Sorted Lists](./42-merge-two-sorted-lists/README.pt.md)
 43. [Merge k Sorted Lists](./43-merge-k-sorted-lists/README.pt.md)
 44. [Remove Nth Node From End of List](./44-remove-nth-node-from-end-of-list/README.pt.md)
+45. [Reorder List](./45-reorder-list/README.pt.md)
 
 ## Padrão para os próximos
 
