@@ -5,6 +5,7 @@
 
 This repository is organized to help you study the **Top 75 LeetCode Questions** in a clean and repeatable way.
 It currently includes **45 organized problems** with explanations in both languages.
+The solved problems are now grouped by type: `array`, `binary`, `dynamic-programming`, `graph`, `interval`, and `linked-list`.
 It also includes auxiliary bit manipulation guides:
 
 - [Bit Manipulation Guide in English](./auxiliares/guia-manipulacao-bits-javascript.en.md)

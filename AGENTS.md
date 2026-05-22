@@ -15,23 +15,34 @@ Cada problema deve virar um material de revisão simples, consistente e fácil d
 
 ## Estrutura esperada
 
-Cada problema deve ficar em uma pasta própria, seguindo este padrão:
+Cada problema deve ficar dentro da pasta do seu tipo, seguindo este padrão:
 
 ```text
-numero-nome-do-problema/
-  nome-do-problema.js
-  README.pt.md
-  README.en.md
+tipo/
+  numero-nome-do-problema/
+    nome-do-problema.js
+    README.pt.md
+    README.en.md
 ```
 
 Exemplo:
 
 ```text
-10-container-with-most-water/
-  container-with-most-water.js
-  README.pt.md
-  README.en.md
+array/
+  10-container-with-most-water/
+    container-with-most-water.js
+    README.pt.md
+    README.en.md
 ```
+
+Exemplos de tipos já usados no projeto:
+
+- `array`
+- `binary`
+- `dynamic-programming`
+- `graph`
+- `interval`
+- `linked-list`
 
 ## Padrão do arquivo `.js`
 
@@ -101,6 +112,7 @@ Ao adicionar um novo problema, o agente também deve atualizar:
 Nos arquivos `README.pt.md` e `README.en.md` da raiz:
 
 - adicionar o novo problema na lista de problemas organizados
+- adicionar o novo problema dentro da seção do tipo correspondente
 - manter a numeração correta
 - manter o mesmo formato dos itens anteriores
 
@@ -114,12 +126,13 @@ No arquivo `README.md` da raiz:
 Quando receber uma solicitação para adicionar ou padronizar um exercício, o agente deve:
 
 1. Ver como os problemas anteriores foram feitos
-2. Criar ou ajustar a pasta do problema
-3. Criar ou ajustar o arquivo `.js` no mesmo padrão dos demais
-4. Criar `README.pt.md`
-5. Criar `README.en.md`
-6. Atualizar os READMEs centrais
-7. Executar o arquivo com `node` para validar os exemplos, quando possível
+2. Identificar a pasta de tipo correta
+3. Criar ou ajustar a pasta do problema dentro desse tipo
+4. Criar ou ajustar o arquivo `.js` no mesmo padrão dos demais
+5. Criar `README.pt.md`
+6. Criar `README.en.md`
+7. Atualizar os READMEs centrais
+8. Executar o arquivo com `node` para validar os exemplos, quando possível
 
 ## Prioridade
 
