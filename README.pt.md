@@ -146,6 +146,7 @@ O foco é transformar cada exercício em um material rápido de revisão, para q
 40. [Reverse Linked List](./40-reverse-linked-list/README.pt.md)
 41. [Linked List Cycle](./41-linked-list-cycle/README.pt.md)
 42. [Merge Two Sorted Lists](./42-merge-two-sorted-lists/README.pt.md)
+43. [Merge k Sorted Lists](./43-merge-k-sorted-lists/README.pt.md)
 
 ## Padrão para os próximos
 
