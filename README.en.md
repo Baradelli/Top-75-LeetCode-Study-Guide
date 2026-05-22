@@ -144,6 +144,7 @@ The focus is to turn each exercise into a quick review resource, so later you ca
 37. [Non-overlapping Intervals](./37-non-overlapping-intervals/README.en.md)
 38. [Meeting Rooms](./38-meeting-rooms/README.en.md)
 39. [Meeting Rooms II](./39-meeting-rooms-2/README.en.md)
+40. [Reverse Linked List](./40-reverse-linked-list/README.en.md)
 
 ## Pattern for the next ones
 
