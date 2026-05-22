@@ -148,6 +148,7 @@ The focus is to turn each exercise into a quick review resource, so later you ca
 41. [Linked List Cycle](./41-linked-list-cycle/README.en.md)
 42. [Merge Two Sorted Lists](./42-merge-two-sorted-lists/README.en.md)
 43. [Merge k Sorted Lists](./43-merge-k-sorted-lists/README.en.md)
+44. [Remove Nth Node From End of List](./44-remove-nth-node-from-end-of-list/README.en.md)
 
 ## Pattern for the next ones
 
