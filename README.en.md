@@ -143,6 +143,7 @@ The focus is to turn each exercise into a quick review resource, so later you ca
 36. [Merge Intervals](./36-merge-intervals/README.en.md)
 37. [Non-overlapping Intervals](./37-non-overlapping-intervals/README.en.md)
 38. [Meeting Rooms](./38-meeting-rooms/README.en.md)
+39. [Meeting Rooms II](./39-meeting-rooms-2/README.en.md)
 
 ## Pattern for the next ones
 

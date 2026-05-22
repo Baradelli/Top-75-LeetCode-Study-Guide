@@ -142,6 +142,7 @@ O foco é transformar cada exercício em um material rápido de revisão, para q
 36. [Merge Intervals](./36-merge-intervals/README.pt.md)
 37. [Non-overlapping Intervals](./37-non-overlapping-intervals/README.pt.md)
 38. [Meeting Rooms](./38-meeting-rooms/README.pt.md)
+39. [Meeting Rooms II](./39-meeting-rooms-2/README.pt.md)
 
 ## Padrão para os próximos
 
