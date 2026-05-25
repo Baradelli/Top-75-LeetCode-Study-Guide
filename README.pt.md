@@ -33,6 +33,12 @@ matrix/
     set-matrix-zeroes.js
     README.pt.md
     README.en.md
+
+string/
+  50-longest-substring-without-repeating-characters/
+    longest-substring-without-repeating-characters.js
+    README.pt.md
+    README.en.md
 ```
 
 ## O que existe em cada pasta
@@ -181,6 +187,10 @@ O foco é transformar cada exercício em um material rápido de revisão, para q
 47. [Spiral Matrix](./matrix/47-spiral-matrix/README.pt.md)
 48. [Rotate Image](./matrix/48-rotate-image/README.pt.md)
 49. [Word Search](./matrix/49-word-search/README.pt.md)
+
+### String
+
+50. [Longest Substring Without Repeating Characters](./string/50-longest-substring-without-repeating-characters/README.pt.md)
 
 ## Padrão para os próximos
 

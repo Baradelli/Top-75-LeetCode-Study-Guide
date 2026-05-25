@@ -33,6 +33,12 @@ matrix/
     set-matrix-zeroes.js
     README.pt.md
     README.en.md
+
+string/
+  50-longest-substring-without-repeating-characters/
+    longest-substring-without-repeating-characters.js
+    README.pt.md
+    README.en.md
 ```
 
 ## What exists in each folder
@@ -182,6 +188,10 @@ The focus is to turn each exercise into a quick review resource, so later you ca
 47. [Spiral Matrix](./matrix/47-spiral-matrix/README.en.md)
 48. [Rotate Image](./matrix/48-rotate-image/README.en.md)
 49. [Word Search](./matrix/49-word-search/README.en.md)
+
+### String
+
+50. [Longest Substring Without Repeating Characters](./string/50-longest-substring-without-repeating-characters/README.en.md)
 
 ## Pattern for the next ones
 
