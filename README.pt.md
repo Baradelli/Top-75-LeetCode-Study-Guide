@@ -178,6 +178,7 @@ O foco é transformar cada exercício em um material rápido de revisão, para q
 ### Matrix
 
 46. [Set Matrix Zeroes](./matrix/46-set-matrix-zeroes/README.pt.md)
+47. [Spiral Matrix](./matrix/47-spiral-matrix/README.pt.md)
 
 ## Padrão para os próximos
 
