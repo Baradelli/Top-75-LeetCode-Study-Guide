@@ -180,6 +180,7 @@ The focus is to turn each exercise into a quick review resource, so later you ca
 
 46. [Set Matrix Zeroes](./matrix/46-set-matrix-zeroes/README.en.md)
 47. [Spiral Matrix](./matrix/47-spiral-matrix/README.en.md)
+48. [Rotate Image](./matrix/48-rotate-image/README.en.md)
 
 ## Pattern for the next ones
 
