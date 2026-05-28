@@ -195,6 +195,7 @@ O foco é transformar cada exercício em um material rápido de revisão, para q
 52. [Minimum Window Substring](./string/52-minimum-window-substring/README.pt.md)
 53. [Valid Anagram](./string/53-valid-anagram/README.pt.md)
 54. [Group Anagrams](./string/54-group-anagrams/README.pt.md)
+55. [Valid Parentheses](./string/55-valid-parentheses/README.pt.md)
 
 ## Padrão para os próximos
 

@@ -196,6 +196,7 @@ The focus is to turn each exercise into a quick review resource, so later you ca
 52. [Minimum Window Substring](./string/52-minimum-window-substring/README.en.md)
 53. [Valid Anagram](./string/53-valid-anagram/README.en.md)
 54. [Group Anagrams](./string/54-group-anagrams/README.en.md)
+55. [Valid Parentheses](./string/55-valid-parentheses/README.en.md)
 
 ## Pattern for the next ones
 
