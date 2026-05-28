@@ -194,6 +194,7 @@ O foco é transformar cada exercício em um material rápido de revisão, para q
 51. [Longest Repeating Character Replacement](./string/51-longest-repeating-character-replacement/README.pt.md)
 52. [Minimum Window Substring](./string/52-minimum-window-substring/README.pt.md)
 53. [Valid Anagram](./string/53-valid-anagram/README.pt.md)
+54. [Group Anagrams](./string/54-group-anagrams/README.pt.md)
 
 ## Padrão para os próximos
 
