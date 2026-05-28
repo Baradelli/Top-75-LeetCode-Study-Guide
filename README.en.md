@@ -193,6 +193,7 @@ The focus is to turn each exercise into a quick review resource, so later you ca
 
 50. [Longest Substring Without Repeating Characters](./string/50-longest-substring-without-repeating-characters/README.en.md)
 51. [Longest Repeating Character Replacement](./string/51-longest-repeating-character-replacement/README.en.md)
+52. [Minimum Window Substring](./string/52-minimum-window-substring/README.en.md)
 
 ## Pattern for the next ones
 
