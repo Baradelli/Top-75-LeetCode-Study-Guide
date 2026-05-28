@@ -197,6 +197,7 @@ O foco é transformar cada exercício em um material rápido de revisão, para q
 54. [Group Anagrams](./string/54-group-anagrams/README.pt.md)
 55. [Valid Parentheses](./string/55-valid-parentheses/README.pt.md)
 56. [Valid Palindrome](./string/56-valid-palindrome/README.pt.md)
+57. [Longest Palindromic Substring](./string/57-longest-palindromic-substring/README.pt.md)
 
 ## Padrão para os próximos
 
