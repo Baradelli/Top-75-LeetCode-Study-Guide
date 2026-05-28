@@ -191,6 +191,7 @@ O foco é transformar cada exercício em um material rápido de revisão, para q
 ### String
 
 50. [Longest Substring Without Repeating Characters](./string/50-longest-substring-without-repeating-characters/README.pt.md)
+51. [Longest Repeating Character Replacement](./string/51-longest-repeating-character-replacement/README.pt.md)
 
 ## Padrão para os próximos
 

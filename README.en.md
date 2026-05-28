@@ -192,6 +192,7 @@ The focus is to turn each exercise into a quick review resource, so later you ca
 ### String
 
 50. [Longest Substring Without Repeating Characters](./string/50-longest-substring-without-repeating-characters/README.en.md)
+51. [Longest Repeating Character Replacement](./string/51-longest-repeating-character-replacement/README.en.md)
 
 ## Pattern for the next ones
 
