@@ -198,6 +198,7 @@ O foco é transformar cada exercício em um material rápido de revisão, para q
 55. [Valid Parentheses](./string/55-valid-parentheses/README.pt.md)
 56. [Valid Palindrome](./string/56-valid-palindrome/README.pt.md)
 57. [Longest Palindromic Substring](./string/57-longest-palindromic-substring/README.pt.md)
+58. [Palindromic Substrings](./string/58-palindromic-substrings/README.pt.md)
 
 ## Padrão para os próximos
 
