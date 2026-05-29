@@ -202,6 +202,10 @@ The focus is to turn each exercise into a quick review resource, so later you ca
 58. [Palindromic Substrings](./string/58-palindromic-substrings/README.en.md)
 59. [Encode and Decode Strings](./string/59-encode-and-decode-strings/README.en.md)
 
+### Tree
+
+60. [Maximum Depth of Binary Tree](./tree/60-maximum-depth-of-binary-tree/README.en.md)
+
 ## Pattern for the next ones
 
 For each new problem in the Top 75 list, the idea is to follow the same pattern:

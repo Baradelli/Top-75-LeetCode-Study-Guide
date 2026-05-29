@@ -201,6 +201,10 @@ O foco é transformar cada exercício em um material rápido de revisão, para q
 58. [Palindromic Substrings](./string/58-palindromic-substrings/README.pt.md)
 59. [Encode and Decode Strings](./string/59-encode-and-decode-strings/README.pt.md)
 
+### Tree
+
+60. [Maximum Depth of Binary Tree](./tree/60-maximum-depth-of-binary-tree/README.pt.md)
+
 ## Padrão para os próximos
 
 Para cada novo problema da lista Top 75, a ideia é seguir o mesmo padrão:
