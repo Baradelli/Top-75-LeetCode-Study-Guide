@@ -200,6 +200,7 @@ The focus is to turn each exercise into a quick review resource, so later you ca
 56. [Valid Palindrome](./string/56-valid-palindrome/README.en.md)
 57. [Longest Palindromic Substring](./string/57-longest-palindromic-substring/README.en.md)
 58. [Palindromic Substrings](./string/58-palindromic-substrings/README.en.md)
+59. [Encode and Decode Strings](./string/59-encode-and-decode-strings/README.en.md)
 
 ## Pattern for the next ones
 

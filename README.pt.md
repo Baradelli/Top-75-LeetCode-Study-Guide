@@ -199,6 +199,7 @@ O foco é transformar cada exercício em um material rápido de revisão, para q
 56. [Valid Palindrome](./string/56-valid-palindrome/README.pt.md)
 57. [Longest Palindromic Substring](./string/57-longest-palindromic-substring/README.pt.md)
 58. [Palindromic Substrings](./string/58-palindromic-substrings/README.pt.md)
+59. [Encode and Decode Strings](./string/59-encode-and-decode-strings/README.pt.md)
 
 ## Padrão para os próximos
 
