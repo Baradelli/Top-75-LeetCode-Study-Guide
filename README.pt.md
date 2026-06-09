@@ -209,6 +209,7 @@ O foco é transformar cada exercício em um material rápido de revisão, para q
 63. [Binary Tree Maximum Path Sum](./tree/63-binary-tree-maximum-path-sum/README.pt.md)
 64. [Binary Tree Level Order Traversal](./tree/64-binary-tree-level-order-traversal/README.pt.md)
 65. [Serialize and Deserialize Binary Tree](./tree/65-serialize-and-deserialize-binary-tree/README.pt.md)
+66. [Subtree of Another Tree](./tree/66-subtree-of-another-tree/README.pt.md)
 
 ## Padrão para os próximos
 
