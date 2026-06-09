@@ -205,6 +205,7 @@ The focus is to turn each exercise into a quick review resource, so later you ca
 ### Tree
 
 60. [Maximum Depth of Binary Tree](./tree/60-maximum-depth-of-binary-tree/README.en.md)
+61. [Same Tree](./tree/61-same-tree/README.en.md)
 
 ## Pattern for the next ones
 
