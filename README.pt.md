@@ -206,6 +206,7 @@ O foco é transformar cada exercício em um material rápido de revisão, para q
 60. [Maximum Depth of Binary Tree](./tree/60-maximum-depth-of-binary-tree/README.pt.md)
 61. [Same Tree](./tree/61-same-tree/README.pt.md)
 62. [Invert Binary Tree](./tree/62-invert-binary-tree/README.pt.md)
+63. [Binary Tree Maximum Path Sum](./tree/63-binary-tree-maximum-path-sum/README.pt.md)
 
 ## Padrão para os próximos
 
