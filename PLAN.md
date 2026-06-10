@@ -1,6 +1,6 @@
 # Plano — Curso Interativo de LeetCode e Algoritmos
 
-> Status: rascunho em construção conjunta. Última atualização: 2026-06-10.
+> Status: Fase 0 (fundação técnica) implementada em `web/` — aguardando validação no navegador. Última atualização: 2026-06-10.
 
 ## 1. Visão
 

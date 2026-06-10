@@ -1,0 +1,65 @@
+# Introdução + POC: two-sum linha a linha
+
+> Esta aula é a prova de conceito da fundação técnica do curso: código de
+> verdade executando no seu navegador, com visualização passo a passo.
+
+## O problema
+
+Dado um array de números e um alvo, encontre os índices de dois números que
+somados dão o alvo. É o problema nº 1 do LeetCode — e o exemplo perfeito do
+padrão **hash map**.
+
+## Veja o algoritmo funcionando
+
+Use os controles abaixo para executar o algoritmo passo a passo. Repare como o
+hash map `seen` vai guardando cada número visitado, e como em cada posição o
+algoritmo pergunta: *"o complemento que eu preciso já passou por aqui?"*
+
+<TwoSumDemo />
+
+## Experimente você mesmo
+
+Edite o código abaixo e execute. Troque o array, o alvo, ou quebre a solução
+de propósito para ver o que acontece — o código roda de verdade, aqui no
+navegador.
+
+<CodeRunner
+  python={`def two_sum(nums, target):
+    seen = {}
+    for i in range(len(nums)):
+        complement = target - nums[i]
+        if complement in seen:
+            return [seen[complement], i]
+        seen[nums[i]] = i
+    return []
+
+print(two_sum([2, 7, 11, 15], 9))
+print(two_sum([3, 2, 4], 6))
+print(two_sum([3, 3], 6))`}
+  javascript={`function twoSum(nums, target) {
+  var seen = {};
+  for (var i = 0; i < nums.length; i++) {
+    var complement = target - nums[i];
+    if (seen[complement] !== undefined) {
+      return [seen[complement], i];
+    }
+    seen[nums[i]] = i;
+  }
+  return [];
+}
+
+console.log(twoSum([2, 7, 11, 15], 9));
+console.log(twoSum([3, 2, 4], 6));
+console.log(twoSum([3, 3], 6));`}
+/>
+
+## Complexidade
+
+- **Tempo:** O(n) — uma única passada pelo array.
+- **Espaço:** O(n) — o hash map pode guardar todos os elementos.
+
+## O que vem a seguir
+
+Esta é só a demonstração da fundação. A seção Array completa terá aulas de
+todos os padrões (hash map, two pointers, sliding window, prefix product e
+Kadane), quizzes e a prova final.
