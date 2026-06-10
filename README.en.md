@@ -217,6 +217,7 @@ The focus is to turn each exercise into a quick review resource, so later you ca
 70. [Lowest Common Ancestor of a Binary Search Tree](./tree/70-lowest-common-ancestor-of-a-binary-search-tree/README.en.md)
 71. [Implement Trie (Prefix Tree)](./tree/71-implement-trie-prefix-tree/README.en.md)
 72. [Design Add and Search Words Data Structure](./tree/72-design-add-and-search-words-data-structure/README.en.md)
+73. [Word Search II](./tree/73-word-search-2/README.en.md)
 
 ## Pattern for the next ones
 
