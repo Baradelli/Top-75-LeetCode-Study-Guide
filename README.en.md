@@ -213,6 +213,7 @@ The focus is to turn each exercise into a quick review resource, so later you ca
 66. [Subtree of Another Tree](./tree/66-subtree-of-another-tree/README.en.md)
 67. [Construct Binary Tree from Preorder and Inorder Traversal](./tree/67-construct-binary-tree-from-preorder-and-inorder-traversal/README.en.md)
 68. [Validate Binary Search Tree](./tree/68-validate-binary-search-tree/README.en.md)
+69. [Kth Smallest Element in a BST](./tree/69-kth-smallest-element-in-a-bst/README.en.md)
 
 ## Pattern for the next ones
 

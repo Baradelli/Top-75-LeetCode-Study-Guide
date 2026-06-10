@@ -212,6 +212,7 @@ O foco é transformar cada exercício em um material rápido de revisão, para q
 66. [Subtree of Another Tree](./tree/66-subtree-of-another-tree/README.pt.md)
 67. [Construct Binary Tree from Preorder and Inorder Traversal](./tree/67-construct-binary-tree-from-preorder-and-inorder-traversal/README.pt.md)
 68. [Validate Binary Search Tree](./tree/68-validate-binary-search-tree/README.pt.md)
+69. [Kth Smallest Element in a BST](./tree/69-kth-smallest-element-in-a-bst/README.pt.md)
 
 ## Padrão para os próximos
 
