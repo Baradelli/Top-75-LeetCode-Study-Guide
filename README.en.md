@@ -219,6 +219,10 @@ The focus is to turn each exercise into a quick review resource, so later you ca
 72. [Design Add and Search Words Data Structure](./tree/72-design-add-and-search-words-data-structure/README.en.md)
 73. [Word Search II](./tree/73-word-search-2/README.en.md)
 
+### Heap
+
+74. [Top K Frequent Elements](./heap/74-top-k-frequent-elements/README.en.md)
+
 ## Pattern for the next ones
 
 For each new problem in the Top 75 list, the idea is to follow the same pattern:

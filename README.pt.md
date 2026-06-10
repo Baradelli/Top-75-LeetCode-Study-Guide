@@ -218,6 +218,10 @@ O foco é transformar cada exercício em um material rápido de revisão, para q
 72. [Design Add and Search Words Data Structure](./tree/72-design-add-and-search-words-data-structure/README.pt.md)
 73. [Word Search II](./tree/73-word-search-2/README.pt.md)
 
+### Heap
+
+74. [Top K Frequent Elements](./heap/74-top-k-frequent-elements/README.pt.md)
+
 ## Padrão para os próximos
 
 Para cada novo problema da lista Top 75, a ideia é seguir o mesmo padrão:
