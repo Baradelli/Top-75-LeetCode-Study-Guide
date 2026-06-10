@@ -222,6 +222,7 @@ The focus is to turn each exercise into a quick review resource, so later you ca
 ### Heap
 
 74. [Top K Frequent Elements](./heap/74-top-k-frequent-elements/README.en.md)
+75. [Find Median from Data Stream](./heap/75-find-median-from-data-stream/README.en.md)
 
 ## Pattern for the next ones
 

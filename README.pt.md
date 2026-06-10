@@ -221,6 +221,7 @@ O foco é transformar cada exercício em um material rápido de revisão, para q
 ### Heap
 
 74. [Top K Frequent Elements](./heap/74-top-k-frequent-elements/README.pt.md)
+75. [Find Median from Data Stream](./heap/75-find-median-from-data-stream/README.pt.md)
 
 ## Padrão para os próximos
 
