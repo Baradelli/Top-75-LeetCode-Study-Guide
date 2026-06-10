@@ -214,6 +214,7 @@ O foco é transformar cada exercício em um material rápido de revisão, para q
 68. [Validate Binary Search Tree](./tree/68-validate-binary-search-tree/README.pt.md)
 69. [Kth Smallest Element in a BST](./tree/69-kth-smallest-element-in-a-bst/README.pt.md)
 70. [Lowest Common Ancestor of a Binary Search Tree](./tree/70-lowest-common-ancestor-of-a-binary-search-tree/README.pt.md)
+71. [Implement Trie (Prefix Tree)](./tree/71-implement-trie-prefix-tree/README.pt.md)
 
 ## Padrão para os próximos
 
