@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import TracePlayer, { type VisualizerProps } from "./TracePlayer";
 import ArrayTraceVisualizer from "./visualizers/ArrayTraceVisualizer";
 import StringTraceVisualizer from "./visualizers/StringTraceVisualizer";
+import BitTraceVisualizer from "./visualizers/BitTraceVisualizer";
 import { DEMOS } from "@/lib/demos";
 
 /**
@@ -22,6 +23,13 @@ export default function TraceDemo({ id }: { id: string }) {
         return <ArrayTraceVisualizer {...props} config={config} />;
       }
       return ArrayBound;
+    }
+    if ("bit" in demo) {
+      const config = demo.bit;
+      function BitBound(props: VisualizerProps) {
+        return <BitTraceVisualizer {...props} config={config} />;
+      }
+      return BitBound;
     }
     const config = demo.string;
     function StringBound(props: VisualizerProps) {

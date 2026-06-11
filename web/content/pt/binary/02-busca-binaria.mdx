@@ -1,0 +1,183 @@
+# Padrão 1: Busca Binária
+
+> A ideia é a de procurar um nome numa lista telefônica: você não começa na
+> primeira página — abre no meio e decide para que lado ir. Cada decisão
+> **elimina metade** do que restava.
+
+<Challenge id="binary-search" />
+
+> Tentou? A solução "óbvia" é percorrer o array do começo ao fim — O(n). Ela
+> funciona, mas **ignora** a informação mais valiosa do enunciado: o array está
+> **ordenado**. A teoria abaixo mostra como a ordem derruba isso para O(log n).
+
+## A teoria: aproveitar a ordem
+
+Num array ordenado, o valor do meio te diz muito. Se você procura `target` e o
+meio é **menor** que ele, então `target` — se existir — só pode estar à
+**direita** do meio (tudo à esquerda é ainda menor). Você acabou de descartar
+**metade** do array sem olhar. Simétrico se o meio for maior.
+
+```text
+left = 0, right = n - 1
+enquanto left <= right:
+    mid = (left + right) // 2
+    se nums[mid] == target → achou
+    se nums[mid]  < target → o alvo está à direita: left = mid + 1
+    se nums[mid]  > target → o alvo está à esquerda: right = mid - 1
+não achou → -1
+```
+
+Acompanhe o intervalo ativo `[left..right]` encolhendo pela metade a cada
+passo, com `mid` no centro:
+
+<TraceDemo id="binary-search" />
+
+### Por que é O(log n)? (a justificativa completa)
+
+A pergunta-chave: quantas vezes dá para **dividir n por 2** até sobrar 1
+elemento? Essa é a definição de **log₂(n)**:
+
+- n = 8 → 4 → 2 → 1: **3 passos** (log₂ 8 = 3)
+- n = 1.000.000 → ... → 1: **~20 passos** (2²⁰ ≈ 1 milhão)
+
+Cada iteração do laço descarta metade do espaço restante e faz só trabalho
+O(1) (uma comparação, ajustar um ponteiro). Como o número de iterações é
+log₂(n), o total é **O(log n) de tempo** e **O(1) de espaço**. Não é "mais ou
+menos rápido" — é exponencialmente melhor que a busca linear.
+
+| Solução | Tempo | Espaço | Exige |
+| --- | --- | --- | --- |
+| Busca linear | O(n) | O(1) | nada |
+| Busca binária | O(log n) | O(1) | array **ordenado** |
+
+## A armadilha clássica: os detalhes das fronteiras
+
+Busca binária é fácil de entender e **fácil de errar** nos detalhes. Três
+pontos que derrubam muita gente:
+
+1. **`left <= right` ou `left < right`?** Com `right = n-1` (índice válido),
+   use `<=` — senão você não checa o último elemento quando `left == right`.
+2. **`mid + 1` / `mid - 1`?** Como `nums[mid]` já foi testado, exclua-o do
+   próximo intervalo. Esquecer o `±1` causa **loop infinito**.
+3. **Overflow do `mid`?** Em linguagens com inteiro fixo, `(left + right)` pode
+   estourar; `left + (right - left) // 2` evita isso. (Em Python/JS do curso
+   não é problema, mas é bom saber para entrevistas em Java/C++.)
+
+Edite o código e force os erros (troque `mid + 1` por `mid`) para ver o loop
+infinito ser interrompido pelo limite de passos:
+
+<CodeRunner
+  python={`def busca(nums, target):
+    left = 0
+    right = len(nums) - 1
+    while left <= right:
+        mid = left + (right - left) // 2   # evita overflow
+        if nums[mid] == target:
+            return mid
+        elif nums[mid] < target:
+            left = mid + 1
+        else:
+            right = mid - 1
+    return -1
+
+dados = [-5, -2, 0, 3, 7, 9, 14, 21]
+print(busca(dados, 9))    # 5
+print(busca(dados, -5))   # 0
+print(busca(dados, 8))    # -1`}
+  javascript={`function busca(nums, target) {
+  var left = 0;
+  var right = nums.length - 1;
+  while (left <= right) {
+    var mid = left + Math.floor((right - left) / 2); // evita overflow
+    if (nums[mid] === target) {
+      return mid;
+    } else if (nums[mid] < target) {
+      left = mid + 1;
+    } else {
+      right = mid - 1;
+    }
+  }
+  return -1;
+}
+
+var dados = [-5, -2, 0, 3, 7, 9, 14, 21];
+console.log(busca(dados, 9));   // 5
+console.log(busca(dados, -5));  // 0
+console.log(busca(dados, 8));   // -1`}
+/>
+
+## Busca binária é mais que "achar um valor"
+
+O verdadeiro poder vem quando você percebe que busca binária funciona em
+qualquer espaço **monótono** — onde existe uma fronteira "antes dela não, a
+partir dela sim". Procurar o **primeiro** elemento ≥ x, o **último** ≤ x, ou
+até *"a menor velocidade que dá conta da tarefa"* (busca binária na resposta) —
+tudo é busca binária com a mesma espinha. Você verá isso na síntese e na prova.
+
+<Quiz
+  title="Quiz de fixação"
+  questions={[
+    {
+      question:
+        "Qual informação do enunciado torna a busca binária possível, e que a busca linear ignora?",
+      options: [
+        "O tamanho do array",
+        "O array estar ORDENADO — a ordem diz em qual metade o alvo pode estar",
+        "Os valores serem positivos",
+        "O array não ter repetições",
+      ],
+      answer: 1,
+      explanation:
+        "Sem ordem, o valor do meio não diz nada sobre onde o alvo está. Com ordem, ele descarta metade do espaço a cada passo.",
+    },
+    {
+      question: "Por que a busca binária é O(log n)?",
+      options: [
+        "Porque tem um único laço",
+        "Porque cada passo descarta METADE do espaço restante; o número de divisões de n até 1 é log₂(n)",
+        "Porque o array é pequeno",
+        "Porque não usa memória",
+      ],
+      answer: 1,
+      explanation:
+        "n → n/2 → n/4 → ... → 1 leva log₂(n) passos, cada um O(1). Daí O(log n): ~20 passos para 1 milhão, ~30 para 1 bilhão.",
+    },
+    {
+      question:
+        "Esquecer de usar mid+1 / mid-1 (e manter left=mid, por exemplo) costuma causar o quê?",
+      options: [
+        "Resposta levemente errada",
+        "Loop infinito — o intervalo para de encolher quando left e right ficam adjacentes",
+        "Overflow",
+        "Nada, é equivalente",
+      ],
+      answer: 1,
+      explanation:
+        "Se nums[mid] não é o alvo, ele precisa SAIR do próximo intervalo. Sem o ±1, com left e right adjacentes o mid não muda e o laço nunca termina.",
+    },
+    {
+      question:
+        "'Encontre o primeiro elemento ≥ x num array ordenado.' Busca binária serve?",
+      options: [
+        "Não, busca binária só acha valores exatos",
+        "Sim — é uma busca binária por FRONTEIRA: continue para a esquerda mesmo ao achar um candidato, registrando-o, até achar o primeiro que satisfaz",
+        "Só com o array invertido",
+        "Não, precisa ser O(n)",
+      ],
+      answer: 1,
+      explanation:
+        "Busca binária funciona em qualquer espaço monótono. 'Primeiro que satisfaz' é o padrão de fronteira: ao achar um candidato, vá para a esquerda procurando um ainda anterior.",
+    },
+  ]}
+/>
+
+## Resumo
+
+- Busca binária precisa de **ordem**; olha o meio e descarta metade por passo.
+- **O(log n)** porque n se divide por 2 até chegar a 1 (log₂ n passos), cada um
+  O(1).
+- Cuidado com fronteiras: `<=`, `mid ± 1`, overflow do `mid`.
+- Generaliza para fronteiras e "busca na resposta" — qualquer espaço monótono.
+
+Próxima aula: e quando o array ordenado foi **girado**? A busca binária
+modificada.

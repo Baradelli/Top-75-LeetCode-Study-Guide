@@ -55,6 +55,15 @@ export default function ArrayTraceVisualizer({
     .map((name) => ({ name, value: step.locals[name] }))
     .filter((s) => s.value !== undefined && s.value !== null);
 
+  const winLeft =
+    config.window && typeof step.locals[config.window.left] === "number"
+      ? (step.locals[config.window.left] as number)
+      : null;
+  const winRight =
+    config.window && typeof step.locals[config.window.right] === "number"
+      ? (step.locals[config.window.right] as number)
+      : null;
+
   if (!array) {
     return (
       <p className="text-sm text-zinc-500">
@@ -114,10 +123,16 @@ export default function ArrayTraceVisualizer({
       ) : (
         <div className="flex flex-wrap gap-1">
           {array.map((value, index) => {
-            const pointer = pointers.find((p) => p.value === index);
+            const here = pointers.filter((p) => p.value === index);
+            const pointer = here[0];
             const isInMap =
               map !== null &&
               Object.values(map).some((mapIndex) => mapIndex === index);
+            const inWindow =
+              winLeft !== null &&
+              winRight !== null &&
+              index >= winLeft &&
+              index <= winRight;
             return (
               <div key={index} className="flex flex-col items-center">
                 <div
@@ -126,7 +141,9 @@ export default function ArrayTraceVisualizer({
                       ? `${pointer.color.border} ${pointer.color.bg} font-bold`
                       : isInMap
                         ? "border-sky-400 bg-sky-400/10"
-                        : "border-zinc-300 dark:border-zinc-700"
+                        : inWindow
+                          ? "border-zinc-300 bg-emerald-500/5 dark:border-zinc-700"
+                          : "border-zinc-200 text-zinc-400 dark:border-zinc-800"
                   }`}
                 >
                   {value}
@@ -136,7 +153,9 @@ export default function ArrayTraceVisualizer({
                     pointer ? `font-bold ${pointer.color.text}` : "text-zinc-400"
                   }`}
                 >
-                  {pointer ? `${pointer.name}=${index}` : index}
+                  {here.length > 0
+                    ? here.map((p) => p.name).join("=") + `=${index}`
+                    : index}
                 </span>
               </div>
             );

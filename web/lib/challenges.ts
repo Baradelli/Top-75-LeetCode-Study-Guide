@@ -24,6 +24,248 @@ export interface Challenge {
 }
 
 export const CHALLENGES: Record<string, Challenge> = {
+  "binary-search": {
+    title: "Binary Search",
+    statement: `Dado um array \`nums\` **ordenado em ordem crescente** e um \`target\`, retorne o **índice** de \`target\`. Se não existir, retorne \`-1\`. Espera-se O(log n).
+
+Exemplo: \`nums = [-1, 0, 3, 5, 9, 12]\`, \`target = 9\` → \`4\`. \`target = 2\` → \`-1\`.`,
+    functionName: { python: "binary_search", javascript: "binarySearch" },
+    starter: {
+      python: `def binary_search(nums, target):
+    # o array está ordenado — aproveite isso!
+    pass`,
+      javascript: `function binarySearch(nums, target) {
+  // o array está ordenado — aproveite isso!
+}`,
+    },
+    tests: [
+      { args: [[-1, 0, 3, 5, 9, 12], 9], expected: 4 },
+      { args: [[-1, 0, 3, 5, 9, 12], 2], expected: -1 },
+      { args: [[5], 5], expected: 0 },
+      { args: [[], 1], expected: -1 },
+      { args: [[2, 4, 6, 8], 8], expected: 3 },
+    ],
+    hint: "Como o array é ordenado, olhe o elemento do MEIO: se for o alvo, achou; se for menor, o alvo só pode estar na metade direita; se for maior, na esquerda. A cada passo você descarta METADE — daí o O(log n).",
+    solution: {
+      python: `def binary_search(nums, target):
+    left = 0
+    right = len(nums) - 1
+    while left <= right:
+        mid = (left + right) // 2
+        if nums[mid] == target:
+            return mid
+        elif nums[mid] < target:
+            left = mid + 1
+        else:
+            right = mid - 1
+    return -1`,
+      javascript: `function binarySearch(nums, target) {
+  var left = 0;
+  var right = nums.length - 1;
+  while (left <= right) {
+    var mid = Math.floor((left + right) / 2);
+    if (nums[mid] === target) {
+      return mid;
+    } else if (nums[mid] < target) {
+      left = mid + 1;
+    } else {
+      right = mid - 1;
+    }
+  }
+  return -1;
+}`,
+    },
+    solutionIdea:
+      "Compare com o meio e descarte metade a cada passo. O(log n) de tempo, O(1) de espaço.",
+  },
+
+  "search-rotated": {
+    title: "Search in Rotated Sorted Array",
+    statement: `Um array ordenado foi **girado** em algum pivô desconhecido (ex.: \`[0,1,2,4,5,6,7]\` virou \`[4,5,6,7,0,1,2]\`). Dado \`nums\` e \`target\`, retorne o índice de \`target\` ou \`-1\`. Espera-se O(log n).
+
+Exemplo: \`nums = [4,5,6,7,0,1,2]\`, \`target = 0\` → \`4\`.`,
+    functionName: { python: "search", javascript: "search" },
+    starter: {
+      python: `def search(nums, target):
+    # ainda dá para fazer busca binária num array girado!
+    pass`,
+      javascript: `function search(nums, target) {
+  // ainda dá para fazer busca binária num array girado!
+}`,
+    },
+    tests: [
+      { args: [[4, 5, 6, 7, 0, 1, 2], 0], expected: 4 },
+      { args: [[4, 5, 6, 7, 0, 1, 2], 3], expected: -1 },
+      { args: [[1], 0], expected: -1 },
+      { args: [[5, 1, 3], 5], expected: 0 },
+      { args: [[6, 7, 8, 1, 2, 3, 4, 5], 8], expected: 2 },
+    ],
+    hint: "No meio, pelo menos UMA das metades está ordenada. Descubra qual (compare nums[left] com nums[mid]). Se o alvo cabe no intervalo ordenado, vá para lá; senão, vá para a outra metade. Ainda é O(log n).",
+    solution: {
+      python: `def search(nums, target):
+    left = 0
+    right = len(nums) - 1
+    while left <= right:
+        mid = (left + right) // 2
+        if nums[mid] == target:
+            return mid
+        if nums[left] <= nums[mid]:        # esquerda ordenada
+            if nums[left] <= target < nums[mid]:
+                right = mid - 1
+            else:
+                left = mid + 1
+        else:                              # direita ordenada
+            if nums[mid] < target <= nums[right]:
+                left = mid + 1
+            else:
+                right = mid - 1
+    return -1`,
+      javascript: `function search(nums, target) {
+  var left = 0;
+  var right = nums.length - 1;
+  while (left <= right) {
+    var mid = Math.floor((left + right) / 2);
+    if (nums[mid] === target) return mid;
+    if (nums[left] <= nums[mid]) {
+      if (nums[left] <= target && target < nums[mid]) {
+        right = mid - 1;
+      } else {
+        left = mid + 1;
+      }
+    } else {
+      if (nums[mid] < target && target <= nums[right]) {
+        left = mid + 1;
+      } else {
+        right = mid - 1;
+      }
+    }
+  }
+  return -1;
+}`,
+    },
+    solutionIdea:
+      "Uma metade sempre está ordenada; decida em qual o alvo cabe e descarte a outra. O(log n).",
+  },
+
+  "hamming-weight": {
+    title: "Number of 1 Bits",
+    statement: `Dado um inteiro não-negativo \`n\`, conte quantos **bits 1** há na sua representação binária (o "peso de Hamming").
+
+Exemplo: \`n = 11\` (binário \`1011\`) → \`3\`. \`n = 128\` (binário \`10000000\`) → \`1\`.`,
+    functionName: { python: "hamming_weight", javascript: "hammingWeight" },
+    starter: {
+      python: `def hamming_weight(n):
+    # quantos bits 1 existem em n?
+    pass`,
+      javascript: `function hammingWeight(n) {
+  // quantos bits 1 existem em n?
+}`,
+    },
+    tests: [
+      { args: [11], expected: 3 },
+      { args: [128], expected: 1 },
+      { args: [0], expected: 0 },
+      { args: [255], expected: 8 },
+      { args: [2147483647], expected: 31 },
+    ],
+    hint: "Você pode olhar o último bit com (n & 1) e deslocar n para a direita. Truque mais esperto: n & (n-1) apaga exatamente o bit 1 mais à direita — conte quantas vezes dá para fazer isso até n virar 0.",
+    solution: {
+      python: `def hamming_weight(n):
+    count = 0
+    while n != 0:
+        n = n & (n - 1)   # apaga o bit 1 mais à direita
+        count = count + 1
+    return count`,
+      javascript: `function hammingWeight(n) {
+  var count = 0;
+  while (n !== 0) {
+    n = n & (n - 1); // apaga o bit 1 mais à direita
+    count = count + 1;
+  }
+  return count;
+}`,
+    },
+    solutionIdea:
+      "n & (n-1) zera o bit 1 mais à direita; o número de repetições até n=0 é a quantidade de bits 1.",
+  },
+
+  "missing-number": {
+    title: "Missing Number",
+    statement: `Dado um array \`nums\` com \`n\` números distintos tirados de \`0..n\`, **um** número está faltando. Encontre-o. Tente fazer em O(n) tempo e O(1) de espaço extra.
+
+Exemplo: \`nums = [3, 0, 1]\` (deveria ter 0,1,2,3) → falta o \`2\`.`,
+    functionName: { python: "missing_number", javascript: "missingNumber" },
+    starter: {
+      python: `def missing_number(nums):
+    # qual número de 0..n não está no array?
+    pass`,
+      javascript: `function missingNumber(nums) {
+  // qual número de 0..n não está no array?
+}`,
+    },
+    tests: [
+      { args: [[3, 0, 1]], expected: 2 },
+      { args: [[0, 1]], expected: 2 },
+      { args: [[9, 6, 4, 2, 3, 5, 7, 0, 1]], expected: 8 },
+      { args: [[0]], expected: 1 },
+    ],
+    hint: "Soma de 0..n menos a soma do array dá o que falta (O(1) espaço). Ou, sem risco de overflow, use XOR: a^a=0, então XOR de todos os índices 0..n com todos os valores cancela os pares e sobra o que falta.",
+    solution: {
+      python: `def missing_number(nums):
+    res = len(nums)
+    for i in range(len(nums)):
+        res = res ^ i ^ nums[i]
+    return res`,
+      javascript: `function missingNumber(nums) {
+  var res = nums.length;
+  for (var i = 0; i < nums.length; i++) {
+    res = res ^ i ^ nums[i];
+  }
+  return res;
+}`,
+    },
+    solutionIdea:
+      "XOR de todos os índices 0..n e de todos os valores: pares se cancelam (a^a=0), sobra o ausente. O(n), O(1).",
+  },
+
+  "counting-bits": {
+    title: "Counting Bits",
+    statement: `Dado um inteiro \`n\`, retorne um array \`ans\` de tamanho \`n+1\` onde \`ans[i]\` é a quantidade de bits 1 de \`i\`, para todo \`i\` de \`0\` a \`n\`. Tente fazer em O(n).
+
+Exemplo: \`n = 5\` → \`[0, 1, 1, 2, 1, 2]\` (0,1,10,11,100,101).`,
+    functionName: { python: "count_bits", javascript: "countBits" },
+    starter: {
+      python: `def count_bits(n):
+    # quantos bits 1 tem cada número de 0 até n?
+    pass`,
+      javascript: `function countBits(n) {
+  // quantos bits 1 tem cada número de 0 até n?
+}`,
+    },
+    tests: [
+      { args: [5], expected: [0, 1, 1, 2, 1, 2] },
+      { args: [2], expected: [0, 1, 1] },
+      { args: [0], expected: [0] },
+    ],
+    hint: "Contar bit a bit para cada número é O(n log n). Para O(n), reaproveite respostas anteriores: i tem os mesmos bits de i>>1 (i sem o último bit), MAIS o último bit (i & 1). Ou seja: ans[i] = ans[i >> 1] + (i & 1).",
+    solution: {
+      python: `def count_bits(n):
+    ans = [0] * (n + 1)
+    for i in range(1, n + 1):
+        ans[i] = ans[i >> 1] + (i & 1)
+    return ans`,
+      javascript: `function countBits(n) {
+  var ans = [0];
+  for (var i = 1; i <= n; i++) {
+    ans[i] = ans[i >> 1] + (i & 1);
+  }
+  return ans;
+}`,
+    },
+    solutionIdea:
+      "DP sobre bits: ans[i] = ans[i>>1] + (i&1). Cada resposta reusa uma já calculada. O(n).",
+  },
+
   "two-sum": {
     title: "Two Sum",
     statement: `Dado um array \`nums\` e um número \`target\`, retorne os **índices** de dois números que somam \`target\`. Existe exatamente uma resposta.

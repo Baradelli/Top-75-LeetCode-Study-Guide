@@ -66,7 +66,7 @@ export const SECTIONS: Section[] = [
     description:
       "Busca binária como continuação natural de arrays; bits como módulo independente.",
     patterns: ["Busca binária", "Array rotacionado", "XOR", "Shifts e máscaras"],
-    status: "soon",
+    status: "available",
   },
   {
     slug: "linked-list",
@@ -264,6 +264,50 @@ export const LESSONS: Record<string, Lesson[]> = {
       title: "Síntese: qual padrão usar?",
       description:
         "A árvore de decisão da seção String e o quiz geral antes da prova final.",
+    },
+  ],
+  binary: [
+    {
+      slug: "01-introducao",
+      title: "Reconhecendo busca binária e bits",
+      description:
+        "Os dois temas da seção, quando cada um aparece, e por que O(log n) é tão poderoso.",
+    },
+    {
+      slug: "02-busca-binaria",
+      title: "Padrão 1: Busca Binária",
+      description:
+        "Cortar o espaço de busca pela metade a cada passo — a essência do O(log n).",
+    },
+    {
+      slug: "03-busca-binaria-girada",
+      title: "Padrão 2: Busca binária modificada (array girado)",
+      description:
+        "Quando o array foi girado: decidir qual metade está ordenada e continuar cortando.",
+    },
+    {
+      slug: "04-bits-fundamentos",
+      title: "Padrão 3: Fundamentos de bits",
+      description:
+        "Pensar em binário: AND, OR, XOR, NOT, deslocamentos e máscaras.",
+    },
+    {
+      slug: "05-bits-xor",
+      title: "Padrão 4: O poder do XOR",
+      description:
+        "A propriedade a^a=0 que faz pares se cancelarem e revela o que sobra.",
+    },
+    {
+      slug: "06-bits-tecnicas",
+      title: "Padrão 5: Técnicas com bits",
+      description:
+        "Reaproveitar contagens (counting bits), inverter bits e somar sem o operador +.",
+    },
+    {
+      slug: "07-sintese",
+      title: "Síntese: qual padrão usar?",
+      description:
+        "A árvore de decisão da seção Binary e o quiz geral antes da prova final.",
     },
   ],
 };

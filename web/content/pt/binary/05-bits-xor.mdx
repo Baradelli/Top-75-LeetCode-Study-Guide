@@ -1,0 +1,160 @@
+# Padrão 4: O poder do XOR
+
+> O XOR (`^`) tem uma propriedade quase mágica que resolve uma família inteira
+> de problemas "achar o que sobra" em O(n) tempo e O(1) espaço — sem hash map,
+> sem ordenar.
+
+<Challenge id="missing-number" />
+
+> Tentou? Provavelmente você usou um conjunto (set) ou a fórmula da soma —
+> ambas funcionam! A teoria abaixo mostra uma terceira via, com XOR, que não
+> usa memória extra nem corre risco de overflow.
+
+## A teoria: as propriedades do XOR
+
+O XOR compara bit a bit e dá 1 onde os bits **diferem**. Disso saem três
+propriedades que, juntas, são uma ferramenta poderosa:
+
+```text
+1.  a ^ a = 0       (qualquer coisa com ela mesma se cancela)
+2.  a ^ 0 = a       (XOR com zero não muda nada)
+3.  a ^ b = b ^ a   (a ordem não importa — comutativo e associativo)
+```
+
+Junte tudo: se você fizer o XOR de uma porção de números, **tudo que aparece
+em par se cancela** (propriedade 1) e sobra exatamente o que apareceu um
+número ímpar de vezes. É um "detector de desemparelhados" que não guarda nada
+na memória.
+
+### Os sinais de XOR no enunciado
+
+- "Todo elemento aparece **duas vezes**, exceto um" → o solitário sobra.
+- "Um número está **faltando**" em uma sequência conhecida → emparelhe o que
+  existe com o que deveria existir; o ausente sobra.
+- "Troque dois valores sem variável auxiliar", "ache a diferença de bits".
+- Restrição **O(1) de espaço** num problema que pareceria pedir um hash set.
+
+## Exemplo 1 — Missing Number
+
+*"Um array tem `n` números distintos de `0..n`; um está faltando."*
+
+- **Força bruta / hash:** marque os presentes num set e veja qual falta —
+  O(n) tempo mas O(n) espaço.
+- **Soma:** `soma(0..n) − soma(nums)` dá o ausente — O(1) espaço, mas a soma
+  pode estourar inteiros enormes.
+- **XOR (sem overflow, sem memória):** faça o XOR de **todos os índices
+  `0..n`** com **todos os valores**. Cada número presente aparece como índice
+  *e* como valor → se cancela. O único índice sem valor correspondente é o que
+  falta — e ele sobra.
+
+Veja o acumulador `res` em binário enquanto os pares se cancelam:
+
+<TraceDemo id="missing-number" />
+
+### Por que é O(n) tempo e O(1) espaço?
+
+Uma única passada pelos `n` elementos, com um XOR (O(1)) por passo →
+**O(n) de tempo**. O estado é uma só variável acumuladora, não importa o
+tamanho da entrada → **O(1) de espaço**. E, diferente da soma, o XOR nunca
+"cresce" além da largura do inteiro — sem risco de overflow.
+
+| Solução | Tempo | Espaço | Observação |
+| --- | --- | --- | --- |
+| Hash set | O(n) | O(n) | memória extra |
+| Soma de Gauss | O(n) | O(1) | pode estourar inteiros |
+| XOR | O(n) | O(1) | sem overflow, sem memória |
+
+## Exemplo 2 — Single Number
+
+*"Todo elemento aparece duas vezes, menos um. Ache o solitário."* É o XOR na
+sua forma mais pura — sem nem precisar dos índices:
+
+<CodeRunner
+  python={`def single_number(nums):
+    resultado = 0
+    for x in nums:
+        resultado = resultado ^ x   # pares se cancelam, sobra o solitário
+    return resultado
+
+print(single_number([2, 2, 1]))         # 1
+print(single_number([4, 1, 2, 1, 2]))   # 4
+print(single_number([7]))               # 7`}
+  javascript={`function singleNumber(nums) {
+  var resultado = 0;
+  for (var i = 0; i < nums.length; i++) {
+    resultado = resultado ^ nums[i]; // pares se cancelam, sobra o solitário
+  }
+  return resultado;
+}
+
+console.log(singleNumber([2, 2, 1]));       // 1
+console.log(singleNumber([4, 1, 2, 1, 2])); // 4
+console.log(singleNumber([7]));             // 7`}
+/>
+
+Comece de `0` (propriedade 2: não atrapalha), faça XOR de tudo: cada par some,
+o solitário fica. Uma linha, O(n)/O(1). Tente resolver isso com qualquer outra
+abordagem em O(1) de espaço — você vai entender por que o XOR é especial.
+
+<Quiz
+  title="Quiz de fixação"
+  questions={[
+    {
+      question: "Quanto vale a ^ a, para qualquer a?",
+      options: ["a", "0", "1", "2a"],
+      answer: 1,
+      explanation:
+        "XOR dá 1 onde os bits diferem. Um número comparado com ele mesmo não tem nenhum bit diferente → todos os bits 0 → resultado 0. É a propriedade que faz pares se cancelarem.",
+    },
+    {
+      question:
+        "Por que fazer XOR de todos os elementos de um array onde tudo aparece em par (menos um) revela o solitário?",
+      options: [
+        "Porque XOR ordena os números",
+        "Porque cada par se cancela (a^a=0) e o XOR com 0 não muda nada (a^0=a), então sobra exatamente o desemparelhado",
+        "Porque XOR soma os números",
+        "Por coincidência",
+      ],
+      answer: 1,
+      explanation:
+        "As propriedades a^a=0 e a^0=a, com comutatividade, fazem todos os pares desaparecerem. O único sem par fica.",
+    },
+    {
+      question:
+        "Qual vantagem o XOR tem sobre a 'soma de Gauss' no Missing Number?",
+      options: [
+        "É mais fácil de escrever",
+        "Não corre risco de overflow — o XOR nunca cresce além da largura do inteiro, enquanto a soma pode estourar",
+        "É O(log n)",
+        "Não tem vantagem",
+      ],
+      answer: 1,
+      explanation:
+        "Ambos são O(n)/O(1), mas a soma de 0..n pode exceder o limite de inteiros em entradas grandes. O XOR opera bit a bit e se mantém na mesma largura.",
+    },
+    {
+      question:
+        "'Troque os valores de duas variáveis a e b sem usar uma variável auxiliar.' Que ferramenta da aula resolve?",
+      options: [
+        "Busca binária",
+        "XOR: a^=b; b^=a; a^=b — as propriedades do XOR realizam a troca sem espaço extra",
+        "Um hash map",
+        "Não é possível",
+      ],
+      answer: 1,
+      explanation:
+        "O 'swap por XOR' é uma aplicação clássica das mesmas propriedades (a^a=0, a^0=a). Não é o mais legível, mas mostra o poder do operador sem memória auxiliar.",
+    },
+  ]}
+/>
+
+## Resumo
+
+- XOR: `a^a=0`, `a^0=a`, comutativo. Pares se cancelam; o desemparelhado sobra.
+- **Single Number**: XOR de tudo a partir de 0 → o solitário. O(n)/O(1).
+- **Missing Number**: XOR de índices `0..n` com os valores → o ausente sobra,
+  sem overflow nem memória.
+- Sinais: "aparece duas vezes menos um", "está faltando", O(1) de espaço.
+
+Próxima aula: técnicas que combinam bits com outras ideias — **counting bits,
+reverse bits e somar sem `+`**.

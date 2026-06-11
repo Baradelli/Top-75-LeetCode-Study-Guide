@@ -10,6 +10,8 @@ export interface ArrayVisualConfig {
   arrayVar: string;
   /** Variáveis que são índices no array principal (ponteiros). */
   pointerVars?: string[];
+  /** Sombrear o intervalo ativo [left..right] (ex.: busca binária). */
+  window?: { left: string; right: string };
   /** Variável de dicionário/hash map para exibir como chips. */
   mapVar?: string;
   /** Rótulo do hash map (ex.: "valor → índice"). */
@@ -20,6 +22,15 @@ export interface ArrayVisualConfig {
   extraArrayVars?: string[];
   /** true = renderizar o array principal como barras de altura. */
   bars?: boolean;
+}
+
+export interface BitVisualConfig {
+  /** Variáveis numéricas a exibir em binário. */
+  numberVars: string[];
+  /** Largura em bits (default 8). */
+  bitWidth?: number;
+  /** Variáveis escalares em destaque. */
+  scalarVars?: string[];
 }
 
 export interface StringVisualConfig {
@@ -40,7 +51,8 @@ export interface StringVisualConfig {
 
 export type DemoDefinition =
   | { python: string; javascript: string; array: ArrayVisualConfig }
-  | { python: string; javascript: string; string: StringVisualConfig };
+  | { python: string; javascript: string; string: StringVisualConfig }
+  | { python: string; javascript: string; bit: BitVisualConfig };
 
 export const DEMOS: Record<string, DemoDefinition> = {
   // ---------------------------------------------------------------- ARRAY ---
@@ -404,6 +416,160 @@ console.log(resultado);`,
       pointerVars: ["i"],
       scalarVars: ["c"],
       stackVar: "pilha",
+    },
+  },
+
+  // --------------------------------------------------------------- BINARY ---
+  "binary-search": {
+    python: `def binary_search(nums, target):
+    left = 0
+    right = len(nums) - 1
+    while left <= right:
+        mid = (left + right) // 2
+        if nums[mid] == target:
+            return mid
+        elif nums[mid] < target:
+            left = mid + 1
+        else:
+            right = mid - 1
+    return -1
+
+resultado = binary_search([1, 3, 5, 7, 9, 11, 13], 11)
+print(resultado)`,
+    javascript: `function binarySearch(nums, target) {
+  var left = 0;
+  var right = nums.length - 1;
+  while (left <= right) {
+    var mid = Math.floor((left + right) / 2);
+    if (nums[mid] === target) {
+      return mid;
+    } else if (nums[mid] < target) {
+      left = mid + 1;
+    } else {
+      right = mid - 1;
+    }
+  }
+  return -1;
+}
+
+var resultado = binarySearch([1, 3, 5, 7, 9, 11, 13], 11);
+console.log(resultado);`,
+    array: {
+      arrayVar: "nums",
+      pointerVars: ["left", "right", "mid"],
+      window: { left: "left", right: "right" },
+      scalarVars: ["target", "mid"],
+    },
+  },
+
+  "search-rotated": {
+    python: `def search(nums, target):
+    left = 0
+    right = len(nums) - 1
+    while left <= right:
+        mid = (left + right) // 2
+        if nums[mid] == target:
+            return mid
+        if nums[left] <= nums[mid]:        # metade esquerda ordenada
+            if nums[left] <= target and target < nums[mid]:
+                right = mid - 1
+            else:
+                left = mid + 1
+        else:                              # metade direita ordenada
+            if nums[mid] < target and target <= nums[right]:
+                left = mid + 1
+            else:
+                right = mid - 1
+    return -1
+
+resultado = search([4, 5, 6, 7, 0, 1, 2], 0)
+print(resultado)`,
+    javascript: `function search(nums, target) {
+  var left = 0;
+  var right = nums.length - 1;
+  while (left <= right) {
+    var mid = Math.floor((left + right) / 2);
+    if (nums[mid] === target) {
+      return mid;
+    }
+    if (nums[left] <= nums[mid]) {         // metade esquerda ordenada
+      if (nums[left] <= target && target < nums[mid]) {
+        right = mid - 1;
+      } else {
+        left = mid + 1;
+      }
+    } else {                               // metade direita ordenada
+      if (nums[mid] < target && target <= nums[right]) {
+        left = mid + 1;
+      } else {
+        right = mid - 1;
+      }
+    }
+  }
+  return -1;
+}
+
+var resultado = search([4, 5, 6, 7, 0, 1, 2], 0);
+console.log(resultado);`,
+    array: {
+      arrayVar: "nums",
+      pointerVars: ["left", "right", "mid"],
+      window: { left: "left", right: "right" },
+      scalarVars: ["target", "mid"],
+    },
+  },
+
+  "hamming-weight": {
+    python: `def count_ones(n):
+    count = 0
+    while n != 0:
+        n = n & (n - 1)   # apaga o bit 1 mais à direita
+        count = count + 1
+    return count
+
+resultado = count_ones(156)   # 10011100 -> 4 bits ligados
+print(resultado)`,
+    javascript: `function countOnes(n) {
+  var count = 0;
+  while (n !== 0) {
+    n = n & (n - 1); // apaga o bit 1 mais à direita
+    count = count + 1;
+  }
+  return count;
+}
+
+var resultado = countOnes(156); // 10011100 -> 4 bits ligados
+console.log(resultado);`,
+    bit: {
+      numberVars: ["n"],
+      bitWidth: 8,
+      scalarVars: ["count"],
+    },
+  },
+
+  "missing-number": {
+    python: `def missing_number(nums):
+    res = len(nums)
+    for i in range(len(nums)):
+        res = res ^ i ^ nums[i]   # cada par índice/valor se cancela
+    return res
+
+resultado = missing_number([3, 0, 1])   # falta o 2
+print(resultado)`,
+    javascript: `function missingNumber(nums) {
+  var res = nums.length;
+  for (var i = 0; i < nums.length; i++) {
+    res = res ^ i ^ nums[i]; // cada par índice/valor se cancela
+  }
+  return res;
+}
+
+var resultado = missingNumber([3, 0, 1]); // falta o 2
+console.log(resultado);`,
+    bit: {
+      numberVars: ["res"],
+      bitWidth: 8,
+      scalarVars: ["i"],
     },
   },
 };

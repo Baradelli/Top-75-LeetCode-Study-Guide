@@ -1,0 +1,75 @@
+# Reconhecendo busca binária e bits
+
+> Esta seção tem **dois temas** que compartilham o nome "binary" mas resolvem
+> coisas diferentes: **busca binária** (achar algo cortando o espaço pela
+> metade) e **manipulação de bits** (operar diretamente nos 0s e 1s de um
+> número). Vamos tratá-los como dois módulos.
+
+> Como nas seções anteriores, cada aula de padrão abre com um **🎯 Tente
+> primeiro**. Resolva antes de ver a teoria.
+
+## Módulo 1 — Busca binária
+
+A ideia mais poderosa da seção, e talvez do curso: se os dados têm uma
+**ordem**, você não precisa olhar um por um. Olhe o meio, e a ordem te diz em
+qual metade continuar — **descartando a outra inteira**. Repetindo isso, o
+espaço de busca despenca: n → n/2 → n/4 → ... → 1.
+
+Esse "cortar pela metade" é o que chamamos de **O(log n)** (lembra da seção de
+Fundamentos?), e ele é absurdamente rápido:
+
+| n | Passos de busca linear O(n) | Passos de busca binária O(log n) |
+| --- | --- | --- |
+| 1.000 | 1.000 | ~10 |
+| 1.000.000 | 1.000.000 | ~20 |
+| 1.000.000.000 | 1 bilhão | ~30 |
+
+Trinta passos para um bilhão de elementos. É por isso que reconhecer "dá para
+usar busca binária aqui" muda o jogo.
+
+### Os sinais de busca binária
+
+- O array está **ordenado** (ou pode ser ordenado sem estragar o problema).
+- O enunciado pede algo **melhor que O(n)** — quase sempre O(log n).
+- Você está procurando um valor, uma fronteira ("primeiro/último que..."), ou
+  até **o menor valor que satisfaz uma condição** (busca binária na resposta —
+  veremos na prova!).
+
+## Módulo 2 — Manipulação de bits
+
+Todo número, por dentro, é uma sequência de bits (0s e 1s). Manipular bits
+diretamente resolve certos problemas com uma elegância e eficiência que
+nenhuma outra abordagem alcança — e é uma habilidade que entrevistadores
+adoram cobrar.
+
+As ferramentas: os operadores `&` (AND), `|` (OR), `^` (XOR), `~` (NOT) e os
+deslocamentos `<<`, `>>`. Com eles você liga, desliga, testa e conta bits.
+
+### Os sinais de manipulação de bits
+
+- O enunciado fala em **bits, binário, potências de 2**.
+- "Encontre o número que aparece uma vez" / "o que está faltando" — cheiro de
+  **XOR**.
+- Restrição estranha: "sem usar o operador `+`", "O(1) de espaço" em contagem.
+- Você precisa de um **conjunto compacto** de flags (bitmask).
+
+## Os problemas da seção
+
+- **Busca binária:** Search in Rotated Sorted Array, Find Minimum in Rotated
+  Sorted Array → *busca binária clássica e modificada*.
+- **Bits:** Number of 1 Bits, Counting Bits, Reverse Bits, Missing Number, Sum
+  of Two Integers → *fundamentos, XOR e técnicas*.
+
+E na prova: três problemas inéditos, incluindo um que aplica busca binária de
+um jeito que talvez te surpreenda.
+
+## Resumo
+
+- **Busca binária**: dados ordenados → corte pela metade → O(log n), rápido o
+  bastante para entradas gigantes.
+- **Bits**: opere nos 0s e 1s com `& | ^ ~ << >>`; sinais são "binário",
+  "aparece uma vez/faltando" (XOR), restrições de espaço.
+- São dois módulos independentes dentro da mesma seção.
+
+Próxima aula: **busca binária** na sua forma clássica — e a justificativa
+completa do O(log n).

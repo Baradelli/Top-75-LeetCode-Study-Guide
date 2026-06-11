@@ -1,0 +1,165 @@
+# Síntese: qual padrão usar?
+
+> Dois módulos, cinco padrões. Hora de treinar o reflexo: bater o olho num
+> enunciado e saber se é busca binária, qual sabor, ou se é um problema de
+> bits — com justificativa.
+
+## A árvore de decisão da seção
+
+```text
+1. Os dados estão ORDENADOS (ou há uma fronteira monótona "não→sim")?
+   ├── procurar um valor exato            → BUSCA BINÁRIA clássica
+   ├── array ORDENADO mas GIRADO          → busca binária modificada
+   │                                        (qual metade está ordenada?)
+   ├── "primeiro/último que satisfaz..."  → busca binária por FRONTEIRA
+   └── "a MENOR/MAIOR x que funciona"      → busca binária NA RESPOSTA
+                                            (testar um x candidato é O(n))
+
+2. O problema fala em BITS, binário, ou tem restrição estranha de espaço?
+   ├── "aparece 2x menos um" / "faltando" → XOR (pares se cancelam)
+   ├── contar/olhar/ligar/apagar bits     → operadores & | ^ ~ << >>
+   ├── "para cada i, conte os bits"       → counting bits (ans[i]=ans[i>>1]+(i&1))
+   └── "sem usar +", inverter bits        → técnicas (carry por &<<1, espelho)
+```
+
+E o teste de sanidade de sempre: se o enunciado pede **melhor que O(n)** num
+dado ordenado, é quase certo que a resposta é **O(log n)** — busca binária.
+
+## O mapa completo da seção
+
+| Padrão | Pergunta-chave | Tempo | Espaço |
+| --- | --- | --- | --- |
+| Busca binária clássica | "achar valor em array ordenado" | O(log n) | O(1) |
+| Busca binária girada | "array ordenado e girado" | O(log n) | O(1) |
+| Busca na resposta | "menor/maior x que satisfaz" | O(n log(faixa)) | O(1) |
+| XOR | "aparece 2x menos um / faltando" | O(n) | O(1) |
+| Operadores de bit | testar/ligar/apagar/contar bits | O(1)–O(largura) | O(1) |
+| Counting bits | "bits 1 de 0..n" | O(n) | O(n) (saída) |
+
+A ideia que une o módulo de busca binária: **descartar metade com certeza a
+cada passo**. A que une o módulo de bits: **operar nos 0s e 1s direto**, em vez
+de tratar o número como quantidade.
+
+## Quiz da seção
+
+Enunciados que você **não viu** nas aulas. Identifique o padrão e o porquê.
+7+ acertos: pronto para a prova.
+
+<Quiz
+  title="Quiz da seção: Binary"
+  questions={[
+    {
+      question:
+        "'Num array ordenado, encontre a posição onde um target deveria ser inserido para mantê-lo ordenado.' Qual padrão?",
+      options: [
+        "XOR",
+        "Busca binária por fronteira (o primeiro índice com valor ≥ target)",
+        "Counting bits",
+        "Força bruta O(n)",
+      ],
+      answer: 1,
+      explanation:
+        "É busca binária procurando a fronteira 'primeiro ≥ target'. Espaço ordenado + procurar uma posição = O(log n).",
+    },
+    {
+      question:
+        "'Dado um array onde todo número aparece 3x, exceto um que aparece 1x, ache o solitário.' O XOR simples resolve?",
+      options: [
+        "Sim, XOR de tudo resolve igual ao caso 2x",
+        "Não diretamente — XOR cancela PARES; com triplas é preciso contar bits por posição (mod 3). O raciocínio é de bits, mas adaptado",
+        "Sim, basta aplicar XOR duas vezes",
+        "É busca binária",
+      ],
+      answer: 1,
+      explanation:
+        "a^a=0 cancela pares, não triplas. A generalização conta, para cada posição de bit, quantos 1s aparecem e tira mod 3 — ainda é pensamento de bits, mas o XOR puro não basta. Reconhecer o limite do padrão é parte do domínio.",
+    },
+    {
+      question:
+        "'Qual a menor capacidade de um navio para transportar todos os pacotes em D dias?' Qual padrão?",
+      options: [
+        "Busca binária NA RESPOSTA: a capacidade vai de max(pacote) a soma(pacotes); para uma capacidade candidata, checar em O(n) se cabe em D dias",
+        "XOR",
+        "Counting bits",
+        "Busca binária clássica no array de pacotes",
+      ],
+      answer: 0,
+      explanation:
+        "Não há array ordenado para buscar — buscamos no ESPAÇO DE RESPOSTAS (capacidades). 'Cabe em D dias?' é monótono em relação à capacidade, então busca binária acha a menor que satisfaz.",
+    },
+    {
+      question:
+        "'Encontre o pico (um elemento maior que seus vizinhos) em O(log n).' Por que busca binária funciona mesmo sem o array ser ordenado?",
+      options: [
+        "Não funciona, precisa ser O(n)",
+        "Porque dá para decidir o lado com certeza: se nums[mid] < nums[mid+1], há um pico à direita (subindo) — descarta-se metade",
+        "Porque o array é sempre ordenado",
+        "Por causa do XOR",
+      ],
+      answer: 1,
+      explanation:
+        "Busca binária exige só decidir o lado com certeza em O(1). A inclinação no mid garante que existe um pico subindo naquela direção, permitindo descartar metade.",
+    },
+    {
+      question:
+        "'Detecte se um inteiro é potência de 2.' Qual técnica de bits resolve em O(1)?",
+      options: [
+        "Contar todos os bits com um laço de 32",
+        "n > 0 e (n & (n - 1)) == 0 — potências de 2 têm exatamente um bit ligado, que n & (n-1) zera",
+        "XOR de n com 2",
+        "Busca binária",
+      ],
+      answer: 1,
+      explanation:
+        "Potência de 2 tem um único bit 1. n & (n-1) apaga o bit 1 mais à direita; se o resultado é 0 (e n>0), havia só um bit — logo, potência de 2.",
+    },
+    {
+      question:
+        "Qual a condição GERAL para usar busca binária, vista nesta seção?",
+      options: [
+        "O array precisa estar totalmente ordenado",
+        "Conseguir decidir, em O(1) a cada passo, para qual metade do espaço ir com certeza",
+        "Os valores precisam ser potências de 2",
+        "A entrada precisa ser pequena",
+      ],
+      answer: 1,
+      explanation:
+        "Vimos isso no array girado, nas fronteiras e na busca na resposta: o que importa é o descarte de metade com certeza — não a ordenação total.",
+    },
+    {
+      question:
+        "Por que o XOR é preferível à 'soma de Gauss' para achar um número faltando?",
+      options: [
+        "É mais curto",
+        "Não corre risco de overflow e usa O(1) de espaço, operando sempre na mesma largura de bits",
+        "É O(log n)",
+        "Não é preferível",
+      ],
+      answer: 1,
+      explanation:
+        "Ambos são O(n)/O(1), mas a soma pode estourar inteiros em entradas grandes; o XOR se mantém na largura fixa, sem overflow.",
+    },
+    {
+      question:
+        "Qual a ideia-mãe que une o MÓDULO de busca binária?",
+      options: [
+        "Ordenar o array antes",
+        "A cada passo, descartar METADE do espaço de busca com certeza — reduzindo n a 1 em log₂(n) passos",
+        "Usar XOR para comparar",
+        "Percorrer tudo uma vez",
+      ],
+      answer: 1,
+      explanation:
+        "Clássica, girada, fronteira ou na resposta: todas descartam metade por passo com uma decisão O(1). Esse é o coração do O(log n).",
+    },
+  ]}
+/>
+
+## Pronto para a prova?
+
+A prova final da seção Binary tem **três problemas inéditos** — fácil, médio e
+difícil — com casos ocultos. O difícil aplica **busca binária na resposta**
+(o sabor da árvore de decisão que talvez seja o mais surpreendente). As cinco
+aulas cobrem tudo que você precisa.
+
+**Boa prova!** Volte para a página da seção e clique em "Prova final".

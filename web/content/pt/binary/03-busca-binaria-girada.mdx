@@ -1,0 +1,178 @@
+# Padrão 2: Busca binária modificada (array girado)
+
+> E se alguém pegasse o array ordenado e o **girasse** num ponto qualquer?
+> `[0,1,2,4,5,6,7]` vira `[4,5,6,7,0,1,2]`. Ainda dá para manter o O(log n) — o
+> truque é descobrir, a cada passo, **qual metade ainda está ordenada**.
+
+<Challenge id="search-rotated" />
+
+> Tentou? A saída fácil é varrer tudo — O(n) — e ignorar que o array é "quase
+> ordenado". A teoria abaixo recupera o O(log n) mesmo com a rotação.
+
+## A teoria: uma das metades sempre está ordenada
+
+Eis a observação que destrava tudo: por mais que o array tenha sido girado,
+quando você corta no `mid`, **pelo menos uma das duas metades está
+perfeitamente ordenada**. Sempre. (A outra contém o "ponto de virada".)
+
+Você descobre qual comparando as pontas:
+
+- Se `nums[left] <= nums[mid]`, a **metade esquerda** `[left..mid]` é
+  ordenada.
+- Senão, a **metade direita** `[mid..right]` é ordenada.
+
+E aí o pulo do gato: na metade **ordenada**, você sabe exatamente quais
+valores ela contém — então consegue testar se o `target` cai nela. Se cai, vá
+para essa metade; se não, vá para a outra. De qualquer jeito, você **descarta
+metade** — e o O(log n) sobrevive.
+
+```text
+mid = meio
+se nums[mid] == target → achou
+se a metade ESQUERDA é ordenada (nums[left] <= nums[mid]):
+    se target está em [nums[left], nums[mid]) → vá para a esquerda
+    senão                                     → vá para a direita
+senão (metade DIREITA é ordenada):
+    se target está em (nums[mid], nums[right]] → vá para a direita
+    senão                                      → vá para a esquerda
+```
+
+Veja a decisão acontecendo — note como o intervalo ativo pula para o lado onde
+o alvo *pode* estar:
+
+<TraceDemo id="search-rotated" />
+
+### Por que continua O(log n)?
+
+A estrutura é a mesma da busca binária clássica: cada iteração faz trabalho
+O(1) (algumas comparações) e **descarta metade** do intervalo. O número de
+iterações continua log₂(n). A rotação só muda *como decidimos o lado* — não
+quantas vezes cortamos. **O(log n) de tempo, O(1) de espaço.**
+
+## Exemplo 2 — Find Minimum in Rotated Sorted Array
+
+*"Qual o menor elemento do array girado?"* O menor é o **ponto de virada** (o
+lugar onde a ordem "quebra"). Mesma filosofia, decisão ainda mais simples:
+compare `nums[mid]` com `nums[right]`.
+
+- Se `nums[mid] > nums[right]`, a virada está **à direita** de `mid` → o mínimo
+  está em `[mid+1 .. right]`.
+- Senão, `mid` ainda pode ser o mínimo → `[left .. mid]`.
+
+<CodeRunner
+  python={`def find_min(nums):
+    left = 0
+    right = len(nums) - 1
+    while left < right:
+        mid = (left + right) // 2
+        if nums[mid] > nums[right]:
+            left = mid + 1      # virada está depois de mid
+        else:
+            right = mid         # mid ainda pode ser o mínimo
+    return nums[left]
+
+print(find_min([4, 5, 6, 7, 0, 1, 2]))   # 0
+print(find_min([3, 4, 5, 1, 2]))          # 1
+print(find_min([11, 13, 15, 17]))         # 11 (não girado)`}
+  javascript={`function findMin(nums) {
+  var left = 0;
+  var right = nums.length - 1;
+  while (left < right) {
+    var mid = Math.floor((left + right) / 2);
+    if (nums[mid] > nums[right]) {
+      left = mid + 1;   // virada está depois de mid
+    } else {
+      right = mid;      // mid ainda pode ser o mínimo
+    }
+  }
+  return nums[left];
+}
+
+console.log(findMin([4, 5, 6, 7, 0, 1, 2])); // 0
+console.log(findMin([3, 4, 5, 1, 2]));        // 1
+console.log(findMin([11, 13, 15, 17]));       // 11 (não girado)`}
+/>
+
+Repare que aqui usamos `left < right` e `right = mid` (sem o −1): estamos
+convergindo para uma **posição** (o mínimo), não testando um valor exato — um
+sabor diferente de busca binária. Esses detalhes de fronteira são o que você
+treina até virar reflexo.
+
+## A lição que generaliza
+
+Busca binária não exige um array **totalmente** ordenado — exige só que, a
+cada passo, você consiga **decidir com certeza para que lado ir**. No array
+girado, a metade ordenada te dá essa certeza. Sempre que você conseguir
+responder "o alvo está deste lado ou do outro?" em O(1), busca binária está no
+cardápio.
+
+<Quiz
+  title="Quiz de fixação"
+  questions={[
+    {
+      question:
+        "Ao cortar um array girado no meio, o que é SEMPRE verdade sobre as duas metades?",
+      options: [
+        "As duas estão ordenadas",
+        "Pelo menos uma das duas metades está totalmente ordenada",
+        "Nenhuma está ordenada",
+        "A da esquerda nunca está ordenada",
+      ],
+      answer: 1,
+      explanation:
+        "O ponto de virada está em apenas uma das metades; a outra é um trecho contíguo do array original, portanto ordenada. Identificar qual é o que permite decidir o lado.",
+    },
+    {
+      question:
+        "Como saber qual metade está ordenada no array girado?",
+      options: [
+        "Contando os elementos",
+        "Comparando nums[left] com nums[mid]: se nums[left] <= nums[mid], a esquerda está ordenada; senão, a direita",
+        "Ordenando o array antes",
+        "Olhando se há negativos",
+      ],
+      answer: 1,
+      explanation:
+        "Se a ponta esquerda não é maior que o meio, o trecho [left..mid] cresce sem virada — está ordenado. Caso contrário, a virada está à esquerda e é a direita que está ordenada.",
+    },
+    {
+      question:
+        "Por que a busca no array girado continua O(log n)?",
+      options: [
+        "Porque o array é pequeno",
+        "Porque cada passo ainda descarta metade do intervalo com trabalho O(1); a rotação muda só COMO decidimos o lado, não o número de cortes",
+        "Porque ordena primeiro (O(n log n))",
+        "Não continua — vira O(n)",
+      ],
+      answer: 1,
+      explanation:
+        "O número de iterações é log₂(n) como na busca clássica. A lógica extra para escolher o lado é O(1), então a complexidade não muda.",
+    },
+    {
+      question:
+        "Qual é a condição geral para poder usar busca binária, mesmo sem o array estar totalmente ordenado?",
+      options: [
+        "O array não pode ter repetições",
+        "Conseguir decidir em O(1), a cada passo, para qual metade ir com certeza",
+        "O array precisa ser pequeno",
+        "Os valores precisam ser positivos",
+      ],
+      answer: 1,
+      explanation:
+        "A essência é o descarte de metade com certeza. Se a estrutura do problema permite responder 'o alvo está deste lado?' em O(1), busca binária se aplica — array girado, fronteiras, busca na resposta etc.",
+    },
+  ]}
+/>
+
+## Resumo
+
+- Num array girado, **uma das metades sempre está ordenada**; descubra qual
+  comparando as pontas e decida o lado por ali.
+- O(log n) se mantém: a rotação muda a *decisão*, não o número de cortes.
+- Find Minimum: convirja para a **posição** do ponto de virada (`left < right`,
+  `right = mid`).
+- Busca binária exige só **decidir o lado com certeza em O(1)** — não ordem
+  total.
+
+Começa agora o segundo módulo da seção: **bits**. Próxima aula, os
+fundamentos.

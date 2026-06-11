@@ -235,6 +235,113 @@ Exemplo: \`s = ")()())"\` → \`4\` (a substring "()()"). \`s = "(()"\` → \`2\
       hint: "Uma pilha de índices, inicializada com -1 como “âncora”. Empilhe a posição de cada '('; a cada ')', desempilhe e meça a distância até o novo topo (o último índice não casado). Quando a pilha esvazia, empilhe o ')' atual como nova âncora.",
     },
   ],
+
+  binary: [
+    {
+      slug: "single-number",
+      title: "Single Number",
+      difficulty: "facil",
+      leetcodeUrl: "https://leetcode.com/problems/single-number/",
+      statement: `Num array \`nums\`, **todo** elemento aparece duas vezes, exceto um, que aparece uma vez. Encontre esse único. Tente fazer em O(n) tempo e O(1) de espaço extra.
+
+Exemplo: \`nums = [4, 1, 2, 1, 2]\` → \`4\`.`,
+      functionName: { python: "single_number", javascript: "singleNumber" },
+      starter: {
+        python: `def single_number(nums):
+    # escreva sua solução aqui
+    pass`,
+        javascript: `function singleNumber(nums) {
+  // escreva sua solução aqui
+}`,
+      },
+      tests: [
+        { args: [[2, 2, 1]], expected: 1 },
+        { args: [[4, 1, 2, 1, 2]], expected: 4 },
+        { args: [[1]], expected: 1 },
+        { args: [[7, 3, 7, 3, 9]], expected: 9, hidden: true },
+        {
+          args: [
+            (() => {
+              const a: number[] = [];
+              for (let x = 1; x <= 10000; x++) a.push(x, x);
+              a.push(42424);
+              return a;
+            })(),
+          ],
+          expected: 42424,
+          hidden: true,
+        },
+      ],
+      hint: "XOR é a chave: a ^ a = 0 e a ^ 0 = a. Faça o XOR de todos os elementos — os pares se cancelam e sobra exatamente o número solitário. O(n) tempo, O(1) espaço.",
+    },
+    {
+      slug: "search-range",
+      title: "Find First and Last Position of Element in Sorted Array",
+      difficulty: "medio",
+      leetcodeUrl:
+        "https://leetcode.com/problems/find-first-and-last-position-of-element-in-sorted-array/",
+      statement: `Dado um array \`nums\` **ordenado** (com repetições) e um \`target\`, retorne \`[primeiro, último]\` índice onde \`target\` aparece, ou \`[-1, -1]\` se não existir. Espera-se O(log n).
+
+Exemplo: \`nums = [5,7,7,8,8,10]\`, \`target = 8\` → \`[3, 4]\`.`,
+      functionName: { python: "search_range", javascript: "searchRange" },
+      starter: {
+        python: `def search_range(nums, target):
+    # escreva sua solução aqui
+    pass`,
+        javascript: `function searchRange(nums, target) {
+  // escreva sua solução aqui
+}`,
+      },
+      tests: [
+        { args: [[5, 7, 7, 8, 8, 10], 8], expected: [3, 4] },
+        { args: [[5, 7, 7, 8, 8, 10], 6], expected: [-1, -1] },
+        { args: [[], 0], expected: [-1, -1] },
+        { args: [[1], 1], expected: [0, 0], hidden: true },
+        { args: [[2, 2], 2], expected: [0, 1], hidden: true },
+        {
+          args: [
+            (() => {
+              const a: number[] = [];
+              for (let x = 0; x < 100000; x++) a.push(x);
+              for (let k = 0; k < 5; k++) a.push(100000);
+              return a;
+            })(),
+            100000,
+          ],
+          expected: [100000, 100004],
+          hidden: true,
+        },
+      ],
+      hint: "Faça DUAS buscas binárias: uma que, ao achar o alvo, continua indo para a ESQUERDA (acha o primeiro), e outra que continua para a DIREITA (acha o último). Cada uma é O(log n).",
+    },
+    {
+      slug: "koko-bananas",
+      title: "Koko Eating Bananas",
+      difficulty: "dificil",
+      leetcodeUrl: "https://leetcode.com/problems/koko-eating-bananas/",
+      statement: `Koko tem pilhas de bananas (\`piles[i]\`) e \`h\` horas. Numa velocidade \`k\` (bananas/hora), cada hora ela escolhe uma pilha e come até \`k\` dela (se a pilha tem menos, come tudo e descansa o resto da hora). Retorne a **menor** \`k\` que permite comer todas as bananas em \`h\` horas.
+
+Exemplo: \`piles = [3, 6, 7, 11]\`, \`h = 8\` → \`4\`.`,
+      functionName: { python: "min_eating_speed", javascript: "minEatingSpeed" },
+      starter: {
+        python: `def min_eating_speed(piles, h):
+    # escreva sua solução aqui
+    pass`,
+        javascript: `function minEatingSpeed(piles, h) {
+  // escreva sua solução aqui
+}`,
+      },
+      tests: [
+        { args: [[3, 6, 7, 11], 8], expected: 4 },
+        { args: [[30, 11, 23, 4, 20], 5], expected: 30 },
+        { args: [[30, 11, 23, 4, 20], 6], expected: 23 },
+        { args: [[1], 1], expected: 1, hidden: true },
+        { args: [[1000000000], 2], expected: 500000000, hidden: true },
+        { args: [[312884470], 312884469], expected: 2, hidden: true },
+      ],
+      hint: "Busca binária no ESPAÇO DE RESPOSTAS: a velocidade k vai de 1 a max(piles). Para um k candidato, dá para checar em O(n) se Koko termina em h horas (some teto(pilha/k)). Quanto maior k, menos horas — então busque a menor k que cabe em h. O(n log(max)).",
+    },
+  ],
 };
 
 export function getExam(section: string): ExamProblem[] | undefined {
