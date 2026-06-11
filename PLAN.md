@@ -91,6 +91,16 @@ Toda seção segue o mesmo esqueleto (validado primeiro na seção piloto):
 
 Antes da primeira seção de padrões, uma seção dedicada só a análise de complexidade: o que é Big-O, as classes de crescimento, as regras práticas para analisar qualquer código (sequência soma, aninhamento multiplica, metade vira log) e complexidade de espaço. Todas as seções seguintes referenciam esses fundamentos ao justificar complexidades.
 
+**Big-O é progressivo, não fechado na Seção 0.** A análise das primeiras seções (array, string) cabe nas regras básicas. Mas em seções mais difíceis a identificação fica mais sutil e precisa de ferramentas novas — quando chegarmos nelas, voltamos e ampliamos o material de Fundamentos (ou adicionamos uma aula de "análise avançada" referenciada de lá):
+
+- **Matriz:** complexidade com duas dimensões — `O(m·n)`, `O(linhas·colunas)`; por que não é `O(n²)` quando a matriz não é quadrada.
+- **Árvores / Recursão:** custo de uma travessia `O(n)` vs. profundidade da pilha `O(h)`; por que uma árvore balanceada dá `O(log n)` de altura e uma degenerada `O(n)`.
+- **Grafos:** a notação `O(V + E)` (vértices + arestas) e quando `E` domina.
+- **DP:** o atalho "número de estados × custo por estado"; por que memoização derruba exponencial `O(2ⁿ)` para polinomial; análise de árvore de recursão.
+- **Heap / ordenação:** justificar o `O(n log n)` e o `O(log n)` das operações de heap a partir da altura da árvore.
+
+A regra de ouro do curso continua valendo em todas: **sempre justificar o porquê da complexidade**, e a justificativa fica mais rica conforme os problemas ficam mais difíceis de identificar.
+
 ## 5. Mapa das seções (ordem didática)
 
 A ordem abaixo foi desenhada para que cada seção prepare a seguinte: padrões simples primeiro, recursão no meio, e DP — que combina tudo — por último. Antes de todas vem a **Seção 0 — Fundamentos (Big-O)**, descrita no template.

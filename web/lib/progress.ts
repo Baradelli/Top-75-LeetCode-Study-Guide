@@ -18,6 +18,7 @@ export interface ProgressStore {
   get(): ProgressData;
   setLessonComplete(lessonKey: string, complete: boolean): void;
   setExamProblemPassed(problemKey: string): void;
+  clear(): void;
   subscribe(listener: () => void): () => void;
 }
 
@@ -78,6 +79,9 @@ function createLocalStorageStore(): ProgressStore {
         passedExamProblems: [...current.passedExamProblems, problemKey],
       });
     },
+    clear() {
+      write({ completedLessons: [], passedExamProblems: [] });
+    },
     subscribe(listener) {
       listeners.add(listener);
       return () => listeners.delete(listener);
@@ -118,4 +122,55 @@ export function useExamProblem(section: string, problem: string) {
   const isPassed = progress.passedExamProblems.includes(key);
   const markPassed = () => progressStore.setExamProblemPassed(key);
   return { isPassed, markPassed };
+}
+
+// --- Helpers puros (sem hooks) para resumir o progresso de uma seção. ---
+
+export interface SectionProgress {
+  totalLessons: number;
+  completedLessons: number;
+  examTotal: number;
+  examPassed: number;
+  hasExam: boolean;
+  /** Aulas + prova (se houver) totalmente concluídas. */
+  isComplete: boolean;
+  /** 0–100, considerando aulas e prova com o mesmo peso por item. */
+  percent: number;
+}
+
+export function isLessonDone(
+  progress: ProgressData,
+  section: string,
+  lesson: string,
+): boolean {
+  return progress.completedLessons.includes(lessonKey(section, lesson));
+}
+
+export function computeSectionProgress(
+  progress: ProgressData,
+  section: string,
+  lessonSlugs: string[],
+  examProblemSlugs: string[],
+): SectionProgress {
+  const completedLessons = lessonSlugs.filter((slug) =>
+    isLessonDone(progress, section, slug),
+  ).length;
+  const examPassed = examProblemSlugs.filter((slug) =>
+    progress.passedExamProblems.includes(lessonKey(section, slug)),
+  ).length;
+
+  const totalItems = lessonSlugs.length + examProblemSlugs.length;
+  const doneItems = completedLessons + examPassed;
+  const percent =
+    totalItems === 0 ? 0 : Math.round((doneItems / totalItems) * 100);
+
+  return {
+    totalLessons: lessonSlugs.length,
+    completedLessons,
+    examTotal: examProblemSlugs.length,
+    examPassed,
+    hasExam: examProblemSlugs.length > 0,
+    isComplete: totalItems > 0 && doneItems === totalItems,
+    percent,
+  };
 }

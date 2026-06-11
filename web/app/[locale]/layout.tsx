@@ -26,20 +26,28 @@ export default async function LocaleLayout({
           <Link href={`/${locale}`} className="font-semibold tracking-tight">
             {strings.courseTitle}
           </Link>
-          <nav className="flex gap-2 text-sm">
-            {LOCALES.map((code) => (
-              <Link
-                key={code}
-                href={`/${code}`}
-                className={`rounded px-2 py-1 uppercase ${
-                  code === locale
-                    ? "bg-zinc-200 font-semibold dark:bg-zinc-800"
-                    : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
-                }`}
-              >
-                {code}
-              </Link>
-            ))}
+          <nav className="flex items-center gap-3 text-sm">
+            <Link
+              href={`/${locale}/perfil`}
+              className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+            >
+              {strings.profile}
+            </Link>
+            <span className="flex gap-2">
+              {LOCALES.map((code) => (
+                <Link
+                  key={code}
+                  href={`/${code}`}
+                  className={`rounded px-2 py-1 uppercase ${
+                    code === locale
+                      ? "bg-zinc-200 font-semibold dark:bg-zinc-800"
+                      : "text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100"
+                  }`}
+                >
+                  {code}
+                </Link>
+              ))}
+            </span>
           </nav>
         </div>
       </header>

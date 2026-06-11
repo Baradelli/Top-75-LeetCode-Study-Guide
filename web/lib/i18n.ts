@@ -30,6 +30,21 @@ const UI = {
     nextLesson: "Próxima aula",
     allLessons: "Todas as aulas da seção",
     goToExam: "Ir para a prova final",
+    profile: "Meu progresso",
+    overallProgress: "Progresso geral",
+    continueLearning: "Continuar de onde parei",
+    startCourse: "Começar o curso",
+    lessonsWord: "aulas",
+    examPassed: "prova ✓",
+    examPending: "prova pendente",
+    notStarted: "Não iniciada",
+    sectionComplete: "Seção concluída ✓",
+    clearProgress: "Limpar progresso",
+    clearConfirm:
+      "Apagar todo o seu progresso? Esta ação não pode ser desfeita.",
+    exportProgress: "Exportar (JSON)",
+    noProgressYet:
+      "Você ainda não concluiu nada. Comece pela primeira seção e seu progresso aparece aqui.",
   },
   en: {
     courseTitle: "LeetCode & Algorithms Course",
@@ -49,6 +64,20 @@ const UI = {
     nextLesson: "Next lesson",
     allLessons: "All lessons in this section",
     goToExam: "Go to final exam",
+    profile: "My progress",
+    overallProgress: "Overall progress",
+    continueLearning: "Continue where I left off",
+    startCourse: "Start the course",
+    lessonsWord: "lessons",
+    examPassed: "exam ✓",
+    examPending: "exam pending",
+    notStarted: "Not started",
+    sectionComplete: "Section complete ✓",
+    clearProgress: "Clear progress",
+    clearConfirm: "Erase all your progress? This cannot be undone.",
+    exportProgress: "Export (JSON)",
+    noProgressYet:
+      "You haven't completed anything yet. Start with the first section and your progress will show up here.",
   },
 } as const;
 

@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { SECTIONS } from "@/lib/sections";
+import { getLessons, SECTIONS } from "@/lib/sections";
+import { sectionExamSlugs, sectionLessonSlugs } from "@/lib/course";
 import { isLocale, t } from "@/lib/i18n";
+import SectionProgress from "@/components/SectionProgress";
 
 export default async function HomePage({
   params,
@@ -63,6 +65,14 @@ export default async function HomePage({
                   </span>
                 ))}
               </div>
+              {available && getLessons(section.slug).length > 0 && (
+                <SectionProgress
+                  locale={locale}
+                  section={section.slug}
+                  lessonSlugs={sectionLessonSlugs(section.slug)}
+                  examSlugs={sectionExamSlugs(section.slug)}
+                />
+              )}
             </div>
           );
           return (

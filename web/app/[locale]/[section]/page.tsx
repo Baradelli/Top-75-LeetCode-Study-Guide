@@ -2,7 +2,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getLessons, getSection, SECTIONS } from "@/lib/sections";
 import { getExam } from "@/lib/exams";
+import { sectionExamSlugs, sectionLessonSlugs } from "@/lib/course";
 import { isLocale, LOCALES, t } from "@/lib/i18n";
+import LessonStatus from "@/components/LessonStatus";
+import SectionProgress from "@/components/SectionProgress";
 
 export function generateStaticParams() {
   return LOCALES.flatMap((locale) =>
@@ -40,6 +43,17 @@ export default async function SectionPage({
         {section.description}
       </p>
 
+      {lessons.length > 0 && (
+        <div className="mt-4 max-w-md">
+          <SectionProgress
+            locale={locale}
+            section={sectionSlug}
+            lessonSlugs={sectionLessonSlugs(sectionSlug)}
+            examSlugs={sectionExamSlugs(sectionSlug)}
+          />
+        </div>
+      )}
+
       <h2 className="mt-10 mb-4 text-sm font-semibold uppercase tracking-wide text-zinc-500">
         {strings.lessons}
       </h2>
@@ -51,15 +65,20 @@ export default async function SectionPage({
             <li key={lesson.slug}>
               <Link
                 href={`/${locale}/${sectionSlug}/${lesson.slug}`}
-                className="block rounded-xl border border-zinc-200 p-4 transition hover:border-emerald-500 hover:shadow-md dark:border-zinc-800 dark:hover:border-emerald-500"
+                className="flex items-start gap-3 rounded-xl border border-zinc-200 p-4 transition hover:border-emerald-500 hover:shadow-md dark:border-zinc-800 dark:hover:border-emerald-500"
               >
-                <span className="font-mono text-xs text-zinc-400">
-                  {String(index + 1).padStart(2, "0")}
+                <span className="mt-0.5">
+                  <LessonStatus section={sectionSlug} lesson={lesson.slug} />
                 </span>
-                <h3 className="mt-1 font-semibold">{lesson.title}</h3>
-                <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-                  {lesson.description}
-                </p>
+                <span className="min-w-0">
+                  <span className="font-mono text-xs text-zinc-400">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                  <h3 className="mt-1 font-semibold">{lesson.title}</h3>
+                  <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+                    {lesson.description}
+                  </p>
+                </span>
               </Link>
             </li>
           ))}
