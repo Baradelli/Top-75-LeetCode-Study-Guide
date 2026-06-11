@@ -30,6 +30,10 @@ function repeated(length: number, fill: (index: number) => number): number[] {
   return Array.from({ length }, (_, index) => fill(index));
 }
 
+function repeatStr(chunk: string, times: number): string {
+  return chunk.repeat(times);
+}
+
 export const EXAMS: Record<string, ExamProblem[]> = {
   array: [
     {
@@ -129,6 +133,106 @@ A água acima de cada posição é limitada pela menor das maiores barras à esq
         },
       ],
       hint: "Versão O(n) de espaço: arrays de máximo à esquerda e à direita. Versão O(1): two pointers convergindo, avançando sempre o lado da barra menor.",
+    },
+  ],
+
+  string: [
+    {
+      slug: "first-unique-character",
+      title: "First Unique Character in a String",
+      difficulty: "facil",
+      leetcodeUrl:
+        "https://leetcode.com/problems/first-unique-character-in-a-string/",
+      statement: `Dada uma string \`s\`, retorne o **índice do primeiro caractere que não se repete**. Se não existir nenhum, retorne \`-1\`.
+
+Exemplo: \`s = "leetcode"\` → \`0\` (o 'l' é o primeiro que aparece uma única vez). \`s = "aabb"\` → \`-1\`.`,
+      functionName: {
+        python: "first_uniq_char",
+        javascript: "firstUniqChar",
+      },
+      starter: {
+        python: `def first_uniq_char(s):
+    # escreva sua solução aqui
+    pass`,
+        javascript: `function firstUniqChar(s) {
+  // escreva sua solução aqui
+}`,
+      },
+      tests: [
+        { args: ["leetcode"], expected: 0 },
+        { args: ["loveleetcode"], expected: 2 },
+        { args: ["aabb"], expected: -1 },
+        { args: ["z"], expected: 0, hidden: true },
+        { args: ["aadadaad"], expected: -1, hidden: true },
+        {
+          args: [repeatStr("a", 10000) + "b"],
+          expected: 10000,
+          hidden: true,
+        },
+      ],
+      hint: "Duas passadas: na primeira, conte a frequência de cada caractere (hash map); na segunda, percorra a string e retorne o índice do primeiro com contagem 1. O(n) de tempo, O(1) de espaço (no máximo 26 letras).",
+    },
+    {
+      slug: "find-all-anagrams",
+      title: "Find All Anagrams in a String",
+      difficulty: "medio",
+      leetcodeUrl:
+        "https://leetcode.com/problems/find-all-anagrams-in-a-string/",
+      statement: `Dadas duas strings \`s\` e \`p\`, retorne uma lista com os **índices iniciais** de todos os anagramas de \`p\` dentro de \`s\` (em ordem crescente).
+
+Exemplo: \`s = "cbaebabacd"\`, \`p = "abc"\` → \`[0, 6]\` (os trechos "cba" e "bac" são anagramas de "abc").`,
+      functionName: { python: "find_anagrams", javascript: "findAnagrams" },
+      starter: {
+        python: `def find_anagrams(s, p):
+    # escreva sua solução aqui
+    pass`,
+        javascript: `function findAnagrams(s, p) {
+  // escreva sua solução aqui
+}`,
+      },
+      tests: [
+        { args: ["cbaebabacd", "abc"], expected: [0, 6] },
+        { args: ["abab", "ab"], expected: [0, 1, 2] },
+        { args: ["a", "ab"], expected: [], hidden: true },
+        { args: ["aa", "bb"], expected: [], hidden: true },
+        {
+          args: [repeatStr("z", 10000) + "ab", "ab"],
+          expected: [10000],
+          hidden: true,
+        },
+      ],
+      hint: "Junte os dois padrões da seção: uma janela deslizante de tamanho len(p) carregando um mapa de frequência como estado. A cada passo, um char entra e um sai; quando a frequência da janela bate com a de p, registre o índice. O(n).",
+    },
+    {
+      slug: "longest-valid-parentheses",
+      title: "Longest Valid Parentheses",
+      difficulty: "dificil",
+      leetcodeUrl:
+        "https://leetcode.com/problems/longest-valid-parentheses/",
+      statement: `Dada uma string \`s\` contendo apenas \`(\` e \`)\`, retorne o **comprimento da maior substring de parênteses válidos** (corretamente fechados).
+
+Exemplo: \`s = ")()())"\` → \`4\` (a substring "()()"). \`s = "(()"\` → \`2\`.`,
+      functionName: {
+        python: "longest_valid_parentheses",
+        javascript: "longestValidParentheses",
+      },
+      starter: {
+        python: `def longest_valid_parentheses(s):
+    # escreva sua solução aqui
+    pass`,
+        javascript: `function longestValidParentheses(s) {
+  // escreva sua solução aqui
+}`,
+      },
+      tests: [
+        { args: ["(()"], expected: 2 },
+        { args: [")()())"], expected: 4 },
+        { args: [""], expected: 0 },
+        { args: ["()(()"], expected: 2, hidden: true },
+        { args: ["()(())"], expected: 6, hidden: true },
+        { args: [repeatStr("()", 5000)], expected: 10000, hidden: true },
+      ],
+      hint: "Uma pilha de índices, inicializada com -1 como “âncora”. Empilhe a posição de cada '('; a cada ')', desempilhe e meça a distância até o novo topo (o último índice não casado). Quando a pilha esvazia, empilhe o ')' atual como nova âncora.",
     },
   ],
 };

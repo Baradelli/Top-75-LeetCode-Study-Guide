@@ -3,21 +3,31 @@
 import { useMemo } from "react";
 import TracePlayer, { type VisualizerProps } from "./TracePlayer";
 import ArrayTraceVisualizer from "./visualizers/ArrayTraceVisualizer";
+import StringTraceVisualizer from "./visualizers/StringTraceVisualizer";
 import { DEMOS } from "@/lib/demos";
 
 /**
  * Demonstração trace & replay usada nas aulas MDX: <TraceDemo id="two-sum" />.
- * Busca código e configuração visual no registry lib/demos.ts.
+ * Busca código e configuração visual no registry lib/demos.ts e escolhe o
+ * visualizador certo (array ou string).
  */
 export default function TraceDemo({ id }: { id: string }) {
   const demo = DEMOS[id];
 
   const Visualizer = useMemo(() => {
     if (!demo) return undefined;
-    function BoundVisualizer(props: VisualizerProps) {
-      return <ArrayTraceVisualizer {...props} config={demo.visual} />;
+    if ("array" in demo) {
+      const config = demo.array;
+      function ArrayBound(props: VisualizerProps) {
+        return <ArrayTraceVisualizer {...props} config={config} />;
+      }
+      return ArrayBound;
     }
-    return BoundVisualizer;
+    const config = demo.string;
+    function StringBound(props: VisualizerProps) {
+      return <StringTraceVisualizer {...props} config={config} />;
+    }
+    return StringBound;
   }, [demo]);
 
   if (!demo) {

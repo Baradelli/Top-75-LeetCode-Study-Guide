@@ -1,0 +1,217 @@
+# Padrão 2: Sliding Window com frequência
+
+> O sliding window que você aprendeu no Array volta aqui — só que o **estado**
+> da janela deixa de ser um número e passa a ser um **mapa de contagens**.
+> Com isso, ele resolve a maior família de problemas de string do LeetCode.
+
+## A teoria: a janela ganha um estado mais rico
+
+Lembre do template da janela variável (seção Array): `right` expande, e um
+`while` encolhe `left` enquanto a janela viola a condição. O esqueleto é
+idêntico aqui — o que muda é **o que a janela carrega** e **o que conta como
+violação**.
+
+```text
+left = 0
+contagem = {}            # ← o estado agora é um mapa de frequência
+para right de 0 até n-1:
+    contagem[s[right]] += 1            # char entra pela direita
+    enquanto a janela é INVÁLIDA:
+        contagem[s[left]] -= 1         # char sai pela esquerda
+        left += 1
+    registre o melhor (janela [left..right] é válida)
+```
+
+A definição de "inválida" muda por problema: *tem char repetido?*, *precisa
+trocar mais que k chars?*, *ainda falta cobrir alguma letra do alvo?*. Tudo
+isso é lido a partir do mapa de contagens.
+
+E o porquê do O(n) é o mesmo da seção Array: cada caractere **entra na janela
+uma vez** (`right`) e **sai no máximo uma vez** (`left`) — no máximo 2n
+movimentos, cada um O(1). O `while` interno não faz disso um O(n²).
+
+### Os sinais no enunciado
+
+- "**substring** (contígua!) mais longa/mais curta que satisfaz ..." .
+- Uma condição sobre os caracteres **dentro** da janela ("sem repetição", "no
+  máximo k distintos", "contém todas as letras de t").
+- Diferença crucial para a aula anterior: aqui a **ordem e a contiguidade
+  importam** (é uma substring), não só a composição.
+
+## Exemplo 1 — Longest Substring Without Repeating Characters
+
+*"Maior substring sem caracteres repetidos."* A condição de validade:
+nenhuma letra aparece duas vezes na janela.
+
+- **Força bruta:** testar todas as substrings e checar repetição — O(n²) ou
+  O(n³).
+- **O desperdício:** ao mover o início, recomeçamos a verificação do zero.
+- **O padrão:** expanda `right` sempre; se o novo char já está na janela,
+  encolha `left` até remover a repetição. O estado é o conjunto de chars da
+  janela.
+
+Veja a janela `[left..right]` crescendo e encolhendo — repare que `left` só
+avança quando `right` traz um caractere repetido:
+
+<TraceDemo id="longest-substring" />
+
+A janela sempre contém caracteres únicos, e a resposta é o maior tamanho
+`right - left + 1` visto. **O(n)** de tempo; espaço O(min(n, alfabeto)) para
+o mapa.
+
+## Exemplo 2 — Longest Repeating Character Replacement
+
+*"Maior substring que vira um bloco de uma letra só trocando no máximo `k`
+caracteres."* A condição de validade fica mais sutil:
+
+> tamanho da janela − (contagem do caractere mais frequente nela) ≤ k
+
+Ou seja: os caracteres que **não** são o majoritário são os que você teria de
+trocar; se forem ≤ k, a janela é válida. O mapa de contagens é o que permite
+saber, em O(1), qual é o caractere mais frequente da janela.
+
+<CodeRunner
+  python={`def character_replacement(s, k):
+    contagem = {}
+    left = 0
+    mais_freq = 0
+    melhor = 0
+    for right in range(len(s)):
+        c = s[right]
+        contagem[c] = contagem.get(c, 0) + 1
+        mais_freq = max(mais_freq, contagem[c])
+        # se precisamos trocar mais que k chars, encolhe
+        if (right - left + 1) - mais_freq > k:
+            contagem[s[left]] = contagem[s[left]] - 1
+            left = left + 1
+        melhor = max(melhor, right - left + 1)
+    return melhor
+
+print(character_replacement("AABABBA", 1))  # 4
+print(character_replacement("ABAB", 2))      # 4`}
+  javascript={`function characterReplacement(s, k) {
+  var contagem = {};
+  var left = 0;
+  var maisFreq = 0;
+  var melhor = 0;
+  for (var right = 0; right < s.length; right++) {
+    var c = s[right];
+    contagem[c] = (contagem[c] || 0) + 1;
+    maisFreq = Math.max(maisFreq, contagem[c]);
+    if ((right - left + 1) - maisFreq > k) {
+      contagem[s[left]] = contagem[s[left]] - 1;
+      left = left + 1;
+    }
+    melhor = Math.max(melhor, right - left + 1);
+  }
+  return melhor;
+}
+
+console.log(characterReplacement("AABABBA", 1)); // 4
+console.log(characterReplacement("ABAB", 2));    // 4`}
+/>
+
+### Por que é O(n)?
+
+Uma passada de `right` (n vezes); `left` nunca recua. As operações no mapa e o
+`max` são O(1). Mesmo argumento de progresso irreversível da seção Array:
+cada char entra e sai no máximo uma vez. **O(n)**, espaço O(1) (alfabeto
+fixo).
+
+## Exemplo 3 — Minimum Window Substring (o boss da seção)
+
+*"Menor substring de `s` que contém todas as letras de `t` (com
+multiplicidade)."* É o sliding window com frequência no seu auge:
+
+1. Monte a frequência **alvo** (de `t`).
+2. Expanda `right`, contando os caracteres da janela.
+3. Quando a janela **cobre** todo o alvo, tente **encolher** `left` ao máximo
+   sem perder a cobertura — registrando a menor janela válida.
+
+Aqui a janela quer ser **mínima** (não máxima): o `while` de encolhimento roda
+enquanto a janela *continua válida*, ao contrário dos exemplos anteriores. É a
+mesma estrutura, com a direção da otimização invertida — bom sinal de que você
+entendeu o padrão, não decorou um caso.
+
+| Variante | Janela cresce até... | Janela encolhe enquanto... | Quer |
+| --- | --- | --- | --- |
+| Sem repetição | sempre | há repetição | máxima |
+| ≤ k trocas | sempre | precisa de >k trocas | máxima |
+| Cobrir `t` | cobrir o alvo | continua cobrindo | mínima |
+
+## Sliding window ou contagem fixa? (aula 2 vs aula 3)
+
+- A composição da string **inteira** importa (anagrama, agrupar)? → contagem
+  fixa (aula 2).
+- A condição é sobre uma **substring contígua** que cresce/encolhe? → sliding
+  window (esta aula).
+
+<Quiz
+  title="Quiz de fixação"
+  questions={[
+    {
+      question:
+        "O que muda no sliding window quando passamos de arrays para strings como nestes problemas?",
+      options: [
+        "Nada muda",
+        "O estado da janela deixa de ser um número e passa a ser um mapa de contagens de caracteres; o esqueleto expande/encolhe é o mesmo",
+        "Deixa de ser O(n)",
+        "Passa a exigir ordenação",
+      ],
+      answer: 1,
+      explanation:
+        "O template é idêntico ao da seção Array. O que enriquece é o estado (um mapa de frequência) e o critério de 'janela inválida', lido desse mapa.",
+    },
+    {
+      question:
+        "Mesmo com um while interno encolhendo a janela, por que esses algoritmos são O(n)?",
+      options: [
+        "Porque o while quase nunca executa",
+        "Porque cada caractere entra na janela uma vez (right) e sai no máximo uma vez (left): no máximo 2n movimentos",
+        "Porque o alfabeto é pequeno",
+        "Não são — são O(n²)",
+      ],
+      answer: 1,
+      explanation:
+        "Conte movimentos de ponteiro, não iterações aninhadas: right anda n vezes, left anda ≤ n vezes. 2n × O(1) = O(n). É o argumento de progresso irreversível.",
+    },
+    {
+      question:
+        "No Longest Repeating Character Replacement, por que a condição de validade é '(tamanho da janela − char mais frequente) ≤ k'?",
+      options: [
+        "Porque k é o tamanho máximo da janela",
+        "Porque os caracteres que NÃO são o majoritário são os que precisariam ser trocados; se forem ≤ k trocas, dá para uniformizar a janela",
+        "Porque sempre trocamos o primeiro caractere",
+        "É uma fórmula arbitrária",
+      ],
+      answer: 1,
+      explanation:
+        "Para virar um bloco de uma letra só, você troca todos os que não são o majoritário. Esse número é tamanho − contagem_do_majoritário; se ≤ k, a janela é alcançável.",
+    },
+    {
+      question:
+        "No Minimum Window Substring queremos a MENOR janela. Como isso muda o encolhimento em relação aos outros exemplos?",
+      options: [
+        "Não muda",
+        "O while encolhe enquanto a janela CONTINUA válida (ainda cobre o alvo), para achar a mínima — o oposto de encolher só quando fica inválida",
+        "Não usa left",
+        "Passa a usar dois maps",
+      ],
+      answer: 1,
+      explanation:
+        "Quando se busca a janela máxima, encolhe-se ao violar a condição. Quando se busca a mínima, encolhe-se enquanto a condição se mantém, registrando o menor tamanho válido a cada passo.",
+    },
+  ]}
+/>
+
+## Resumo
+
+- Sliding window de string = template do Array + **estado = mapa de
+  frequência**.
+- A "validade" da janela é lida do mapa: sem repetição / ≤ k trocas / cobre o
+  alvo.
+- **O(n)** sempre, pelo mesmo argumento: cada char entra e sai no máximo uma
+  vez.
+- Janela máxima encolhe ao violar; janela mínima encolhe enquanto vale.
+
+Próxima aula: voltando aos dois ponteiros — desta vez para **palíndromos**.

@@ -1,0 +1,172 @@
+# Síntese: qual padrão usar?
+
+> Cinco padrões cobertos. Hora de treinar o reflexo que vale a entrevista:
+> ler um enunciado de string novo e saber qual ferramenta sacar — com
+> justificativa.
+
+## A árvore de decisão da seção
+
+```text
+1. A ORDEM dos caracteres NÃO importa, só a composição?
+   ├── Comparar/agrupar strings inteiras por composição
+   │     → CONTAGEM DE FREQUÊNCIA (anagramas)
+   └── Continue ↓
+
+2. A resposta é uma SUBSTRING contígua que cresce/encolhe sob uma condição?
+   → SLIDING WINDOW com mapa de frequência
+     (sem repetição / ≤ k trocas / cobre um alvo)
+
+3. O problema é sobre SIMETRIA (palíndromo)?
+   ├── "Isto é um palíndromo?"        → TWO POINTERS convergentes
+   └── "Quantos / qual o maior?"      → EXPANDIR DO CENTRO (ímpar e par)
+
+4. Há ANINHAMENTO ou casamento de aberturas/fechamentos? Ou "último pendente"?
+   → PILHA (LIFO)
+
+5. Preciso REPRESENTAR dados em string e recuperá-los sem ambiguidade?
+   → CODIFICAÇÃO length-prefix (design)
+```
+
+E o teste de sanidade de sempre: **os limites**. Lembre que enumerar todas as
+substrings já é O(n²) — se n é grande, quase nunca é esse o caminho.
+
+## O mapa completo da seção
+
+| Padrão | Pergunta-chave | Estrutura | Tempo | Espaço |
+| --- | --- | --- | --- | --- |
+| Frequência (anagramas) | "mesma composição?" | mapa de contagens | O(n) ou O(n·k log k) | O(1)* |
+| Sliding window | "substring que satisfaz X?" | janela + mapa | O(n) | O(1)* |
+| Two pointers | "é palíndromo?" | dois índices das pontas | O(n) | O(1) |
+| Expandir do centro | "quantos/maior palíndromo?" | dois índices do centro | O(n²) | O(1) |
+| Pilha | "aninhamento / último pendente?" | stack LIFO | O(n) | O(n) |
+| Codificação | "representar sem ambiguidade?" | length-prefix | O(n) | O(n) |
+
+\* O(1) quando o alfabeto é fixo (ex.: 26 letras); senão O(min(n, alfabeto)).
+
+E a conexão com a seção anterior, que vale internalizar: **frequência é o hash
+map, sliding window e two pointers vieram do Array**. Você não aprendeu 5
+ferramentas novas — aprendeu a aplicar as do Array a caracteres e ganhou pilha,
+expandir-do-centro e codificação de presente.
+
+## Quiz da seção
+
+Enunciados que você **não viu** nas aulas. Identifique o padrão e saiba dizer
+o porquê. 7+ acertos: pronto para a prova.
+
+<Quiz
+  title="Quiz da seção: String"
+  questions={[
+    {
+      question:
+        "'Verifique se s2 contém alguma permutação de s1 como substring.' Qual padrão?",
+      options: [
+        "Expandir do centro",
+        "Sliding window de tamanho fixo |s1| comparando o mapa de frequência da janela com o de s1",
+        "Pilha",
+        "Codificação",
+      ],
+      answer: 1,
+      explanation:
+        "'Permutação como substring' = janela contígua de tamanho |s1| cuja composição bate com a de s1. Janela fixa + comparação de frequências: O(n).",
+    },
+    {
+      question:
+        "'Dada uma string, qual o tamanho da maior substring com no máximo 2 caracteres distintos?' Qual padrão?",
+      options: [
+        "Contagem fixa de frequência",
+        "Sliding window variável: expande right, encolhe left enquanto houver mais de 2 chars distintos no mapa",
+        "Two pointers das pontas",
+        "Pilha",
+      ],
+      answer: 1,
+      explanation:
+        "Substring contígua + condição sobre os chars dentro dela ('≤ 2 distintos') = sliding window variável, com o mapa de contagens dizendo quantos distintos há. O(n).",
+    },
+    {
+      question:
+        "'Quantas substrings palindrômicas existem em s?' Qual padrão e qual a complexidade?",
+      options: [
+        "Sliding window, O(n)",
+        "Expandir do centro (ímpar e par), O(n²)",
+        "Pilha, O(n)",
+        "Força bruta de todas as substrings, O(n³)",
+      ],
+      answer: 1,
+      explanation:
+        "Palíndromos têm centro; expanda de cada um (ímpar e par) contando os válidos. O(n²) — bem melhor que o O(n³) de testar todas as substrings.",
+    },
+    {
+      question:
+        "'Remova todos os parênteses inválidos para tornar a expressão válida.' Que estrutura é a base natural?",
+      options: [
+        "Mapa de frequência",
+        "Pilha / contagem de aberturas e fechamentos pendentes (raciocínio LIFO de casamento)",
+        "Expandir do centro",
+        "Two pointers",
+      ],
+      answer: 1,
+      explanation:
+        "Casar aberturas e fechamentos e detectar os que sobram é território de pilha/contagem de pendências — o mesmo raciocínio LIFO do Valid Parentheses.",
+    },
+    {
+      question:
+        "'É um palíndromo se você puder remover no máximo um caractere?' Qual padrão?",
+      options: [
+        "Pilha",
+        "Two pointers convergentes: ao achar uma divergência, tente pular o char da esquerda OU o da direita e verifique o resto",
+        "Sliding window",
+        "Codificação",
+      ],
+      answer: 1,
+      explanation:
+        "É o two pointers de palíndromo com uma ramificação: na primeira divergência, há duas tentativas (pular left ou right). A estrutura convergente é a mesma; muda a reação ao desacordo.",
+    },
+    {
+      question:
+        "'Codifique uma árvore binária em string e reconstrua.' Qual princípio da seção String se aplica?",
+      options: [
+        "Sliding window",
+        "Codificação sem ambiguidade (registrar a estrutura, inclusive nós nulos) — o mesmo princípio do length-prefix / serialização",
+        "Anagramas",
+        "Expandir do centro",
+      ],
+      answer: 1,
+      explanation:
+        "Serializar estrutura sem ambiguidade é o problema de design da aula de codificação. Você reencontra isso literalmente na seção Árvores.",
+    },
+    {
+      question:
+        "'s e t são anagramas?' — por que NÃO usar sliding window aqui?",
+      options: [
+        "Porque sliding window é lento",
+        "Porque não há substring/janela: compara-se a composição das strings INTEIRAS — basta uma contagem de frequência, O(n)",
+        "Porque anagramas exigem ordenação",
+        "Deve usar sliding window sim",
+      ],
+      answer: 1,
+      explanation:
+        "Sliding window é para substrings contíguas. Anagrama compara as strings completas: contagem de frequência direta, sem janela. Escolher a ferramenta certa começa por 'é substring ou string inteira?'.",
+    },
+    {
+      question:
+        "Qual a ideia-mãe que liga a seção String à seção Array?",
+      options: [
+        "São seções independentes",
+        "String é array de caracteres: frequência é o hash map, sliding window e two pointers vêm do Array — só o tipo do elemento e algumas ferramentas (pilha, centro, codificação) mudam",
+        "Strings são sempre ordenadas",
+        "Ambas usam só força bruta",
+      ],
+      answer: 1,
+      explanation:
+        "Reaproveitar padrões em contextos novos é o coração do curso. Reconhecer 'isto é o sliding window do Array, com mapa no lugar do número' é o que te faz resolver problemas inéditos.",
+    },
+  ]}
+/>
+
+## Pronto para a prova?
+
+A prova final da seção String tem **três problemas inéditos** — fácil, médio e
+difícil — com casos ocultos. As cinco aulas cobrem tudo que você precisa, e a
+árvore de decisão acima resolve a escolha do padrão dos três.
+
+**Boa prova!** Volte para a página da seção e clique em "Prova final".

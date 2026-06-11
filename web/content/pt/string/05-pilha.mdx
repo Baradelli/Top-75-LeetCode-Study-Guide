@@ -1,0 +1,141 @@
+# Padrão 4: Pilha
+
+> A pilha (stack) é a estrutura **LIFO** — *Last In, First Out*, o último a
+> entrar é o primeiro a sair. É a ferramenta natural para casar aberturas e
+> fechamentos e para resolver o que está "mais aninhado" primeiro.
+
+## A teoria: por que LIFO casa com aninhamento
+
+Pense numa pilha de pratos: você tira de cima, o último que colocou. Em código,
+uma pilha é só uma lista com duas operações O(1): `push` (empilhar no topo) e
+`pop` (desempilhar do topo).
+
+Por que isso resolve aninhamento? Porque em estruturas aninhadas — parênteses,
+tags HTML, chamadas de função — **o último que abriu é o primeiro que precisa
+fechar**. Isso é exatamente a ordem LIFO. Quando você encontra um fechamento,
+o candidato a casar com ele é sempre o **topo** da pilha.
+
+```text
+para cada símbolo:
+    se é abertura → empilha
+    se é fechamento → o topo da pilha tem que ser a abertura correspondente
+                      (senão, está malformado)
+no fim: a pilha tem que estar vazia (tudo que abriu, fechou)
+```
+
+### Os sinais no enunciado
+
+- **Parênteses / colchetes / chaves** balanceados.
+- Estruturas **aninhadas** (expressões, tags, caminhos de diretório).
+- "O elemento **mais recente** que ainda não foi resolvido" — próximo maior
+  elemento, profundidade de aninhamento, desfazer (undo).
+- Avaliar ou simplificar expressões.
+
+## Exemplo — Valid Parentheses
+
+*"A string de `()[]{}` está corretamente balanceada?"* Ex.: `"([]{})"` →
+verdadeiro; `"(]"` → falso; `"([)]"` → falso (cruzado).
+
+- **Por que pilha?** Cada fechamento deve casar com a abertura **mais
+  recente** ainda aberta. "Mais recente" = topo da pilha.
+- **A lógica:** empilhe cada abertura; a cada fechamento, desempilhe e confira
+  se a abertura que saiu é a correspondente. No fim, a pilha vazia confirma que
+  nada ficou aberto.
+
+Acompanhe a pilha crescer com as aberturas e encolher a cada fechamento que
+casa:
+
+<TraceDemo id="valid-parentheses" />
+
+Repare nos dois jeitos de falhar, ambos detectados: um fechamento que **não
+casa** com o topo (ou pilha vazia na hora de fechar), e **sobrar** abertura na
+pilha no final.
+
+### Por que é O(n) de tempo e O(n) de espaço?
+
+- Uma passada pela string (n caracteres); `push` e `pop` são O(1) →
+  **O(n) de tempo**.
+- No pior caso (`"((((("`), todos os caracteres vão para a pilha →
+  **O(n) de espaço**. Esse é o custo inevitável: para saber com quem casar, é
+  preciso lembrar tudo que está aberto.
+
+| Abordagem | Tempo | Espaço | Observação |
+| --- | --- | --- | --- |
+| Remover pares "()" repetidamente | O(n²) | O(n) | reprocessa a string toda vez |
+| Pilha | O(n) | O(n) | uma passada, casa no topo |
+
+## A pilha além dos parênteses
+
+O mesmo raciocínio LIFO resolve uma família grande: **Min Stack** (pilha que
+também devolve o mínimo em O(1)), **Evaluate Reverse Polish Notation**
+(avaliar expressão pós-fixa), **Daily Temperatures / Next Greater Element**
+(a "pilha monotônica", que mantém candidatos ainda não resolvidos). Sempre que
+a pergunta for sobre "o último item pendente", pense em pilha.
+
+<Quiz
+  title="Quiz de fixação"
+  questions={[
+    {
+      question:
+        "Por que a pilha (LIFO) é a estrutura natural para verificar parênteses aninhados?",
+      options: [
+        "Porque é mais rápida que um array",
+        "Porque o último símbolo aberto é sempre o primeiro que precisa fechar — exatamente a ordem LIFO",
+        "Porque guarda os símbolos ordenados",
+        "Porque usa menos memória",
+      ],
+      answer: 1,
+      explanation:
+        "Aninhamento impõe ordem LIFO: '([{' fecha como '}])'. O candidato a casar com um fechamento é sempre o topo da pilha — a abertura mais recente.",
+    },
+    {
+      question:
+        "Quais são as DUAS formas de uma sequência de parênteses ser inválida, ambas detectadas pela pilha?",
+      options: [
+        "String vazia ou muito longa",
+        "Um fechamento que não casa com o topo (ou pilha vazia ao fechar); e sobrar abertura na pilha no final",
+        "Mais de um tipo de parêntese",
+        "Caracteres repetidos",
+      ],
+      answer: 1,
+      explanation:
+        "Fechar sem a abertura correta no topo detecta o erro na hora; pilha não-vazia no final detecta aberturas que nunca fecharam. As duas checagens juntas cobrem todos os casos.",
+    },
+    {
+      question: "Por que Valid Parentheses usa O(n) de espaço no pior caso?",
+      options: [
+        "Porque cria uma cópia da string",
+        "Porque uma entrada como '(((((' empilha todos os caracteres antes de qualquer fechamento",
+        "Porque a pilha duplica os dados",
+        "Não usa — é O(1)",
+      ],
+      answer: 1,
+      explanation:
+        "Para casar fechamentos depois, é preciso lembrar todas as aberturas pendentes. No pior caso (só aberturas) a pilha guarda os n caracteres: O(n).",
+    },
+    {
+      question:
+        "Enunciado novo: 'para cada dia, em quantos dias virá uma temperatura maior?'. Por que pensar em pilha?",
+      options: [
+        "Porque envolve números",
+        "Porque mantemos uma pilha dos dias ainda não resolvidos (sem maior à frente); cada novo dia resolve os pendentes menores que ele — o 'último pendente' é LIFO",
+        "Porque precisa ordenar as temperaturas",
+        "Não se aplica pilha",
+      ],
+      answer: 1,
+      explanation:
+        "É a pilha monotônica: guarde índices ainda esperando um valor maior. Ao chegar um valor maior, ele resolve os pendentes do topo para baixo. 'Último pendente primeiro' = LIFO.",
+    },
+  ]}
+/>
+
+## Resumo
+
+- Pilha = LIFO, com `push`/`pop` em O(1); ideal para **aninhamento** e
+  "último pendente".
+- Valid Parentheses: empilhe aberturas, case cada fechamento com o topo,
+  exija pilha vazia no fim — O(n) tempo, O(n) espaço.
+- Generaliza para min stack, expressões pós-fixas e pilha monotônica (próximo
+  maior).
+
+Próxima aula: o último padrão da seção — **codificação e design** de strings.

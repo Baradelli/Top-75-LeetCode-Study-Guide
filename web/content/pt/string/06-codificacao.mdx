@@ -1,0 +1,192 @@
+# Padrão 5: Codificação e design
+
+> Nem todo problema de string é sobre buscar um padrão — alguns são sobre
+> **representar dados**. Como transformar uma lista de strings em uma única
+> string e depois recuperá-la *exatamente*? A resposta ensina um princípio que
+> vai bem além de strings.
+
+## A teoria: o problema da ambiguidade
+
+Quero juntar `["abc", "de"]` numa só string para transmitir, e depois separar
+de volta. A ideia ingênua: juntar com uma vírgula → `"abc,de"`. Parece
+funcionar... até um dos dados **conter o separador**:
+
+```text
+["a,b", "c"]  →  "a,b,c"  →  separando por ","  →  ["a", "b", "c"]  ✗
+```
+
+Recuperamos 3 strings em vez de 2. Qualquer separador escolhido pode aparecer
+nos dados — esse é o problema fundamental de **delimitadores**. Trocar a
+vírgula por outro caractere só empurra o problema: e se o dado contiver *esse*
+caractere também?
+
+### A solução: comprimento como prefixo (length-prefix)
+
+Em vez de marcar onde cada pedaço **termina** (um separador, que pode
+colidir), marque quanto cada pedaço **mede** antes dele:
+
+```text
+formato:  <comprimento>#<conteúdo><comprimento>#<conteúdo>...
+
+["abc", "de"]  →  "3#abc2#de"
+```
+
+Para decodificar: leia o número até o `#`, e então **pegue exatamente aquela
+quantidade** de caracteres como o conteúdo — sem nunca interpretar o que vem
+dentro. O `#` nunca é ambíguo porque você só o procura na posição do
+comprimento; os caracteres do conteúdo são lidos por contagem, não por busca.
+Isso funciona mesmo que um dado contenha `#`, números, ou outra string
+codificada inteira.
+
+### Os sinais (o padrão de design)
+
+- "**Serializar / desserializar**", "codificar / decodificar", "transmitir e
+  reconstruir".
+- O dado pode conter **qualquer caractere** (não há separador seguro).
+- Reaparece forte na seção **Árvores** (serializar uma árvore binária é o
+  mesmo princípio: registrar estrutura sem ambiguidade).
+
+## Exemplo — Encode and Decode Strings
+
+*"Escreva `encode(lista) → string` e `decode(string) → lista` que funcionem
+para qualquer conteúdo."*
+
+<CodeRunner
+  python={`def encode(strs):
+    resultado = []
+    for s in strs:
+        resultado.append(str(len(s)) + "#" + s)
+    return "".join(resultado)
+
+def decode(s):
+    resultado = []
+    i = 0
+    while i < len(s):
+        j = i
+        while s[j] != "#":      # acha o fim do numero
+            j = j + 1
+        tamanho = int(s[i:j])   # comprimento do proximo pedaco
+        inicio = j + 1
+        resultado.append(s[inicio:inicio + tamanho])
+        i = inicio + tamanho    # pula direto para o proximo pedaco
+    return resultado
+
+codificado = encode(["abc", "de", "a#2#b"])
+print(codificado)
+print(decode(codificado))     # ['abc', 'de', 'a#2#b']`}
+  javascript={`function encode(strs) {
+  var resultado = "";
+  for (var i = 0; i < strs.length; i++) {
+    resultado = resultado + strs[i].length + "#" + strs[i];
+  }
+  return resultado;
+}
+
+function decode(s) {
+  var resultado = [];
+  var i = 0;
+  while (i < s.length) {
+    var j = i;
+    while (s[j] !== "#") {        // acha o fim do numero
+      j = j + 1;
+    }
+    var tamanho = parseInt(s.slice(i, j), 10); // comprimento do pedaco
+    var inicio = j + 1;
+    resultado.push(s.slice(inicio, inicio + tamanho));
+    i = inicio + tamanho;         // pula direto para o proximo pedaco
+  }
+  return resultado;
+}
+
+var codificado = encode(["abc", "de", "a#2#b"]);
+console.log(codificado);
+console.log(JSON.stringify(decode(codificado))); // ["abc","de","a#2#b"]`}
+/>
+
+Repare no terceiro dado: `"a#2#b"` contém `#` e dígitos — exatamente o que
+quebraria um separador. Com length-prefix, ele volta intacto, porque o
+decodificador **conta** caracteres em vez de procurar separadores.
+
+### Por que é O(n)?
+
+- **encode:** percorre cada string uma vez para montar a saída — O(n) no total
+  de caracteres.
+- **decode:** o ponteiro `i` avança pelo string codificado sem nunca voltar
+  (lê o número, pula o conteúdo) — O(n). Cada caractere é visitado uma vez.
+- Espaço O(n) para a saída, que é inevitável (é o resultado).
+
+## Por que esta aula importa além de strings
+
+Este é o seu primeiro problema de **design**: a pergunta não é "qual o truque
+esperto?", mas "qual representação evita ambiguidade?". O princípio
+length-prefix — *guardar o tamanho para não depender de delimitadores* — é
+usado em protocolos de rede de verdade e volta na serialização de árvores
+(seção Árvores). Reconhecer "isto é um problema de representação" já é meio
+caminho.
+
+<Quiz
+  title="Quiz de fixação"
+  questions={[
+    {
+      question:
+        "Por que juntar as strings com um separador (como vírgula) não é uma codificação confiável?",
+      options: [
+        "Porque vírgulas são lentas de processar",
+        "Porque algum dado pode conter o próprio separador, tornando a separação ambígua",
+        "Porque o resultado fica grande demais",
+        "Porque vírgulas não são caracteres válidos",
+      ],
+      answer: 1,
+      explanation:
+        "Qualquer caractere escolhido como separador pode aparecer nos dados. '[\"a,b\",\"c\"]' juntado por vírgula vira 'a,b,c' — indistinguível de três strings.",
+    },
+    {
+      question:
+        "Como o esquema '<comprimento>#<conteúdo>' evita a ambiguidade mesmo que o conteúdo contenha '#'?",
+      options: [
+        "Proibindo '#' nos dados",
+        "Porque o decodificador lê o número e então pega EXATAMENTE aquele número de caracteres como conteúdo, sem interpretar o que há dentro",
+        "Escapando todos os '#'",
+        "Comprimindo os dados antes",
+      ],
+      answer: 1,
+      explanation:
+        "O conteúdo é lido por contagem, não por busca de separador. O '#' só é procurado na posição do comprimento; depois disso, 'tamanho' caracteres são copiados literalmente, '#' incluído.",
+    },
+    {
+      question: "Por que decode é O(n) mesmo com um while dentro de um while?",
+      options: [
+        "Porque o while interno é raro",
+        "Porque o ponteiro i percorre o string codificado uma única vez, sem voltar — lê o número e pula direto o conteúdo",
+        "Porque parseInt é O(1)",
+        "Não é O(n), é O(n²)",
+      ],
+      answer: 1,
+      explanation:
+        "Some o trabalho: cada caractere do string codificado é lido exatamente uma vez (ou no número, ou no salto do conteúdo). O total é O(n), apesar dos loops aninhados na forma.",
+    },
+    {
+      question:
+        "Onde mais o princípio 'length-prefix / registrar estrutura sem ambiguidade' reaparece no curso?",
+      options: [
+        "Em nenhum outro lugar",
+        "Na serialização de árvores binárias (seção Árvores), que também precisa codificar estrutura para reconstruir sem ambiguidade",
+        "Na busca binária",
+        "No Kadane",
+      ],
+      answer: 1,
+      explanation:
+        "Serializar/desserializar uma árvore é o mesmo problema de representação: registrar a estrutura (incluindo nós nulos) de forma que a reconstrução seja única. É design, não truque.",
+    },
+  ]}
+/>
+
+## Resumo
+
+- Codificação é um problema de **design/representação**, não de truque.
+- Separadores são ambíguos (o dado pode contê-los); **length-prefix** resolve:
+  conte os caracteres em vez de procurar delimitadores.
+- encode/decode em O(n); o ponteiro de decode nunca volta.
+- O princípio reaparece na serialização de árvores.
+
+Última parada: a **síntese** da seção String e o quiz antes da prova final.

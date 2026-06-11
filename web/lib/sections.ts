@@ -50,7 +50,7 @@ export const SECTIONS: Section[] = [
       "Pilha",
       "Expandir do centro",
     ],
-    status: "soon",
+    status: "available",
   },
   {
     slug: "binary",
@@ -198,6 +198,50 @@ export const LESSONS: Record<string, Lesson[]> = {
       title: "Síntese: qual padrão usar?",
       description:
         "A árvore de decisão da seção e o quiz geral antes da prova final.",
+    },
+  ],
+  string: [
+    {
+      slug: "01-introducao",
+      title: "Reconhecendo problemas de string",
+      description:
+        "Strings são arrays de caracteres: o que se reaproveita do Array e o que é novo nesta seção.",
+    },
+    {
+      slug: "02-frequencia-anagramas",
+      title: "Padrão 1: Contagem de caracteres (anagramas)",
+      description:
+        "A assinatura de frequência que identifica e agrupa strings — anagramas em O(n).",
+    },
+    {
+      slug: "03-sliding-window",
+      title: "Padrão 2: Sliding Window com frequência",
+      description:
+        "A janela deslizante do Array, agora com um mapa de contagens como estado.",
+    },
+    {
+      slug: "04-palindromos",
+      title: "Padrão 3: Two Pointers e expandir do centro",
+      description:
+        "Verificar palíndromos com dois ponteiros e encontrá-los crescendo a partir do centro.",
+    },
+    {
+      slug: "05-pilha",
+      title: "Padrão 4: Pilha",
+      description:
+        "A estrutura LIFO que casa aberturas e fechamentos e resolve o que está “mais aninhado”.",
+    },
+    {
+      slug: "06-codificacao",
+      title: "Padrão 5: Codificação e design",
+      description:
+        "Serializar e desserializar dados em string sem ambiguidade — o padrão length-prefix.",
+    },
+    {
+      slug: "07-sintese",
+      title: "Síntese: qual padrão usar?",
+      description:
+        "A árvore de decisão da seção String e o quiz geral antes da prova final.",
     },
   ],
 };

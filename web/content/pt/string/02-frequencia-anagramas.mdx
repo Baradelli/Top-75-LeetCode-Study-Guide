@@ -1,0 +1,238 @@
+# Padrão 1: Contagem de caracteres (anagramas)
+
+> Duas palavras são anagramas quando têm **exatamente os mesmos caracteres,
+> em qualquer ordem**. A ferramenta que captura isso é o mapa de frequência —
+> a "impressão digital" de uma string que ignora a ordem.
+
+## A teoria: a assinatura de frequência
+
+Como saber se `"listen"` e `"silent"` são a mesma coisa rearranjada? Comparar
+ordem não ajuda — a ordem é justamente o que muda. O que **não** muda é
+*quantas vezes cada letra aparece*. Esse vetor de contagens é a assinatura:
+
+```text
+"listen" → {l:1, i:1, s:1, t:1, e:1, n:1}
+"silent" → {l:1, i:1, s:1, t:1, e:1, n:1}   ← iguais ⇒ anagramas
+```
+
+É o mesmo hash map da seção Array, com uma pergunta diferente: em vez de "já
+vi este valor?", perguntamos "quantas vezes vi cada caractere?". Duas strings
+são anagramas se, e somente se, têm a mesma assinatura.
+
+### Os sinais no enunciado
+
+- A palavra **"anagrama"** aparece literalmente.
+- "Reorganizar / permutar os caracteres de...".
+- "Agrupar palavras que são rearranjos umas das outras".
+- Qualquer coisa em que **a ordem não importa, só a composição**.
+
+### Duas formas da assinatura
+
+- **Mapa de contagens** (`{char: quantidade}`): geral, serve para qualquer
+  alfabeto (Unicode inclusive).
+- **String ordenada** (`sorted("listen") == "eilnst"`): mais simples de
+  escrever, mas custa O(k log k) por palavra (k = tamanho). Útil como *chave*
+  ao agrupar.
+
+## Exemplo 1 — Valid Anagram
+
+*"`s` e `t` são anagramas?"*
+
+- **Força bruta:** testar todas as permutações de `s` — O(k!). Inviável.
+- **O desperdício:** permutar é absurdo quando só precisamos saber se a
+  *composição* é a mesma.
+- **O padrão:** compare as assinaturas de frequência. Uma forma elegante numa
+  passada só: **conte +1 para cada char de `s` e −1 para cada char de `t`**;
+  no fim, todas as contagens têm que ser zero.
+
+<CodeRunner
+  python={`def is_anagram(s, t):
+    if len(s) != len(t):
+        return False
+    contagem = {}
+    for c in s:
+        contagem[c] = contagem.get(c, 0) + 1
+    for c in t:
+        contagem[c] = contagem.get(c, 0) - 1
+        if contagem[c] < 0:
+            return False
+    return True
+
+print(is_anagram("listen", "silent"))  # True
+print(is_anagram("rat", "car"))        # False
+print(is_anagram("aacc", "ccac"))      # False`}
+  javascript={`function isAnagram(s, t) {
+  if (s.length !== t.length) {
+    return false;
+  }
+  var contagem = {};
+  for (var i = 0; i < s.length; i++) {
+    var c = s[i];
+    contagem[c] = (contagem[c] || 0) + 1;
+  }
+  for (var j = 0; j < t.length; j++) {
+    var d = t[j];
+    contagem[d] = (contagem[d] || 0) - 1;
+    if (contagem[d] < 0) {
+      return false;
+    }
+  }
+  return true;
+}
+
+console.log(isAnagram("listen", "silent")); // true
+console.log(isAnagram("rat", "car"));        // false
+console.log(isAnagram("aacc", "ccac"));      // false`}
+/>
+
+### Por que é O(n)? (justificando)
+
+- A verificação de tamanho corta na hora os casos triviais.
+- Duas passadas (uma por string), cada uma O(n), com operações de mapa O(1)
+  por caractere → **O(n) de tempo**.
+- O mapa guarda no máximo o número de caracteres **distintos** do alfabeto —
+  para letras minúsculas, no máximo 26. Espaço **O(1)** (constante, não
+  cresce com n).
+
+Compare com a abordagem "ordenar e comparar": `sorted(s) == sorted(t)`. Custa
+O(n log n) — correta e curtíssima, mas mais lenta. Trade-off clássico:
+simplicidade de código contra velocidade.
+
+| Solução | Tempo | Espaço |
+| --- | --- | --- |
+| Testar permutações | O(k!) | — |
+| Ordenar e comparar | O(n log n) | O(n) |
+| Mapa de frequência | O(n) | O(1) (alfabeto fixo) |
+
+## Exemplo 2 — Group Anagrams
+
+*"Agrupe as palavras que são anagramas entre si."* Ex.: `["eat","tea","tan",
+"ate","nat","bat"]` → `[["eat","tea","ate"],["tan","nat"],["bat"]]`.
+
+- **O desperdício:** comparar cada palavra com todas as outras é O(n²)
+  comparações de strings.
+- **O padrão:** se anagramas têm a **mesma assinatura**, use a assinatura
+  como **chave** de um hash map e jogue cada palavra no seu balde. Uma
+  passada agrupa tudo.
+
+A assinatura aqui costuma ser a *string ordenada* (`"eat"` → `"aet"`), porque
+ela vira uma chave de dicionário naturalmente:
+
+<CodeRunner
+  python={`def group_anagrams(palavras):
+    grupos = {}
+    for palavra in palavras:
+        chave = "".join(sorted(palavra))   # assinatura: letras ordenadas
+        if chave not in grupos:
+            grupos[chave] = []
+        grupos[chave].append(palavra)
+    return list(grupos.values())
+
+print(group_anagrams(["eat", "tea", "tan", "ate", "nat", "bat"]))`}
+  javascript={`function groupAnagrams(palavras) {
+  var grupos = {};
+  for (var i = 0; i < palavras.length; i++) {
+    var chave = palavras[i]
+    .split("")
+    .sort(function (a, b) {
+      return a < b ? -1 : a > b ? 1 : 0;
+    })
+    .join(""); // assinatura: letras ordenadas
+    if (grupos[chave] === undefined) {
+      grupos[chave] = [];
+    }
+    grupos[chave].push(palavras[i]);
+  }
+  var resultado = [];
+  for (var k in grupos) {
+    resultado.push(grupos[k]);
+  }
+  return resultado;
+}
+
+console.log(JSON.stringify(groupAnagrams(["eat","tea","tan","ate","nat","bat"])));`}
+/>
+
+### Por que é O(n · k log k)?
+
+São `n` palavras; para cada uma, ordenar a assinatura custa O(k log k)
+(k = tamanho da palavra). A inserção no hash map é O(k) (calcular o hash da
+chave). Total: **O(n · k log k)**. Muito melhor que comparar todos os pares
+(O(n² · k)). Se quiser cravar O(n · k), troque a assinatura ordenada por uma
+contagem de 26 posições transformada em chave — mesma ideia, sem o `log`.
+
+## Onde mais esse padrão aparece
+
+A assinatura de frequência é a base do **sliding window com contagens** da
+próxima aula (a "janela válida" é definida por um critério sobre as
+frequências dentro dela) e reaparece em problemas de "permutação/substring
+que contém exatamente estes caracteres".
+
+<Quiz
+  title="Quiz de fixação"
+  questions={[
+    {
+      question:
+        "Por que comparar frequências de caracteres identifica anagramas, mas comparar a ordem não?",
+      options: [
+        "Porque a ordem é difícil de calcular",
+        "Porque anagramas têm a mesma composição de caracteres — só a ordem muda; a frequência é justamente o que se mantém igual",
+        "Porque frequência é mais rápida de comparar",
+        "Não identifica — anagramas precisam de ordem igual",
+      ],
+      answer: 1,
+      explanation:
+        "Anagrama = mesma multiset de caracteres. A frequência captura exatamente essa multiset, ignorando a ordem — que é a única coisa que muda entre anagramas.",
+    },
+    {
+      question:
+        "No Valid Anagram, por que o truque de +1 para s e −1 para t funciona em uma passada?",
+      options: [
+        "Porque soma tudo e compara com zero por acaso",
+        "Se as composições são iguais, cada char é somado e subtraído a mesma quantidade de vezes — todas as contagens zeram no fim",
+        "Porque ordena as strings",
+        "Só funciona se as strings forem iguais",
+      ],
+      answer: 1,
+      explanation:
+        "Char a char: +1 ao ver em s, −1 ao ver em t. Composições idênticas ⇒ saldo zero em todas as letras. Qualquer letra a mais/menos deixa um saldo diferente de zero.",
+    },
+    {
+      question:
+        "Para letras minúsculas (a–z), por que a contagem de frequência usa espaço O(1)?",
+      options: [
+        "Porque não usa memória",
+        "Porque o mapa guarda no máximo 26 chaves, independentemente do tamanho da string",
+        "Porque strings são imutáveis",
+        "Não é O(1), é O(n)",
+      ],
+      answer: 1,
+      explanation:
+        "O alfabeto é fixo: no máximo 26 entradas, com n = 10 ou n = 1 milhão. Tamanho que não cresce com a entrada é espaço constante, O(1).",
+    },
+    {
+      question:
+        "No Group Anagrams, por que usar a 'string ordenada' como chave do hash map agrupa corretamente?",
+      options: [
+        "Porque ordena o resultado final",
+        "Porque dois anagramas, quando ordenados, viram exatamente a mesma string — logo caem na mesma chave/balde",
+        "Porque a ordenação remove duplicatas",
+        "Porque é mais rápido que contar",
+      ],
+      answer: 1,
+      explanation:
+        "\"eat\" e \"tea\" ordenados são ambos \"aet\". Anagramas compartilham a assinatura ordenada, então o hash map os joga no mesmo balde numa única passada.",
+    },
+  ]}
+/>
+
+## Resumo
+
+- A **assinatura de frequência** é a identidade de uma string sem a ordem.
+- Valid Anagram: compare assinaturas (ou +1/−1 numa passada) — O(n), espaço
+  O(1) no alfabeto fixo.
+- Group Anagrams: use a assinatura como **chave** de hash map para agrupar —
+  O(n·k log k), muito melhor que comparar pares.
+
+Próxima aula: a assinatura de frequência ganha movimento — **sliding window
+com mapa de contagens**.

@@ -1,6 +1,6 @@
 # Plano — Curso Interativo de LeetCode e Algoritmos
 
-> Status: Fase 1 implementada — Seção 0 (Fundamentos de Big-O, 3 aulas) e seção Array completa (7 aulas + quizzes + prova final com LocalJudge). Aguardando avaliação didática do piloto. Última atualização: 2026-06-10.
+> Status: Fundamentos (Big-O) + Array + String completas (7 aulas cada, quizzes e provas finais), progresso visível (indicadores, barra, perfil). Próxima seção de conteúdo: Binary. Última atualização: 2026-06-10.
 
 ## 1. Visão
 

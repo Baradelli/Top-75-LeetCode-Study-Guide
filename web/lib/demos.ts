@@ -1,7 +1,7 @@
 /**
  * Registry de demonstrações trace & replay usadas nas aulas via
  * <TraceDemo id="..." />. Cada demo define o código nas duas linguagens e a
- * configuração da visualização genérica de array.
+ * configuração da visualização — de array (`array`) ou de string (`string`).
  *
  * O código JS é ES5 (limitação atual do interpretador de trace).
  */
@@ -22,13 +22,28 @@ export interface ArrayVisualConfig {
   bars?: boolean;
 }
 
-export interface DemoDefinition {
-  python: string;
-  javascript: string;
-  visual: ArrayVisualConfig;
+export interface StringVisualConfig {
+  /** Variável que contém a string principal. */
+  stringVar: string;
+  /** Variáveis que são índices na string (ponteiros coloridos). */
+  pointerVars?: string[];
+  /** Sombrear o intervalo [left..right] como uma janela. */
+  window?: { left: string; right: string };
+  /** Variável de dicionário/contagem para exibir como chips. */
+  mapVar?: string;
+  mapLabel?: string;
+  /** Variáveis escalares em destaque. */
+  scalarVars?: string[];
+  /** Variável que é uma pilha (lista/array de chars) renderizada à parte. */
+  stackVar?: string;
 }
 
+export type DemoDefinition =
+  | { python: string; javascript: string; array: ArrayVisualConfig }
+  | { python: string; javascript: string; string: StringVisualConfig };
+
 export const DEMOS: Record<string, DemoDefinition> = {
+  // ---------------------------------------------------------------- ARRAY ---
   "two-sum": {
     python: `def two_sum(nums, target):
     seen = {}
@@ -55,7 +70,7 @@ print(resultado)`,
 
 var resultado = twoSum([2, 7, 11, 15], 9);
 console.log(resultado);`,
-    visual: {
+    array: {
       arrayVar: "nums",
       pointerVars: ["i"],
       mapVar: "seen",
@@ -102,7 +117,7 @@ print(resultado)`,
 
 var resultado = maxArea([1, 8, 6, 2, 5, 4, 8, 3, 7]);
 console.log(resultado);`,
-    visual: {
+    array: {
       arrayVar: "heights",
       pointerVars: ["left", "right"],
       scalarVars: ["area", "best"],
@@ -135,7 +150,7 @@ print(resultado)`,
 
 var resultado = maxProfit([7, 1, 5, 3, 6, 4]);
 console.log(resultado);`,
-    visual: {
+    array: {
       arrayVar: "prices",
       pointerVars: ["i"],
       scalarVars: ["min_price", "minPrice", "profit", "best"],
@@ -180,7 +195,7 @@ print(resultado)`,
 
 var resultado = productExceptSelf([1, 2, 3, 4]);
 console.log(resultado);`,
-    visual: {
+    array: {
       arrayVar: "nums",
       pointerVars: ["i", "j"],
       scalarVars: ["prefix", "suffix"],
@@ -211,10 +226,184 @@ print(resultado)`,
 
 var resultado = maxSubarray([-2, 1, -3, 4, -1, 2, 1, -5, 4]);
 console.log(resultado);`,
-    visual: {
+    array: {
       arrayVar: "nums",
       pointerVars: ["i"],
       scalarVars: ["current", "best"],
+    },
+  },
+
+  // --------------------------------------------------------------- STRING ---
+  "longest-substring": {
+    python: `def longest_unique(s):
+    seen = {}
+    left = 0
+    best = 0
+    for right in range(len(s)):
+        while s[right] in seen:
+            del seen[s[left]]
+            left = left + 1
+        seen[s[right]] = right
+        best = max(best, right - left + 1)
+    return best
+
+resultado = longest_unique("abcabcbb")
+print(resultado)`,
+    javascript: `function longestUnique(s) {
+  var seen = {};
+  var left = 0;
+  var best = 0;
+  for (var right = 0; right < s.length; right++) {
+    while (seen[s[right]] !== undefined) {
+      delete seen[s[left]];
+      left = left + 1;
+    }
+    seen[s[right]] = right;
+    best = Math.max(best, right - left + 1);
+  }
+  return best;
+}
+
+var resultado = longestUnique("abcabcbb");
+console.log(resultado);`,
+    string: {
+      stringVar: "s",
+      pointerVars: ["left", "right"],
+      window: { left: "left", right: "right" },
+      mapVar: "seen",
+      mapLabel: "char → último índice",
+      scalarVars: ["best"],
+    },
+  },
+
+  "valid-palindrome": {
+    python: `def is_palindrome(s):
+    left = 0
+    right = len(s) - 1
+    while left < right:
+        if s[left] != s[right]:
+            return False
+        left = left + 1
+        right = right - 1
+    return True
+
+resultado = is_palindrome("racecar")
+print(resultado)`,
+    javascript: `function isPalindrome(s) {
+  var left = 0;
+  var right = s.length - 1;
+  while (left < right) {
+    if (s[left] !== s[right]) {
+      return false;
+    }
+    left = left + 1;
+    right = right - 1;
+  }
+  return true;
+}
+
+var resultado = isPalindrome("racecar");
+console.log(resultado);`,
+    string: {
+      stringVar: "s",
+      pointerVars: ["left", "right"],
+    },
+  },
+
+  "palindromic-substrings": {
+    python: `def count_palindromes(s):
+    total = 0
+    for center in range(len(s)):
+        # palindromo de comprimento impar (centro num char)
+        left = center
+        right = center
+        while left >= 0 and right < len(s) and s[left] == s[right]:
+            total = total + 1
+            left = left - 1
+            right = right + 1
+        # palindromo de comprimento par (centro entre dois chars)
+        left = center
+        right = center + 1
+        while left >= 0 and right < len(s) and s[left] == s[right]:
+            total = total + 1
+            left = left - 1
+            right = right + 1
+    return total
+
+resultado = count_palindromes("aaa")
+print(resultado)`,
+    javascript: `function countPalindromes(s) {
+  var total = 0;
+  for (var center = 0; center < s.length; center++) {
+    // palindromo de comprimento impar (centro num char)
+    var left = center;
+    var right = center;
+    while (left >= 0 && right < s.length && s[left] === s[right]) {
+      total = total + 1;
+      left = left - 1;
+      right = right + 1;
+    }
+    // palindromo de comprimento par (centro entre dois chars)
+    left = center;
+    right = center + 1;
+    while (left >= 0 && right < s.length && s[left] === s[right]) {
+      total = total + 1;
+      left = left - 1;
+      right = right + 1;
+    }
+  }
+  return total;
+}
+
+var resultado = countPalindromes("aaa");
+console.log(resultado);`,
+    string: {
+      stringVar: "s",
+      pointerVars: ["left", "right"],
+      scalarVars: ["center", "total"],
+    },
+  },
+
+  "valid-parentheses": {
+    python: `def is_valid(s):
+    pares = {")": "(", "]": "[", "}": "{"}
+    pilha = []
+    for i in range(len(s)):
+        c = s[i]
+        if c in pares:
+            topo = pilha.pop() if pilha else "#"
+            if topo != pares[c]:
+                return False
+        else:
+            pilha.append(c)
+    return len(pilha) == 0
+
+resultado = is_valid("([]{})")
+print(resultado)`,
+    javascript: `function isValid(s) {
+  var pares = { ")": "(", "]": "[", "}": "{" };
+  var pilha = [];
+  for (var i = 0; i < s.length; i++) {
+    var c = s[i];
+    if (pares[c] !== undefined) {
+      var topo = pilha.length > 0 ? pilha.pop() : "#";
+      if (topo !== pares[c]) {
+        return false;
+      }
+    } else {
+      pilha.push(c);
+    }
+  }
+  return pilha.length === 0;
+}
+
+var resultado = isValid("([]{})");
+console.log(resultado);`,
+    string: {
+      stringVar: "s",
+      pointerVars: ["i"],
+      scalarVars: ["c"],
+      stackVar: "pilha",
     },
   },
 };

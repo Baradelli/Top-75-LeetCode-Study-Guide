@@ -1,0 +1,112 @@
+# Reconhecendo problemas de string
+
+> Boa notícia: você já sabe metade desta seção. Uma string é um **array de
+> caracteres** — então two pointers, sliding window e hash map (que você
+> dominou na seção Array) reaparecem aqui. Esta seção adiciona o que é
+> genuinamente novo das strings.
+
+## String é um array de caracteres
+
+`"abc"` é, na prática, `['a', 'b', 'c']` com índices `0, 1, 2`. Acessar
+`s[i]` é O(1), percorrer a string é O(n), e os padrões de array funcionam
+quase iguais. Por isso String vem **logo depois** de Array no curso: é o lugar
+perfeito para consolidar aqueles padrões num contexto novo antes de partir
+para estruturas mais complexas.
+
+Há só uma diferença técnica que vale registrar agora: em muitas linguagens
+(incluindo Python e JavaScript) **strings são imutáveis**. Você não troca um
+caractere no lugar — cria uma string nova. Montar uma string concatenando
+dentro de um loop pode esconder um custo O(n²); quando precisar construir uma
+saída grande, acumule numa lista e junte no final.
+
+## O que se reaproveita do Array
+
+| Padrão do Array | Como aparece em String |
+| --- | --- |
+| Hash map ("já vi?") | **contagem de caracteres** — a assinatura de frequência |
+| Sliding window | **substring** que cresce/encolhe, com um mapa de contagens como estado |
+| Two pointers | varrer a string das **duas pontas** (palíndromos) |
+
+## O que é novo nesta seção
+
+| Ferramenta nova | Para quê |
+| --- | --- |
+| **Mapa de frequência** | identidade de uma string ignorando a ordem (anagramas) |
+| **Expandir do centro** | achar palíndromos crescendo a partir de cada centro |
+| **Pilha** | casar aberturas/fechamentos, resolver o "mais aninhado" primeiro |
+| **Codificação** | serializar dados em texto sem ambiguidade |
+
+## O método continua o mesmo
+
+O roteiro da seção Array vale igualzinho aqui: **resolver no braço → força
+bruta → achar o desperdício → conferir os limites**. Só muda o repertório de
+padrões que você considera no passo do desperdício.
+
+Um detalhe específico de strings vale ouro no passo "força bruta": gerar
+**todas as substrings** de uma string custa O(n²) (há n² delas), e avaliar
+cada uma pode somar mais um fator. Boa parte desta seção é justamente sobre
+não cair nesse O(n²)/O(n³) ingênuo.
+
+## Os 10 problemas da seção
+
+Usaremos estes problemas do Top 75 como **exemplos** dos padrões:
+
+- Valid Anagram e Group Anagrams → *contagem de caracteres*
+- Longest Substring Without Repeating, Longest Repeating Character
+  Replacement, Minimum Window Substring → *sliding window com frequência*
+- Valid Palindrome, Longest Palindromic Substring, Palindromic Substrings →
+  *two pointers e expandir do centro*
+- Valid Parentheses → *pilha*
+- Encode and Decode Strings → *codificação / design*
+
+<Quiz
+  title="Quiz de fixação"
+  questions={[
+    {
+      question:
+        "Por que os padrões da seção Array (two pointers, sliding window, hash map) reaparecem em String?",
+      options: [
+        "Coincidência — são problemas diferentes",
+        "Porque uma string é um array de caracteres: os mesmos índices, o mesmo acesso O(1), os mesmos padrões",
+        "Porque strings são sempre ordenadas",
+        "Porque o LeetCode repete problemas de propósito",
+      ],
+      answer: 1,
+      explanation:
+        "String = array de chars. Tudo que você aprendeu a fazer com índices e janelas em arrays vale aqui; muda só o tipo do elemento e algumas ferramentas novas (frequência, pilha, expandir do centro).",
+    },
+    {
+      question:
+        "Gerar e avaliar todas as substrings de uma string de tamanho n custa, no mínimo:",
+      options: ["O(n)", "O(n log n)", "O(n²) (há n² substrings)", "O(1)"],
+      answer: 2,
+      explanation:
+        "Há cerca de n²/2 substrings (escolha início e fim). Só enumerá-las já é O(n²) — e avaliar cada uma pode adicionar outro fator. Os padrões da seção existem para evitar essa força bruta.",
+    },
+    {
+      question:
+        "Por que concatenar caracteres numa string dentro de um loop pode ser uma armadilha de desempenho?",
+      options: [
+        "Porque strings não aceitam concatenação",
+        "Porque strings são imutáveis: cada concatenação pode criar uma cópia nova, levando a O(n²) escondido",
+        "Porque o resultado fica errado",
+        "Não é armadilha, é O(1)",
+      ],
+      answer: 1,
+      explanation:
+        "Strings imutáveis fazem cada `s += c` potencialmente copiar tudo. Para construir saídas grandes, acumule numa lista e junte uma vez no final (join).",
+    },
+  ]}
+/>
+
+## Resumo
+
+- String é array de caracteres: índices, acesso O(1), e os padrões de array
+  valem aqui.
+- Novidades da seção: contagem de frequência, expandir do centro, pilha,
+  codificação.
+- Cuidado com o O(n²) das "todas as substrings" e com o O(n²) escondido da
+  concatenação em loop.
+
+Próxima aula: a ferramenta que dá a uma string sua **identidade sem ordem** —
+a contagem de caracteres, e os anagramas.

@@ -1,0 +1,203 @@
+# Padrão 3: Two Pointers e expandir do centro
+
+> Palíndromo é uma palavra que se lê igual de trás para frente: `arara`,
+> `racecar`. Dois ponteiros **convergindo das pontas** verificam um palíndromo;
+> dois ponteiros **divergindo de um centro** encontram todos eles.
+
+## A teoria 1: verificar com ponteiros convergentes
+
+A definição de palíndromo é simétrica: o 1º char tem que ser igual ao último,
+o 2º ao penúltimo, e assim por diante até o meio. Isso é literalmente o two
+pointers da seção Array, em uma string:
+
+```text
+left = 0; right = n - 1
+enquanto left < right:
+    se s[left] != s[right]: não é palíndromo
+    left += 1; right -= 1
+é palíndromo
+```
+
+Por que parar no meio (`left < right`)? Porque ao se cruzarem, todos os pares
+simétricos já foram conferidos — continuar só repetiria as comparações.
+**O(n)** de tempo (cada char é visitado uma vez), **O(1)** de espaço.
+
+## Exemplo 1 — Valid Palindrome
+
+*"A string é um palíndromo, considerando só letras/dígitos e ignorando
+maiúsculas?"* Ex.: `"A man, a plan, a canal: Panama"` → verdadeiro.
+
+A lógica de palíndromo é a mesma; o tempero é **pular o que não conta**.
+Em vez de limpar a string antes (gastando O(n) de memória), os dois ponteiros
+simplesmente saltam caracteres não alfanuméricos enquanto convergem —
+mantendo o espaço O(1).
+
+Veja os ponteiros convergindo numa string já limpa (foco no padrão):
+
+<TraceDemo id="valid-palindrome" />
+
+<CodeRunner
+  python={`def is_palindrome(s):
+    def ok(c):
+        return c.isalnum()
+    left = 0
+    right = len(s) - 1
+    while left < right:
+        while left < right and not ok(s[left]):
+            left = left + 1
+        while left < right and not ok(s[right]):
+            right = right - 1
+        if s[left].lower() != s[right].lower():
+            return False
+        left = left + 1
+        right = right - 1
+    return True
+
+print(is_palindrome("A man, a plan, a canal: Panama"))  # True
+print(is_palindrome("race a car"))                       # False`}
+  javascript={`function isPalindrome(s) {
+  function ok(c) {
+    return /[a-z0-9]/i.test(c);
+  }
+  var left = 0;
+  var right = s.length - 1;
+  while (left < right) {
+    while (left < right && !ok(s[left])) left = left + 1;
+    while (left < right && !ok(s[right])) right = right - 1;
+    if (s[left].toLowerCase() !== s[right].toLowerCase()) {
+      return false;
+    }
+    left = left + 1;
+    right = right - 1;
+  }
+  return true;
+}
+
+console.log(isPalindrome("A man, a plan, a canal: Panama")); // true
+console.log(isPalindrome("race a car"));                     // false`}
+/>
+
+Mesmo com os `while` internos pulando caracteres, cada ponteiro percorre a
+string **uma vez** no total — **O(n)**, espaço **O(1)** (limpar a string
+antes custaria O(n) de memória).
+
+## A teoria 2: encontrar palíndromos expandindo do centro
+
+Agora o problema inverso: *quantos / qual o maior* palíndromo dentro de uma
+string. A força bruta testa todas as substrings e verifica cada uma —
+O(n²) substrings × O(n) verificação = **O(n³)**.
+
+O desperdício: cada verificação recomeça do zero, ignorando que palíndromos
+têm estrutura. A sacada: **todo palíndromo tem um centro**, e cresce
+simetricamente a partir dele. Então, em vez de testar substrings, escolha cada
+centro possível e **expanda dois ponteiros para fora** enquanto os lados
+baterem:
+
+```text
+para cada centro:
+    left, right = centro
+    enquanto dentro dos limites e s[left] == s[right]:
+        achei um palíndromo!
+        left -= 1; right += 1
+```
+
+Detalhe essencial: existem **dois tipos de centro**. Palíndromos de
+comprimento ímpar têm centro num caractere (`aba`, centro `b`); os de
+comprimento par têm centro **entre dois caracteres** (`abba`, centro entre os
+dois `b`). Por isso expandimos duas vezes a partir de cada posição.
+
+## Exemplo 2 — Palindromic Substrings
+
+*"Quantas substrings palindrômicas existem?"* (`"aaa"` → 6: três `a`, dois
+`aa`, um `aaa`). Cada expansão bem-sucedida **é** um palíndromo — então basta
+contar:
+
+<TraceDemo id="palindromic-substrings" />
+
+### Por que é O(n²)?
+
+São `n` posições de centro (na verdade ~2n, contando ímpar e par), e cada
+expansão custa no máximo O(n). Centros × expansão = **O(n²)** de tempo, com
+espaço **O(1)**. Saímos do O(n³) da força bruta para O(n² eliminando o
+desperdício da re-verificação — e O(n²) é o esperado para "examinar
+palíndromos", já que a resposta pode ter tamanho O(n²).
+
+## Exemplo 3 — Longest Palindromic Substring
+
+Mesmíssima técnica: expanda de cada centro e, em vez de contar, **guarde o
+maior palíndromo** encontrado (suas posições de início/fim). Trocar "contar"
+por "registrar o máximo" é a única diferença — de novo, o padrão é o mesmo,
+muda o que você colhe. O(n²) tempo, O(1) espaço.
+
+> Existe o algoritmo de Manacher, que resolve em O(n). Ele é engenhoso e
+> raramente exigido — expandir do centro (O(n²)) passa na grande maioria dos
+> casos e é o que você deve dominar primeiro.
+
+<Quiz
+  title="Quiz de fixação"
+  questions={[
+    {
+      question:
+        "Por que verificar um palíndromo com two pointers para quando left e right se cruzam (left < right)?",
+      options: [
+        "Por economia de código",
+        "Porque ao se cruzarem todos os pares simétricos já foram comparados; continuar repetiria comparações",
+        "Porque o meio nunca importa",
+        "Para evitar erro de índice",
+      ],
+      answer: 1,
+      explanation:
+        "Palíndromo é simétrico: comparar (0, n−1), (1, n−2)... cobre tudo no meio do caminho. Depois do cruzamento, as comparações se repetiriam invertidas.",
+    },
+    {
+      question:
+        "No Valid Palindrome com pontuação, por que pular caracteres com os próprios ponteiros (em vez de limpar a string antes) é vantajoso?",
+      options: [
+        "É mais fácil de ler",
+        "Mantém o espaço O(1) — limpar a string criaria uma cópia O(n); cada ponteiro ainda percorre a string só uma vez",
+        "Fica mais rápido que O(n)",
+        "Não há vantagem",
+      ],
+      answer: 1,
+      explanation:
+        "Pular in-place evita a cópia. O tempo segue O(n) (cada char visitado uma vez no total) e o espaço cai de O(n) para O(1).",
+    },
+    {
+      question:
+        "Por que 'expandir do centro' precisa considerar dois tipos de centro?",
+      options: [
+        "Por segurança",
+        "Porque palíndromos de comprimento ímpar têm centro num caractere e os de comprimento par têm centro entre dois caracteres",
+        "Para contar mais rápido",
+        "Porque strings podem ser vazias",
+      ],
+      answer: 1,
+      explanation:
+        "'aba' (ímpar) centra no 'b'; 'abba' (par) centra entre os dois 'b'. Sem expandir os dois casos a partir de cada posição, você perderia metade dos palíndromos.",
+    },
+    {
+      question:
+        "Expandir do centro é O(n²). Como esse mesmo código serve tanto para CONTAR palíndromos quanto para achar o MAIOR?",
+      options: [
+        "São algoritmos totalmente diferentes",
+        "A expansão é idêntica; muda só o que você faz a cada palíndromo achado — incrementar um contador ou comparar/registrar o maior",
+        "O maior exige ordenar",
+        "Contar é O(n) e o maior é O(n²)",
+      ],
+      answer: 1,
+      explanation:
+        "O padrão é 'expandir de cada centro'. Contar (+1) ou guardar o máximo (comparar tamanhos) são só a colheita. Dominar o padrão > decorar cada variante.",
+    },
+  ]}
+/>
+
+## Resumo
+
+- Verificar palíndromo: **two pointers convergentes**, O(n)/O(1); pule chars
+  irrelevantes com os próprios ponteiros para manter O(1).
+- Encontrar palíndromos: **expandir do centro**, considerando centro ímpar e
+  par — O(n²)/O(1), bem melhor que o O(n³) ingênuo.
+- Contar ou achar o maior usam a mesma expansão; muda só o que se colhe.
+
+Próxima aula: a estrutura que resolve aninhamento e casamento de símbolos —
+a **pilha**.
