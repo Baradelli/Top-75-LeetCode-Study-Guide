@@ -79,7 +79,7 @@ export const SECTIONS: Section[] = [
       "Dummy node",
       "Ciclo (Floyd)",
     ],
-    status: "soon",
+    status: "available",
   },
   {
     slug: "matrix",
@@ -308,6 +308,50 @@ export const LESSONS: Record<string, Lesson[]> = {
       title: "Síntese: qual padrão usar?",
       description:
         "A árvore de decisão da seção Binary e o quiz geral antes da prova final.",
+    },
+  ],
+  "linked-list": [
+    {
+      slug: "01-introducao",
+      title: "Reconhecendo problemas de lista ligada",
+      description:
+        "O que é uma lista ligada, o nó ListNode, e por que ponteiros mudam a forma de pensar.",
+    },
+    {
+      slug: "02-dummy-node",
+      title: "Padrão 1: Dummy node e dois ponteiros",
+      description:
+        "O nó sentinela que simplifica casos de borda e o truque do intervalo fixo entre ponteiros.",
+    },
+    {
+      slug: "03-reversao",
+      title: "Padrão 2: Reversão in-place",
+      description:
+        "Inverter os ponteiros de uma lista com três variáveis e O(1) de espaço.",
+    },
+    {
+      slug: "04-lento-rapido",
+      title: "Padrão 3: Ponteiros lento e rápido",
+      description:
+        "Dois ponteiros em velocidades diferentes: meio da lista e detecção de ciclo (Floyd).",
+    },
+    {
+      slug: "05-merge",
+      title: "Padrão 4: Merge de listas ordenadas",
+      description:
+        "Costurar duas listas ordenadas em uma, com um nó dummy guiando.",
+    },
+    {
+      slug: "06-combinando",
+      title: "Padrão 5: Combinando os padrões",
+      description:
+        "Problemas difíceis (como reordenar a lista) que encaixam meio + reversão + merge.",
+    },
+    {
+      slug: "07-sintese",
+      title: "Síntese: qual padrão usar?",
+      description:
+        "A árvore de decisão da seção Lista Ligada e o quiz geral antes da prova final.",
     },
   ],
 };

@@ -1,0 +1,170 @@
+# Síntese: qual padrão usar?
+
+> Cinco padrões de lista ligada cobertos. Hora de treinar o reflexo: ler um
+> enunciado e saber qual ferramenta (ou combinação) sacar — com justificativa.
+
+## A árvore de decisão da seção
+
+```text
+1. A operação pode mexer na CABEÇA (remover/inserir no início, merge)?
+   → use um DUMMY NODE para evitar casos especiais
+
+2. Preciso de algo "a N nós do fim" ou do MEIO da lista?
+   ├── "n-ésimo a partir do fim"   → DOIS PONTEIROS com gap fixo de n
+   └── "meio da lista"             → LENTO/RÁPIDO (fast +2, slow +1)
+
+3. A pergunta é sobre CICLO (a lista se fecha)?
+   → FLOYD (lento/rápido): se a lebre alcança a tartaruga, há ciclo
+
+4. Preciso INVERTER a ordem (toda a lista ou um trecho)?
+   → REVERSÃO IN-PLACE (três ponteiros: prev, curr, próximo)
+
+5. Juntar duas listas ORDENADAS?
+   → MERGE com dummy (costura a menor cabeça de cada vez)
+
+6. Parece difícil / faz várias coisas?
+   → DECOMPOR em peças acima (meio + reversão + merge...)
+```
+
+E os reflexos que valem para a seção inteira: **guarde `curr.next` antes de
+sobrescrevê-lo** (ou perde o resto), e **use um dummy** sempre que a cabeça
+puder mudar.
+
+## O mapa completo da seção
+
+| Padrão | Pergunta-chave | Tempo | Espaço |
+| --- | --- | --- | --- |
+| Dummy node | "a operação mexe na cabeça?" | O(n) | O(1) |
+| Dois ponteiros (gap) | "n-ésimo a partir do fim" | O(n) | O(1) |
+| Lento/rápido | "meio da lista" | O(n) | O(1) |
+| Floyd | "tem ciclo?" | O(n) | O(1) |
+| Reversão in-place | "inverter a ordem" | O(n) | O(1) |
+| Merge | "juntar duas ordenadas" | O(n+m) | O(1) |
+
+Repare na coluna de espaço: **tudo O(1)**. É a assinatura da seção — listas
+ligadas premiam quem manipula ponteiros em vez de copiar para arrays. Quando
+uma solução sua usar O(n) de memória, pergunte se dá para fazer só religando.
+
+## Quiz da seção
+
+Enunciados que você **não viu** nas aulas. Identifique o padrão (ou a
+combinação) e o porquê. 7+ acertos: pronto para a prova.
+
+<Quiz
+  title="Quiz da seção: Lista Ligada"
+  questions={[
+    {
+      question:
+        "'Verifique se uma lista ligada é um palíndromo, usando O(1) de espaço.' Qual combinação?",
+      options: [
+        "Merge + dummy",
+        "Lento/rápido (achar o meio) + reversão da segunda metade + comparar as duas metades nó a nó",
+        "Só reversão",
+        "Floyd",
+      ],
+      answer: 1,
+      explanation:
+        "Sem memória extra, você acha o meio, reverte a segunda metade e compara com a primeira. É a decomposição em padrões conhecidos — a marca dos problemas difíceis da seção.",
+    },
+    {
+      question:
+        "'Encontre o nó onde duas listas se cruzam (intersecção).' Que ferramenta da seção ajuda?",
+      options: [
+        "Reversão",
+        "Dois ponteiros caminhando (um em cada lista, trocando de lista ao chegar ao fim) até se encontrarem no nó de interseção",
+        "Merge",
+        "Dummy node",
+      ],
+      answer: 1,
+      explanation:
+        "É uma variação de dois ponteiros: ao alinhar os caminhos percorridos (trocando de lista no fim), os ponteiros chegam juntos ao ponto de interseção. O(n+m), O(1).",
+    },
+    {
+      question:
+        "'Remova todos os nós com um valor específico, inclusive se for a cabeça.' Por que usar dummy?",
+      options: [
+        "Para contar os nós",
+        "Porque o nó a remover pode ser a cabeça (ou vários no início); o dummy dá um anterior à cabeça e elimina o caso especial",
+        "Para ordenar",
+        "Para detectar ciclo",
+      ],
+      answer: 1,
+      explanation:
+        "Sem dummy, remover a cabeça (ou uma sequência de cabeças com o valor) exige código separado. Com dummy, todo nó tem anterior e a lógica de remoção é uniforme.",
+    },
+    {
+      question:
+        "'Detecte se há ciclo e, se houver, retorne o nó onde ele começa.' Qual padrão é a base?",
+      options: [
+        "Merge",
+        "Floyd (lento/rápido): primeiro detecta o encontro; depois, um segundo passo com ponteiros acha o início do ciclo",
+        "Reversão",
+        "Busca binária",
+      ],
+      answer: 1,
+      explanation:
+        "A detecção é o Floyd da aula 4. Achar o início é uma extensão (mover um ponteiro de volta à cabeça e andar os dois em passo 1 até se encontrarem) — tudo O(1) de espaço.",
+    },
+    {
+      question:
+        "'Some dois números representados por listas ligadas (um dígito por nó).' Qual ferramenta evita tratar a cabeça à parte?",
+      options: [
+        "Floyd",
+        "Dummy node para a lista-resultado, costurando cada dígito da soma (com o vai-um) à cauda",
+        "Reversão obrigatória",
+        "Lento/rápido",
+      ],
+      answer: 1,
+      explanation:
+        "Construir uma lista nova nó a nó é o caso clássico do dummy: a cauda pendura cada dígito calculado, e retorna-se dummy.next, sem if especial para o primeiro.",
+    },
+    {
+      question:
+        "'Ordene uma lista ligada em O(n log n) e O(1) de espaço extra.' Que padrões compõem o merge sort em lista?",
+      options: [
+        "Floyd + dummy",
+        "Lento/rápido (dividir no meio) + merge de duas listas ordenadas + recursão",
+        "Só reversão",
+        "Só merge",
+      ],
+      answer: 1,
+      explanation:
+        "Merge sort em lista: divida ao meio (lento/rápido), ordene cada metade recursivamente, e junte com o merge. As peças das aulas 4 e 5, recombinadas.",
+    },
+    {
+      question:
+        "Qual a ideia-mãe que une TODA a seção de lista ligada?",
+      options: [
+        "Copiar para arrays",
+        "Manipular ponteiros (caminhar e religar next) em vez de mover dados — o que dá O(1) de espaço e operações de religação O(1)",
+        "Ordenar primeiro",
+        "Usar recursão sempre",
+      ],
+      answer: 1,
+      explanation:
+        "Listas ligadas premiam quem pensa em ponteiros: religar um next é O(1), e quase tudo se resolve sem memória extra. Por isso a coluna de espaço da seção é toda O(1).",
+    },
+    {
+      question:
+        "Qual erro de implementação é o mais comum em reversão/reordenação de listas?",
+      options: [
+        "Usar variáveis demais",
+        "Sobrescrever curr.next sem guardar o próximo antes — perdendo o acesso ao resto da lista",
+        "Começar prev em None",
+        "Usar um dummy",
+      ],
+      answer: 1,
+      explanation:
+        "O next é o único elo para o resto da lista. Religá-lo sem salvar o destino primeiro é o bug clássico — por isso o 'seguinte = curr.next' vem sempre antes.",
+    },
+  ]}
+/>
+
+## Pronto para a prova?
+
+A prova final da seção Lista Ligada tem **três problemas inéditos** — fácil,
+médio e difícil — com casos ocultos. O difícil (reverter em grupos de k)
+combina a reversão in-place com contagem de grupos: exatamente o tipo de
+decomposição da aula anterior. As cinco aulas cobrem tudo que você precisa.
+
+**Boa prova!** Volte para a página da seção e clique em "Prova final".

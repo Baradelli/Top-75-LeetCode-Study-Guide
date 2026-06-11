@@ -1,6 +1,6 @@
 # Plano — Curso Interativo de LeetCode e Algoritmos
 
-> Status: "Comece aqui" + Fundamentos + Array + String + Binary completas (attempt-first). Binary trouxe o aprofundamento de Big-O (O(log n) justificado) e visualizador de bits. Próxima seção de conteúdo: Linked List. Última atualização: 2026-06-10.
+> Status: "Comece aqui" + Fundamentos + Array + String + Binary + Linked List completas (attempt-first). Linked List trouxe o LinkedListVisualizer e suporte a ListNode no LocalJudge (conversão array↔lista). Próxima seção de conteúdo: Matrix. Última atualização: 2026-06-10.
 
 ## 1. Visão
 

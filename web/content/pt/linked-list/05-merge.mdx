@@ -1,0 +1,192 @@
+# Padrão 4: Merge de listas ordenadas
+
+> Juntar duas listas **ordenadas** numa só, também ordenada, é uma operação
+> fundamental — e a peça central do merge sort. Em listas ligadas ela é
+> especialmente elegante: você não copia nada, só **costura os ponteiros**.
+
+<Challenge id="merge-two-lists" />
+
+> Tentou? Dá para jogar tudo num array, ordenar e reconstruir — mas isso ignora
+> que as listas **já estão ordenadas** e gasta memória. A teoria abaixo costura
+> as duas em uma passada, com O(1) de espaço.
+
+## A teoria: costurar com um dummy guiando
+
+Como as duas listas já estão ordenadas, o menor próximo elemento do resultado
+é sempre a **cabeça de uma das duas**. Então o algoritmo é: compare as cabeças,
+pegue a menor, avance aquela lista, repita.
+
+O ponto delicado é montar o resultado sem casos especiais para o primeiro nó —
+e aqui o **dummy node** (aula 2) brilha de novo:
+
+```text
+dummy → (vazio)
+cauda = dummy
+enquanto l1 e l2 existem:
+    se l1.val <= l2.val: cauda.next = l1; avança l1
+    senão:               cauda.next = l2; avança l2
+    avança cauda
+cauda.next = o que sobrou (l1 ou l2)   ← uma das listas acaba antes
+retorna dummy.next
+```
+
+O `dummy` segura o início; a `cauda` é onde você vai "pendurando" o próximo
+menor nó. No fim, uma das listas esvazia e a outra (cujo resto **já está
+ordenado**) é anexada de uma vez.
+
+<CodeRunner
+  python={`class ListNode:
+    def __init__(self, val=0, next=None):
+        self.val = val
+        self.next = next
+
+def merge_two_lists(l1, l2):
+    dummy = ListNode(0)
+    cauda = dummy
+    while l1 and l2:
+        if l1.val <= l2.val:
+            cauda.next = l1
+            l1 = l1.next
+        else:
+            cauda.next = l2
+            l2 = l2.next
+        cauda = cauda.next
+    cauda.next = l1 if l1 else l2   # anexa o resto (já ordenado)
+    return dummy.next
+
+def build(arr):
+    d = ListNode(0); c = d
+    for x in arr:
+        c.next = ListNode(x); c = c.next
+    return d.next
+def to_list(h):
+    r = []
+    while h: r.append(h.val); h = h.next
+    return r
+
+print(to_list(merge_two_lists(build([1,2,4]), build([1,3,4]))))  # [1,1,2,3,4,4]
+print(to_list(merge_two_lists(build([]), build([0]))))           # [0]`}
+  javascript={`function ListNode(val, next) {
+  this.val = val;
+  this.next = next || null;
+}
+function mergeTwoLists(l1, l2) {
+  var dummy = new ListNode(0);
+  var cauda = dummy;
+  while (l1 && l2) {
+    if (l1.val <= l2.val) {
+      cauda.next = l1;
+      l1 = l1.next;
+    } else {
+      cauda.next = l2;
+      l2 = l2.next;
+    }
+    cauda = cauda.next;
+  }
+  cauda.next = l1 ? l1 : l2;   // anexa o resto (já ordenado)
+  return dummy.next;
+}
+
+function build(arr) {
+  var d = new ListNode(0), c = d;
+  for (var i = 0; i < arr.length; i++) { c.next = new ListNode(arr[i]); c = c.next; }
+  return d.next;
+}
+function toList(h) {
+  var r = [];
+  while (h) { r.push(h.val); h = h.next; }
+  return r;
+}
+
+console.log(toList(mergeTwoLists(build([1,2,4]), build([1,3,4])))); // [1,1,2,3,4,4]
+console.log(toList(mergeTwoLists(build([]), build([0]))));          // [0]`}
+/>
+
+### Por que é O(n + m) tempo e O(1) espaço?
+
+Cada nó das duas listas é visitado **uma vez** ao ser costurado no resultado —
+total O(n + m), onde n e m são os tamanhos. Não criamos nós novos nem arrays:
+apenas religamos os `next` dos nós que já existem, com um dummy e um ponteiro
+de cauda → **O(1) de espaço**. (Note que `<=`, em vez de `<`, mantém a ordem
+relativa de valores iguais — uma propriedade "estável", útil quando importa.)
+
+## Subindo de nível: Merge k Sorted Lists
+
+E se forem **k** listas ordenadas para juntar? Duas estratégias famosas, ambas
+usando o merge de duas como peça:
+
+- **Merge em par, em torneio:** junte as listas duas a duas, depois os
+  resultados duas a duas, e assim por diante (como um campeonato mata-mata).
+  São log k "rodadas", cada uma processando todos os N elementos →
+  **O(N log k)**.
+- **Min-heap:** mantenha as k cabeças num heap e retire sempre a menor — você
+  vai ver isso na seção **Heap**, onde este problema reaparece.
+
+O recado: o merge de duas listas não é só um exercício — é um **bloco de
+construção** que escala para problemas bem maiores.
+
+<Quiz
+  title="Quiz de fixação"
+  questions={[
+    {
+      question:
+        "Por que o merge de duas listas ordenadas não precisa de um passo de ordenação?",
+      options: [
+        "Porque ordena no final",
+        "Porque, como as duas já estão ordenadas, o próximo menor elemento é sempre a cabeça de uma das duas — basta comparar as cabeças",
+        "Porque usa um heap",
+        "Porque copia para um array",
+      ],
+      answer: 1,
+      explanation:
+        "A ordenação prévia é a hipótese que torna tudo O(n+m): nunca é preciso olhar além das duas cabeças para saber qual é o próximo menor.",
+    },
+    {
+      question: "Qual o papel do nó dummy no merge?",
+      options: [
+        "Contar os elementos",
+        "Servir de início fixo do resultado, evitando casos especiais para o primeiro nó; retorna-se dummy.next",
+        "Detectar ciclos",
+        "Ordenar as listas",
+      ],
+      answer: 1,
+      explanation:
+        "Sem o dummy, você precisaria de um if especial para escolher a primeira cabeça. Com ele, a 'cauda' sempre tem onde pendurar o próximo nó, e dummy.next é o resultado.",
+    },
+    {
+      question:
+        "Depois que uma das listas esvazia, por que basta fazer cauda.next = (a outra)?",
+      options: [
+        "Porque a outra está vazia também",
+        "Porque o resto da lista não esvaziada já está ordenado e é maior ou igual a tudo que já foi costurado — pode ser anexado inteiro",
+        "Porque precisa reordenar",
+        "Porque o dummy exige isso",
+      ],
+      answer: 1,
+      explanation:
+        "Cada lista é ordenada internamente. Quando uma acaba, o que sobra na outra é o maior trecho restante e já está em ordem — anexar de uma vez mantém o resultado ordenado.",
+    },
+    {
+      question: "Qual a complexidade de juntar k listas com a estratégia de torneio (par a par)?",
+      options: [
+        "O(N · k)",
+        "O(N log k), onde N é o total de elementos — log k rodadas, cada uma processando N elementos",
+        "O(k²)",
+        "O(N)",
+      ],
+      answer: 1,
+      explanation:
+        "Juntar par a par reduz o número de listas pela metade a cada rodada (log k rodadas); cada rodada toca todos os N elementos. Daí O(N log k) — bem melhor que juntar uma a uma (O(N·k)).",
+    },
+  ]}
+/>
+
+## Resumo
+
+- **Merge de duas listas ordenadas**: compare as cabeças, costure a menor,
+  avance; um **dummy** guia e o resto é anexado no fim.
+- O(n + m) tempo, **O(1) espaço** — só religa ponteiros, não copia.
+- É bloco de construção do **merge k listas** (torneio O(N log k) ou heap).
+
+Próxima aula: juntar tudo — problemas difíceis que **combinam** meio, reversão
+e merge.

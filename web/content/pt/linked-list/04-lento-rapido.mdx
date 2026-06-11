@@ -1,0 +1,188 @@
+# Padrão 3: Ponteiros lento e rápido
+
+> Dois ponteiros que andam pela lista em **velocidades diferentes** revelam
+> coisas surpreendentes: o meio da lista numa passada só, e se existe um
+> **ciclo** — sem usar nenhuma memória extra.
+
+<Challenge id="middle-of-list" />
+
+> Tentou? Dá para contar o tamanho e andar metade — duas passadas. A teoria
+> abaixo faz numa passada só, com uma ideia que rende muito mais que achar o
+> meio.
+
+## A teoria: velocidades diferentes
+
+A ideia (também chamada "tartaruga e lebre"): dois ponteiros partem da cabeça,
+mas `fast` anda **dois** nós por vez enquanto `slow` anda **um**.
+
+```text
+slow: +1 por passo
+fast: +2 por passo
+```
+
+Como `fast` cobre o dobro do caminho, quando ele chega ao **fim**, `slow`
+cobriu exatamente **metade** — ou seja, está no **meio**. Uma passada, sem
+contar nada antes:
+
+<TraceDemo id="fast-slow-middle" />
+
+(Com número par de nós, este código devolve o **segundo** dos dois nós do
+meio — combine a condição do laço conforme o enunciado pedir o primeiro ou o
+segundo.)
+
+### Por que é O(n) tempo e O(1) espaço?
+
+`fast` percorre a lista uma vez (em passos de 2), então o laço roda ~n/2 vezes,
+cada uma O(1) → **O(n) de tempo**. Dois ponteiros, nenhuma estrutura extra →
+**O(1) de espaço**. A alternativa "contar e andar metade" é O(n) também, mas
+faz **duas** passadas.
+
+## O grande truque: detecção de ciclo (Floyd)
+
+E se a lista tiver um **ciclo** (algum `next` aponta para um nó anterior)? Um
+laço `while curr` percorreria para sempre. Como detectar sem marcar nós nem
+usar um conjunto (que custaria O(n) de memória)?
+
+A sacada de **Floyd**: solte a tartaruga (`slow`, +1) e a lebre (`fast`, +2)
+na pista. Se a pista é uma **reta** (sem ciclo), a lebre chega ao fim (`None`)
+e acabou. Se a pista é **circular**, a lebre dá voltas e, cedo ou tarde,
+**alcança a tartaruga por trás** — porque a cada passo a distância entre elas
+diminui de 1. Se `fast == slow` em algum momento, há um ciclo.
+
+<CodeRunner
+  python={`class ListNode:
+    def __init__(self, val=0, next=None):
+        self.val = val
+        self.next = next
+
+def has_cycle(head):
+    slow = head
+    fast = head
+    while fast and fast.next:
+        slow = slow.next        # +1
+        fast = fast.next.next   # +2
+        if slow is fast:        # a lebre alcançou a tartaruga
+            return True
+    return False                # fast chegou ao fim: sem ciclo
+
+# monta 3 -> 2 -> 0 -> -4 -> (volta para o nó de valor 2): tem ciclo
+a = ListNode(3); b = ListNode(2); c = ListNode(0); d = ListNode(-4)
+a.next = b; b.next = c; c.next = d; d.next = b   # ciclo!
+print(has_cycle(a))    # True
+
+# lista reta 1 -> 2 -> 3: sem ciclo
+x = ListNode(1); y = ListNode(2); z = ListNode(3)
+x.next = y; y.next = z
+print(has_cycle(x))    # False`}
+  javascript={`function ListNode(val, next) {
+  this.val = val;
+  this.next = next || null;
+}
+function hasCycle(head) {
+  var slow = head;
+  var fast = head;
+  while (fast && fast.next) {
+    slow = slow.next;        // +1
+    fast = fast.next.next;   // +2
+    if (slow === fast) {     // a lebre alcançou a tartaruga
+      return true;
+    }
+  }
+  return false;              // fast chegou ao fim: sem ciclo
+}
+
+// monta 3 -> 2 -> 0 -> -4 -> (volta ao nó de valor 2): tem ciclo
+var a = new ListNode(3), b = new ListNode(2), c = new ListNode(0), d = new ListNode(-4);
+a.next = b; b.next = c; c.next = d; d.next = b; // ciclo!
+console.log(hasCycle(a)); // true
+
+// lista reta 1 -> 2 -> 3: sem ciclo
+var x = new ListNode(1), y = new ListNode(2), z = new ListNode(3);
+x.next = y; y.next = z;
+console.log(hasCycle(x)); // false`}
+/>
+
+### Por que Floyd funciona (e é O(1) de espaço)
+
+Se há ciclo, uma vez que **as duas** estão dentro dele, a cada passo a lebre se
+aproxima da tartaruga em 1 posição (anda 2, ela anda 1). A distância só
+diminui, então em no máximo "tamanho do ciclo" passos elas se encontram. Se
+**não** há ciclo, a lebre alcança o `None` e o laço termina. Custa **O(n) de
+tempo** e **O(1) de espaço** — a alternativa óbvia (guardar nós já vistos num
+set) também é O(n) de tempo, mas gasta O(n) de memória. Floyd não gasta nenhuma.
+
+## Onde lento/rápido aparece
+
+- **Meio da lista** (e daí: dividir a lista ao meio — base do merge sort em
+  lista e do reorder).
+- **Detecção de ciclo** e, num passo extra, achar **onde** o ciclo começa.
+- **N-ésimo a partir do fim** (o gap fixo da aula anterior é um primo deste
+  padrão).
+
+<Quiz
+  title="Quiz de fixação"
+  questions={[
+    {
+      question:
+        "Por que, quando fast (passo 2) chega ao fim, slow (passo 1) está no meio?",
+      options: [
+        "Por acaso",
+        "Porque fast percorre o dobro do caminho de slow no mesmo tempo; ao fast cobrir o todo, slow cobriu a metade",
+        "Porque a lista é ordenada",
+        "Porque slow conta os nós",
+      ],
+      answer: 1,
+      explanation:
+        "É proporcional: dobro da velocidade, dobro da distância no mesmo número de passos. Fast no fim ⇒ slow na metade.",
+    },
+    {
+      question:
+        "Na detecção de ciclo de Floyd, por que slow e fast acabam se encontrando se há um ciclo?",
+      options: [
+        "Porque começam no mesmo lugar",
+        "Porque, dentro do ciclo, a cada passo a lebre se aproxima da tartaruga em 1 posição — a distância só diminui até zerar",
+        "Porque a lista é curta",
+        "Porque fast volta para o início",
+      ],
+      answer: 1,
+      explanation:
+        "Com fast +2 e slow +1, a distância entre eles cai de 1 a cada passo dentro do ciclo. Logo elas colidem em no máximo 'tamanho do ciclo' passos.",
+    },
+    {
+      question:
+        "Por que Floyd é preferível a guardar os nós visitados num conjunto (set)?",
+      options: [
+        "É mais fácil de escrever",
+        "Mesma O(n) de tempo, mas Floyd usa O(1) de espaço, enquanto o set usa O(n)",
+        "É O(log n)",
+        "O set não detecta ciclos",
+      ],
+      answer: 1,
+      explanation:
+        "Ambos detectam o ciclo em O(n) de tempo. A diferença é a memória: dois ponteiros (O(1)) contra um conjunto que pode guardar todos os nós (O(n)).",
+    },
+    {
+      question:
+        "Como detectar ciclo num laço 'while fast and fast.next' garante terminação quando NÃO há ciclo?",
+      options: [
+        "Não garante, pode travar",
+        "Sem ciclo, fast alcança o fim da lista (None); a condição do laço falha e ele termina",
+        "Porque slow para antes",
+        "Porque conta os nós",
+      ],
+      answer: 1,
+      explanation:
+        "Numa lista reta, fast (+2) chega a None rapidamente; 'fast and fast.next' vira falso e o laço encerra retornando False. O ciclo é o único jeito de fast nunca achar None.",
+    },
+  ]}
+/>
+
+## Resumo
+
+- **Lento/rápido**: fast anda 2, slow anda 1 → slow para no **meio** quando
+  fast acaba. Uma passada, O(n)/O(1).
+- **Floyd (ciclo)**: se há ciclo, a lebre alcança a tartaruga; se não, a lebre
+  acha o fim. O(n)/O(1), sem set.
+- Base para dividir a lista, achar início do ciclo e "n-ésimo do fim".
+
+Próxima aula: juntar duas listas ordenadas — **merge**.

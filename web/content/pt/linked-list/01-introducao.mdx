@@ -1,0 +1,94 @@
+# Reconhecendo problemas de lista ligada
+
+> Até aqui, seus dados moravam em **arrays** — tudo junto, com acesso
+> instantâneo por índice. A lista ligada guarda os mesmos valores de um jeito
+> diferente: nós espalhados, cada um apontando para o próximo. Isso muda o que
+> é barato e o que é caro — e abre uma família de problemas sobre **ponteiros**.
+
+> Como nas seções anteriores, cada aula de padrão abre com um **🎯 Tente
+> primeiro**. Resolva antes de ver a teoria.
+
+## O que é uma lista ligada
+
+Uma lista ligada é uma corrente de **nós**. Cada nó tem dois campos:
+
+- `val`: o valor guardado;
+- `next`: uma referência (ponteiro) para o **próximo** nó — ou `None`/`null` no
+  último, marcando o fim.
+
+Você só guarda a referência para o primeiro nó, a **cabeça** (`head`). Para
+chegar aos outros, você "caminha" pela corrente seguindo os `next`.
+
+```text
+head
+ │
+ ▼
+[1|•]──▶[2|•]──▶[3|•]──▶[4|∅]      (∅ = None/null)
+```
+
+Na maioria das linguagens isso é uma pequena classe:
+
+```python
+class ListNode:
+    def __init__(self, val=0, next=None):
+        self.val = val
+        self.next = next
+```
+
+> **No editor das aulas você usa o `ListNode` de verdade** (`node.val`,
+> `node.next`), como no LeetCode. **Nas visualizações**, para conseguir desenhar
+> a lista a cada passo, representamos os mesmos nós como dois arrays
+> (`valores` e `prox`, onde `prox[i]` é o índice do próximo). É a mesma lista —
+> `prox[i] = j` é exatamente o `nó.next = outro_nó`.
+
+## Array vs lista ligada: o que muda
+
+| Operação | Array | Lista ligada |
+| --- | --- | --- |
+| Acessar o i-ésimo elemento | **O(1)** (índice direto) | **O(n)** (caminhar até ele) |
+| Inserir/remover no início | O(n) (empurra todos) | **O(1)** (repointa) |
+| Inserir/remover no meio (com o nó em mãos) | O(n) | **O(1)** |
+| Memória contígua | sim | não (nós espalhados) |
+
+A grande diferença: na lista ligada você **não tem acesso aleatório** — não
+existe "pule direto para o índice 5". Em compensação, **religar ponteiros é
+O(1)**: inserir ou remover um nó é só mudar um `next`, sem deslocar nada. Quase
+todos os padrões da seção exploram isso.
+
+## Como pensar em problemas de lista ligada
+
+A mudança mental: você raramente trabalha com "índices"; trabalha com
+**ponteiros que caminham**. Três ideias guiam quase tudo:
+
+1. **Caminhar com um ou mais ponteiros** (`curr = curr.next`).
+2. **Religar `next`** para inserir, remover ou inverter — cuidando para não
+   "perder" o resto da lista (guarde o próximo antes de sobrescrever!).
+3. **Casos de borda**: lista vazia (`head` é None), um nó só, e operações na
+   **cabeça** (que não têm "nó anterior") — é aqui que o *dummy node* da
+   próxima aula salva.
+
+### Os sinais de "isto é lista ligada"
+
+- O enunciado fala em `head`, `ListNode`, `.next`, ou desenha nós com setas.
+- Pede para inverter, reordenar, juntar, detectar ciclo, remover nós.
+- Restrição comum: **O(1) de espaço** (sem copiar para um array) ou **uma
+  passada**.
+
+## Os problemas da seção
+
+- Reverse Linked List → *reversão in-place*
+- Middle of the List, Linked List Cycle → *ponteiros lento/rápido (Floyd)*
+- Remove Nth Node From End → *dummy node + dois ponteiros*
+- Merge Two Sorted Lists → *merge com dummy*
+- Reorder List → *combinação dos padrões*
+
+## Resumo
+
+- Lista ligada = nós com `val` e `next`; só se guarda a **cabeça**.
+- Sem acesso aleatório (O(n) para chegar a um nó), mas religar ponteiros é
+  **O(1)**.
+- Pense em **ponteiros que caminham e religam**, com cuidado nas bordas.
+- Nas visualizações, `prox[i] = j` representa `nó.next` — a mesma ideia.
+
+Próxima aula: o nó **dummy** e os **dois ponteiros**, que domam os casos de
+borda.

@@ -33,6 +33,17 @@ export interface BitVisualConfig {
   scalarVars?: string[];
 }
 
+export interface LinkedVisualConfig {
+  /** Array com os valores dos nós, na ordem de armazenamento. */
+  valuesVar: string;
+  /** Array de índices "próximo" (next); -1 representa null/None. */
+  nextVar: string;
+  /** Variáveis que são índices de nó (ponteiros: head, prev, curr...). */
+  pointerVars?: string[];
+  /** Variáveis escalares em destaque. */
+  scalarVars?: string[];
+}
+
 export interface StringVisualConfig {
   /** Variável que contém a string principal. */
   stringVar: string;
@@ -52,7 +63,8 @@ export interface StringVisualConfig {
 export type DemoDefinition =
   | { python: string; javascript: string; array: ArrayVisualConfig }
   | { python: string; javascript: string; string: StringVisualConfig }
-  | { python: string; javascript: string; bit: BitVisualConfig };
+  | { python: string; javascript: string; bit: BitVisualConfig }
+  | { python: string; javascript: string; linked: LinkedVisualConfig };
 
 export const DEMOS: Record<string, DemoDefinition> = {
   // ---------------------------------------------------------------- ARRAY ---
@@ -570,6 +582,72 @@ console.log(resultado);`,
       numberVars: ["res"],
       bitWidth: 8,
       scalarVars: ["i"],
+    },
+  },
+
+  // ----------------------------------------------------------- LINKED LIST ---
+  // Representamos a lista por dois arrays: `valores[i]` é o valor do nó i, e
+  // `prox[i]` é o índice do próximo nó (-1 = None). Assim o motor consegue
+  // serializar a lista a cada passo. No editor das aulas usamos ListNode real.
+  "reverse-list": {
+    python: `valores = [1, 2, 3, 4, 5]
+prox = [1, 2, 3, 4, -1]   # prox[i] = índice do próximo nó (-1 = None)
+
+prev = -1
+curr = 0                   # começa na cabeça (índice 0)
+while curr != -1:
+    seguinte = prox[curr]  # 1) guarda o próximo
+    prox[curr] = prev      # 2) inverte o ponteiro deste nó
+    prev = curr            # 3) avança prev
+    curr = seguinte        # 4) avança curr
+# prev é a nova cabeça
+print(valores[prev])`,
+    javascript: `var valores = [1, 2, 3, 4, 5];
+var prox = [1, 2, 3, 4, -1]; // prox[i] = índice do próximo nó (-1 = None)
+
+var prev = -1;
+var curr = 0;                // começa na cabeça (índice 0)
+while (curr !== -1) {
+  var seguinte = prox[curr]; // 1) guarda o próximo
+  prox[curr] = prev;         // 2) inverte o ponteiro deste nó
+  prev = curr;               // 3) avança prev
+  curr = seguinte;           // 4) avança curr
+}
+// prev é a nova cabeça
+console.log(valores[prev]);`,
+    linked: {
+      valuesVar: "valores",
+      nextVar: "prox",
+      pointerVars: ["prev", "curr", "seguinte"],
+    },
+  },
+
+  "fast-slow-middle": {
+    python: `valores = [1, 2, 3, 4, 5, 6]
+prox = [1, 2, 3, 4, 5, -1]
+
+slow = 0
+fast = 0
+# fast anda 2x mais rápido; quando ele chega ao fim, slow está no meio
+while fast != -1 and prox[fast] != -1:
+    slow = prox[slow]
+    fast = prox[prox[fast]]
+print(valores[slow])`,
+    javascript: `var valores = [1, 2, 3, 4, 5, 6];
+var prox = [1, 2, 3, 4, 5, -1];
+
+var slow = 0;
+var fast = 0;
+// fast anda 2x mais rápido; quando ele chega ao fim, slow está no meio
+while (fast !== -1 && prox[fast] !== -1) {
+  slow = prox[slow];
+  fast = prox[prox[fast]];
+}
+console.log(valores[slow]);`,
+    linked: {
+      valuesVar: "valores",
+      nextVar: "prox",
+      pointerVars: ["slow", "fast"],
     },
   },
 };

@@ -1,0 +1,189 @@
+# Padrão 2: Reversão in-place
+
+> Inverter uma lista ligada é o problema mais clássico da seção — e o que mais
+> aparece como peça de problemas maiores. O truque: caminhar pela lista
+> **virando cada ponteiro para trás**, com cuidado para não perder o resto.
+
+<Challenge id="reverse-list" />
+
+> Tentou? Uma saída é copiar os valores para um array, inverter e reconstruir —
+> mas isso gasta O(n) de memória. A teoria abaixo inverte **no lugar**, com
+> O(1) de espaço, só repointando os `next`.
+
+## A teoria: virar os ponteiros, um a um
+
+Inverter a lista significa que cada `next`, que apontava para frente, passa a
+apontar para **trás**. O perigo: se você fizer `curr.next = anterior` sem
+guardar antes para onde `curr` apontava, você **perde o resto da lista**.
+
+Por isso o padrão usa **três ponteiros**:
+
+- `prev`: o nó anterior (começa em `None` — antes da cabeça não há nada);
+- `curr`: o nó atual (começa na cabeça);
+- um temporário (`seguinte`): guarda `curr.next` **antes** de sobrescrevê-lo.
+
+A cada passo, a dança é sempre a mesma:
+
+```text
+1. seguinte = curr.next   (guarda para não perder o resto)
+2. curr.next = prev       (vira o ponteiro para trás)
+3. prev = curr            (avança prev)
+4. curr = seguinte        (avança curr)
+```
+
+Quando `curr` chega a `None`, `prev` é o último nó visitado — ou seja, a
+**nova cabeça**. Veja os ponteiros (`prox`) invertendo um a um:
+
+<TraceDemo id="reverse-list" />
+
+### Por que é O(n) tempo e O(1) espaço?
+
+O laço visita cada nó **exatamente uma vez** (`curr` anda do início ao fim),
+fazendo trabalho O(1) por nó (quatro atribuições) → **O(n) de tempo**. Não
+criamos nenhuma estrutura nova — só três ponteiros que andam — então
+**O(1) de espaço**. Copiar para um array e reconstruir também seria O(n) de
+tempo, mas com O(n) de espaço; a reversão in-place é estritamente melhor.
+
+| Solução | Tempo | Espaço |
+| --- | --- | --- |
+| Copiar valores p/ array e reconstruir | O(n) | O(n) |
+| Reversão in-place (3 ponteiros) | O(n) | O(1) |
+
+## A mesma ideia, com ListNode de verdade
+
+No editor você manipula `node.next` diretamente. É a mesma dança de três
+ponteiros:
+
+<CodeRunner
+  python={`class ListNode:
+    def __init__(self, val=0, next=None):
+        self.val = val
+        self.next = next
+
+def reverse_list(head):
+    prev = None
+    curr = head
+    while curr:
+        seguinte = curr.next   # 1) guarda o resto
+        curr.next = prev       # 2) vira para trás
+        prev = curr            # 3) avança prev
+        curr = seguinte        # 4) avança curr
+    return prev                # nova cabeça
+
+def build(arr):
+    d = ListNode(0); c = d
+    for x in arr:
+        c.next = ListNode(x); c = c.next
+    return d.next
+def to_list(h):
+    r = []
+    while h: r.append(h.val); h = h.next
+    return r
+
+print(to_list(reverse_list(build([1,2,3,4,5]))))   # [5,4,3,2,1]
+print(to_list(reverse_list(build([]))))            # []`}
+  javascript={`function ListNode(val, next) {
+  this.val = val;
+  this.next = next || null;
+}
+function reverseList(head) {
+  var prev = null;
+  var curr = head;
+  while (curr) {
+    var seguinte = curr.next; // 1) guarda o resto
+    curr.next = prev;         // 2) vira para trás
+    prev = curr;              // 3) avança prev
+    curr = seguinte;          // 4) avança curr
+  }
+  return prev;                // nova cabeça
+}
+
+function build(arr) {
+  var d = new ListNode(0), c = d;
+  for (var i = 0; i < arr.length; i++) { c.next = new ListNode(arr[i]); c = c.next; }
+  return d.next;
+}
+function toList(h) {
+  var r = [];
+  while (h) { r.push(h.val); h = h.next; }
+  return r;
+}
+
+console.log(toList(reverseList(build([1,2,3,4,5])))); // [5,4,3,2,1]
+console.log(toList(reverseList(build([]))));          // []`}
+/>
+
+## Por que vale tanto dominar isto
+
+A reversão in-place é uma **peça de Lego**. Reverter só uma parte da lista,
+reverter em grupos de k (um problema "difícil"!), checar se a lista é um
+palíndromo, reordenar — todos usam essa mesma dança de três ponteiros como
+sub-rotina. Quem automatiza a reversão destrava metade dos problemas difíceis
+da seção. Repita a dança até ela sair sem pensar.
+
+<Quiz
+  title="Quiz de fixação"
+  questions={[
+    {
+      question:
+        "Por que a reversão precisa guardar curr.next num temporário ANTES de fazer curr.next = prev?",
+      options: [
+        "Por estilo",
+        "Porque ao sobrescrever curr.next você perderia a referência para o resto da lista — o temporário preserva o caminho à frente",
+        "Para economizar memória",
+        "Porque prev pode ser None",
+      ],
+      answer: 1,
+      explanation:
+        "curr.next é o único elo para o resto da lista. Se você sobrescrevê-lo sem guardar, o resto vira inacessível. Por isso 'seguinte = curr.next' vem primeiro.",
+    },
+    {
+      question: "Por que prev começa em None?",
+      options: [
+        "Para detectar erros",
+        "Porque o que era a cabeça vira o ÚLTIMO nó da lista invertida, e o último nó aponta para None",
+        "Porque a lista pode estar vazia",
+        "É arbitrário",
+      ],
+      answer: 1,
+      explanation:
+        "Na lista invertida, a antiga cabeça passa a ser o fim — e o fim aponta para None. Começar prev=None garante que o primeiro nó processado termine apontando corretamente para None.",
+    },
+    {
+      question: "Ao fim do laço (curr == None), o que é prev?",
+      options: [
+        "O nó do meio",
+        "A nova cabeça da lista invertida (o último nó que foi visitado)",
+        "Sempre None",
+        "O nó original da cabeça",
+      ],
+      answer: 1,
+      explanation:
+        "prev sempre 'fica para trás' de curr. Quando curr passa do fim (None), prev é o último nó real visitado — que, invertido, é a nova cabeça.",
+    },
+    {
+      question: "Qual a vantagem da reversão in-place sobre copiar para um array?",
+      options: [
+        "É mais fácil de ler",
+        "Usa O(1) de espaço em vez de O(n) — não cria nenhuma estrutura nova, só repointa",
+        "É O(log n)",
+        "Não tem vantagem",
+      ],
+      answer: 1,
+      explanation:
+        "Ambas são O(n) de tempo, mas a in-place não aloca um array de n elementos: trabalha só com três ponteiros, O(1) de espaço.",
+    },
+  ]}
+/>
+
+## Resumo
+
+- Reverter = virar cada `next` para trás, com **três ponteiros** (prev, curr,
+  temporário).
+- Guarde `curr.next` **antes** de sobrescrever, ou perde o resto da lista.
+- O(n) tempo, **O(1) espaço** — melhor que copiar para um array.
+- É peça de Lego de muitos problemas difíceis (reverter em grupos, palíndromo,
+  reordenar).
+
+Próxima aula: dois ponteiros em **velocidades diferentes** — o meio da lista e
+a detecção de ciclos.

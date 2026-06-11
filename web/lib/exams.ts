@@ -24,6 +24,8 @@ export interface ExamProblem {
   tests: ExamTestCase[];
   /** Dica de padrão, revelada sob demanda. */
   hint: string;
+  /** Para problemas de lista ligada: args que são listas + se o retorno é lista. */
+  linked?: { listArgs: number[]; listReturn: boolean };
 }
 
 function repeated(length: number, fill: (index: number) => number): number[] {
@@ -340,6 +342,100 @@ Exemplo: \`piles = [3, 6, 7, 11]\`, \`h = 8\` → \`4\`.`,
         { args: [[312884470], 312884469], expected: 2, hidden: true },
       ],
       hint: "Busca binária no ESPAÇO DE RESPOSTAS: a velocidade k vai de 1 a max(piles). Para um k candidato, dá para checar em O(n) se Koko termina em h horas (some teto(pilha/k)). Quanto maior k, menos horas — então busque a menor k que cabe em h. O(n log(max)).",
+    },
+  ],
+
+  "linked-list": [
+    {
+      slug: "remove-duplicates-sorted",
+      title: "Remove Duplicates from Sorted List",
+      difficulty: "facil",
+      leetcodeUrl:
+        "https://leetcode.com/problems/remove-duplicates-from-sorted-list/",
+      statement: `Dada a cabeça de uma lista ligada **ordenada**, remova os nós com valor duplicado, deixando cada valor só uma vez. Retorne a lista.
+
+Exemplo: \`1 → 1 → 2 → 3 → 3\` → \`1 → 2 → 3\`.`,
+      functionName: {
+        python: "delete_duplicates",
+        javascript: "deleteDuplicates",
+      },
+      starter: {
+        python: `def delete_duplicates(head):
+    # escreva sua solução aqui
+    pass`,
+        javascript: `function deleteDuplicates(head) {
+  // escreva sua solução aqui
+}`,
+      },
+      tests: [
+        { args: [[1, 1, 2]], expected: [1, 2] },
+        { args: [[1, 1, 2, 3, 3]], expected: [1, 2, 3] },
+        { args: [[]], expected: [] },
+        { args: [[1, 1, 1]], expected: [1], hidden: true },
+        { args: [[1, 2, 3]], expected: [1, 2, 3], hidden: true },
+      ],
+      hint: "Como a lista é ordenada, duplicatas são vizinhas. Percorra com um ponteiro: se o nó atual tem o mesmo valor do próximo, pule o próximo (cur.next = cur.next.next); senão, avance. O(n), O(1).",
+      linked: { listArgs: [0], listReturn: true },
+    },
+    {
+      slug: "odd-even-list",
+      title: "Odd Even Linked List",
+      difficulty: "medio",
+      leetcodeUrl: "https://leetcode.com/problems/odd-even-linked-list/",
+      statement: `Reagrupe a lista para que todos os nós em posição **ímpar** (1ª, 3ª, 5ª...) venham primeiro, seguidos dos em posição **par** — mantendo a ordem relativa de cada grupo. Faça em O(1) de espaço. Retorne a lista.
+
+Exemplo: \`1 → 2 → 3 → 4 → 5\` → \`1 → 3 → 5 → 2 → 4\`.`,
+      functionName: { python: "odd_even_list", javascript: "oddEvenList" },
+      starter: {
+        python: `def odd_even_list(head):
+    # escreva sua solução aqui
+    pass`,
+        javascript: `function oddEvenList(head) {
+  // escreva sua solução aqui
+}`,
+      },
+      tests: [
+        { args: [[1, 2, 3, 4, 5]], expected: [1, 3, 5, 2, 4] },
+        { args: [[2, 1, 3, 5, 6, 4, 7]], expected: [2, 3, 6, 7, 1, 5, 4] },
+        { args: [[]], expected: [] },
+        { args: [[1]], expected: [1], hidden: true },
+        { args: [[1, 2]], expected: [1, 2], hidden: true },
+      ],
+      hint: "Mantenha dois 'fios': um costurando os nós ímpares (odd) e outro os pares (even), preservando a cabeça do fio par (even_head). Avance cada um pulando de dois em dois. No fim, ligue a cauda dos ímpares à cabeça dos pares.",
+      linked: { listArgs: [0], listReturn: true },
+    },
+    {
+      slug: "reverse-k-group",
+      title: "Reverse Nodes in k-Group",
+      difficulty: "dificil",
+      leetcodeUrl:
+        "https://leetcode.com/problems/reverse-nodes-in-k-group/",
+      statement: `Inverta os nós da lista em **grupos de k**. Se o último grupo tiver menos de k nós, deixe-o como está. Retorne a lista.
+
+Exemplo: \`1 → 2 → 3 → 4 → 5\`, \`k = 2\` → \`2 → 1 → 4 → 3 → 5\`. Com \`k = 3\` → \`3 → 2 → 1 → 4 → 5\`.`,
+      functionName: { python: "reverse_k_group", javascript: "reverseKGroup" },
+      starter: {
+        python: `def reverse_k_group(head, k):
+    # escreva sua solução aqui
+    pass`,
+        javascript: `function reverseKGroup(head, k) {
+  // escreva sua solução aqui
+}`,
+      },
+      tests: [
+        { args: [[1, 2, 3, 4, 5], 2], expected: [2, 1, 4, 3, 5] },
+        { args: [[1, 2, 3, 4, 5], 3], expected: [3, 2, 1, 4, 5] },
+        { args: [[1, 2, 3, 4, 5], 1], expected: [1, 2, 3, 4, 5] },
+        { args: [[1], 1], expected: [1], hidden: true },
+        { args: [[1, 2, 3, 4], 2], expected: [2, 1, 4, 3], hidden: true },
+        {
+          args: [[1, 2, 3, 4, 5, 6, 7, 8], 3],
+          expected: [3, 2, 1, 6, 5, 4, 7, 8],
+          hidden: true,
+        },
+      ],
+      hint: "Combine a reversão in-place com a verificação de grupo: primeiro confira se há k nós à frente (senão, pare e deixe como está). Reverta os k nós e conecte recursivamente ao resultado do resto da lista. A reversão de cada nó é a mesma da aula de reversão.",
+      linked: { listArgs: [0], listReturn: true },
     },
   ],
 };

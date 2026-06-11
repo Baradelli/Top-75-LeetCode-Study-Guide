@@ -21,9 +21,303 @@ export interface Challenge {
   solution: { python: string; javascript: string };
   /** Uma frase com a ideia central da solução. */
   solutionIdea: string;
+  /** Para problemas de lista ligada: args que são listas + se o retorno é lista. */
+  linked?: { listArgs: number[]; listReturn: boolean };
 }
 
 export const CHALLENGES: Record<string, Challenge> = {
+  "reverse-list": {
+    title: "Reverse Linked List",
+    statement: `Inverta uma lista ligada e retorne a nova cabeça. A lista é \`head = ListNode\` (cada nó tem \`.val\` e \`.next\`; o último aponta para \`None\`/\`null\`).
+
+Exemplo: \`1 → 2 → 3 → 4 → 5\` vira \`5 → 4 → 3 → 2 → 1\`.
+
+(Para testar, passamos a lista como array e comparamos o resultado como array.)`,
+    functionName: { python: "reverse_list", javascript: "reverseList" },
+    starter: {
+      python: `def reverse_list(head):
+    # head é um ListNode (head.val, head.next). Retorne a nova cabeça.
+    pass`,
+      javascript: `function reverseList(head) {
+  // head é um ListNode (head.val, head.next). Retorne a nova cabeça.
+}`,
+    },
+    tests: [
+      { args: [[1, 2, 3, 4, 5]], expected: [5, 4, 3, 2, 1] },
+      { args: [[]], expected: [] },
+      { args: [[1, 2]], expected: [2, 1] },
+    ],
+    hint: "Você precisa de três ponteiros: prev (começa em None), curr (começa na cabeça) e um temporário para o próximo. Em cada passo: guarde curr.next, faça curr.next = prev, e avance prev e curr. No fim, prev é a nova cabeça.",
+    solution: {
+      python: `def reverse_list(head):
+    prev = None
+    curr = head
+    while curr:
+        seguinte = curr.next   # guarda o próximo
+        curr.next = prev       # inverte o ponteiro
+        prev = curr            # avança prev
+        curr = seguinte        # avança curr
+    return prev`,
+      javascript: `function reverseList(head) {
+  var prev = null;
+  var curr = head;
+  while (curr) {
+    var seguinte = curr.next; // guarda o próximo
+    curr.next = prev;         // inverte o ponteiro
+    prev = curr;              // avança prev
+    curr = seguinte;          // avança curr
+  }
+  return prev;
+}`,
+    },
+    solutionIdea:
+      "Três ponteiros (prev, curr, próximo) repointando cada nó para trás. Uma passada, O(n) tempo, O(1) espaço.",
+    linked: { listArgs: [0], listReturn: true },
+  },
+
+  "middle-of-list": {
+    title: "Middle of the Linked List",
+    statement: `Retorne o nó do **meio** de uma lista ligada (a partir dele até o fim). Se houver dois nós no meio, retorne o **segundo**.
+
+Exemplo: \`1 → 2 → 3 → 4 → 5\` → meio é \`3\` (retorna \`3 → 4 → 5\`). \`1 → 2 → 3 → 4 → 5 → 6\` → retorna \`4 → 5 → 6\`.`,
+    functionName: { python: "middle_node", javascript: "middleNode" },
+    starter: {
+      python: `def middle_node(head):
+    # retorne o nó do meio
+    pass`,
+      javascript: `function middleNode(head) {
+  // retorne o nó do meio
+}`,
+    },
+    tests: [
+      { args: [[1, 2, 3, 4, 5]], expected: [3, 4, 5] },
+      { args: [[1, 2, 3, 4, 5, 6]], expected: [4, 5, 6] },
+      { args: [[1]], expected: [1] },
+    ],
+    hint: "Dá para contar o tamanho e andar metade — duas passadas. Mais elegante (uma passada): dois ponteiros, slow (1 passo) e fast (2 passos). Quando fast chega ao fim, slow está no meio.",
+    solution: {
+      python: `def middle_node(head):
+    slow = head
+    fast = head
+    while fast and fast.next:
+        slow = slow.next       # anda 1
+        fast = fast.next.next  # anda 2
+    return slow`,
+      javascript: `function middleNode(head) {
+  var slow = head;
+  var fast = head;
+  while (fast && fast.next) {
+    slow = slow.next;        // anda 1
+    fast = fast.next.next;   // anda 2
+  }
+  return slow;
+}`,
+    },
+    solutionIdea:
+      "Ponteiros lento/rápido: fast anda o dobro, então slow para no meio quando fast acaba. Uma passada, O(n)/O(1).",
+    linked: { listArgs: [0], listReturn: true },
+  },
+
+  "merge-two-lists": {
+    title: "Merge Two Sorted Lists",
+    statement: `Dadas duas listas ligadas **ordenadas** \`l1\` e \`l2\`, junte-as numa só lista ordenada e retorne a cabeça.
+
+Exemplo: \`1 → 2 → 4\` e \`1 → 3 → 4\` → \`1 → 1 → 2 → 3 → 4 → 4\`.`,
+    functionName: { python: "merge_two_lists", javascript: "mergeTwoLists" },
+    starter: {
+      python: `def merge_two_lists(l1, l2):
+    # junte as duas listas ordenadas
+    pass`,
+      javascript: `function mergeTwoLists(l1, l2) {
+  // junte as duas listas ordenadas
+}`,
+    },
+    tests: [
+      { args: [[1, 2, 4], [1, 3, 4]], expected: [1, 1, 2, 3, 4, 4] },
+      { args: [[], []], expected: [] },
+      { args: [[], [0]], expected: [0] },
+      { args: [[1, 3, 5], [2, 4, 6]], expected: [1, 2, 3, 4, 5, 6] },
+    ],
+    hint: "Use um nó 'dummy' (sentinela) para a cabeça do resultado, e um ponteiro 'cauda' que vai costurando. A cada passo, ligue a cauda ao menor entre l1 e l2 e avance esse lado. No fim, anexe o que sobrou.",
+    solution: {
+      python: `def merge_two_lists(l1, l2):
+    dummy = ListNode(0)
+    cauda = dummy
+    while l1 and l2:
+        if l1.val <= l2.val:
+            cauda.next = l1
+            l1 = l1.next
+        else:
+            cauda.next = l2
+            l2 = l2.next
+        cauda = cauda.next
+    cauda.next = l1 if l1 else l2   # anexa o resto
+    return dummy.next`,
+      javascript: `function mergeTwoLists(l1, l2) {
+  var dummy = new ListNode(0);
+  var cauda = dummy;
+  while (l1 && l2) {
+    if (l1.val <= l2.val) {
+      cauda.next = l1;
+      l1 = l1.next;
+    } else {
+      cauda.next = l2;
+      l2 = l2.next;
+    }
+    cauda = cauda.next;
+  }
+  cauda.next = l1 ? l1 : l2; // anexa o resto
+  return dummy.next;
+}`,
+    },
+    solutionIdea:
+      "Nó dummy + ponteiro cauda costurando o menor de cada vez. O(n+m), O(1) de espaço extra.",
+    linked: { listArgs: [0, 1], listReturn: true },
+  },
+
+  "remove-nth-from-end": {
+    title: "Remove Nth Node From End of List",
+    statement: `Remova o **n-ésimo nó a partir do fim** da lista e retorne a cabeça. Tente fazer em **uma única passada**.
+
+Exemplo: \`1 → 2 → 3 → 4 → 5\`, \`n = 2\` → remove o \`4\` → \`1 → 2 → 3 → 5\`.`,
+    functionName: {
+      python: "remove_nth_from_end",
+      javascript: "removeNthFromEnd",
+    },
+    starter: {
+      python: `def remove_nth_from_end(head, n):
+    # remova o n-ésimo nó a partir do fim
+    pass`,
+      javascript: `function removeNthFromEnd(head, n) {
+  // remova o n-ésimo nó a partir do fim
+}`,
+    },
+    tests: [
+      { args: [[1, 2, 3, 4, 5], 2], expected: [1, 2, 3, 5] },
+      { args: [[1], 1], expected: [] },
+      { args: [[1, 2], 1], expected: [1] },
+      { args: [[1, 2], 2], expected: [2] },
+    ],
+    hint: "Dois ponteiros com um intervalo fixo de n nós entre eles. Avance o 'fast' n passos primeiro; depois mova 'fast' e 'slow' juntos até fast chegar ao fim — slow para logo ANTES do nó a remover. Um nó dummy antes da cabeça evita tratar a remoção da cabeça como caso especial.",
+    solution: {
+      python: `def remove_nth_from_end(head, n):
+    dummy = ListNode(0, head)
+    fast = dummy
+    slow = dummy
+    for _ in range(n):       # abre uma distância de n nós
+        fast = fast.next
+    while fast.next:         # anda os dois até o fim
+        fast = fast.next
+        slow = slow.next
+    slow.next = slow.next.next   # pula o nó alvo
+    return dummy.next`,
+      javascript: `function removeNthFromEnd(head, n) {
+  var dummy = new ListNode(0, head);
+  var fast = dummy;
+  var slow = dummy;
+  for (var i = 0; i < n; i++) { // abre uma distância de n nós
+    fast = fast.next;
+  }
+  while (fast.next) {           // anda os dois até o fim
+    fast = fast.next;
+    slow = slow.next;
+  }
+  slow.next = slow.next.next;   // pula o nó alvo
+  return dummy.next;
+}`,
+    },
+    solutionIdea:
+      "Dois ponteiros com gap de n + nó dummy. fast chega ao fim e slow para antes do alvo. Uma passada, O(n)/O(1).",
+    linked: { listArgs: [0], listReturn: true },
+  },
+
+  "reorder-list": {
+    title: "Reorder List",
+    statement: `Reordene a lista \`L0 → L1 → ... → Ln-1 → Ln\` para \`L0 → Ln → L1 → Ln-1 → L2 → ...\` (intercala do começo e do fim), **no lugar**. Retorne a cabeça.
+
+Exemplo: \`1 → 2 → 3 → 4\` → \`1 → 4 → 2 → 3\`. \`1 → 2 → 3 → 4 → 5\` → \`1 → 5 → 2 → 4 → 3\`.`,
+    functionName: { python: "reorder_list", javascript: "reorderList" },
+    starter: {
+      python: `def reorder_list(head):
+    # reordene no lugar e retorne a cabeça
+    pass`,
+      javascript: `function reorderList(head) {
+  // reordene no lugar e retorne a cabeça
+}`,
+    },
+    tests: [
+      { args: [[1, 2, 3, 4]], expected: [1, 4, 2, 3] },
+      { args: [[1, 2, 3, 4, 5]], expected: [1, 5, 2, 4, 3] },
+      { args: [[1]], expected: [1] },
+    ],
+    hint: "Este é um combo de três padrões: (1) ache o MEIO com lento/rápido; (2) REVERTA a segunda metade; (3) INTERCALE as duas metades. Cada peça você já praticou nas aulas anteriores.",
+    solution: {
+      python: `def reorder_list(head):
+    if not head or not head.next:
+        return head
+    # 1) meio (lento/rápido)
+    slow = fast = head
+    while fast.next and fast.next.next:
+        slow = slow.next
+        fast = fast.next.next
+    # 2) reverte a segunda metade
+    prev = None
+    curr = slow.next
+    slow.next = None
+    while curr:
+        nx = curr.next
+        curr.next = prev
+        prev = curr
+        curr = nx
+    # 3) intercala
+    first = head
+    second = prev
+    while second:
+        t1 = first.next
+        t2 = second.next
+        first.next = second
+        second.next = t1
+        first = t1
+        second = t2
+    return head`,
+      javascript: `function reorderList(head) {
+  if (!head || !head.next) return head;
+  // 1) meio (lento/rápido)
+  var slow = head;
+  var fast = head;
+  while (fast.next && fast.next.next) {
+    slow = slow.next;
+    fast = fast.next.next;
+  }
+  // 2) reverte a segunda metade
+  var prev = null;
+  var curr = slow.next;
+  slow.next = null;
+  while (curr) {
+    var nx = curr.next;
+    curr.next = prev;
+    prev = curr;
+    curr = nx;
+  }
+  // 3) intercala
+  var first = head;
+  var second = prev;
+  while (second) {
+    var t1 = first.next;
+    var t2 = second.next;
+    first.next = second;
+    second.next = t1;
+    first = t1;
+    second = t2;
+  }
+  return head;
+}`,
+    },
+    solutionIdea:
+      "Combina os três padrões da seção: achar o meio (lento/rápido) + reverter a segunda metade + intercalar. O(n)/O(1).",
+    linked: { listArgs: [0], listReturn: true },
+  },
+
   "binary-search": {
     title: "Binary Search",
     statement: `Dado um array \`nums\` **ordenado em ordem crescente** e um \`target\`, retorne o **índice** de \`target\`. Se não existir, retorne \`-1\`. Espera-se O(log n).

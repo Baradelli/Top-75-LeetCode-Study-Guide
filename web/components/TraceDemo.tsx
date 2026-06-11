@@ -5,6 +5,7 @@ import TracePlayer, { type VisualizerProps } from "./TracePlayer";
 import ArrayTraceVisualizer from "./visualizers/ArrayTraceVisualizer";
 import StringTraceVisualizer from "./visualizers/StringTraceVisualizer";
 import BitTraceVisualizer from "./visualizers/BitTraceVisualizer";
+import LinkedListVisualizer from "./visualizers/LinkedListVisualizer";
 import { DEMOS } from "@/lib/demos";
 
 /**
@@ -30,6 +31,13 @@ export default function TraceDemo({ id }: { id: string }) {
         return <BitTraceVisualizer {...props} config={config} />;
       }
       return BitBound;
+    }
+    if ("linked" in demo) {
+      const config = demo.linked;
+      function LinkedBound(props: VisualizerProps) {
+        return <LinkedListVisualizer {...props} config={config} />;
+      }
+      return LinkedBound;
     }
     const config = demo.string;
     function StringBound(props: VisualizerProps) {

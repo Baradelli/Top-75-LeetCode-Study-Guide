@@ -1,0 +1,193 @@
+# Padrão 1: Dummy node e dois ponteiros
+
+> Duas ferramentas que aparecem em quase todo problema de lista: o **nó
+> sentinela** (dummy), que elimina o caso especial "e se for a cabeça?", e os
+> **dois ponteiros com distância fixa**, que resolvem "a partir do fim" em uma
+> passada.
+
+<Challenge id="remove-nth-from-end" />
+
+> Tentou? A saída natural é: contar o tamanho da lista numa passada e, em outra,
+> andar até o nó certo — **duas passadas**, e ainda tratar à parte o caso de
+> remover a cabeça. A teoria abaixo faz tudo numa passada e sem caso especial.
+
+## A teoria 1: o nó dummy (sentinela)
+
+Operações na **cabeça** são chatas porque a cabeça não tem "nó anterior" para
+religar. Resultado: um monte de `if head is None` e `if no_anterior is None`
+espalhados.
+
+O truque do **dummy**: crie um nó falso que aponta para a cabeça real.
+
+```text
+dummy ──▶ [1] ──▶ [2] ──▶ [3] ──▶ ∅
+```
+
+Agora **todo** nó de verdade tem um anterior (no pior caso, o dummy). Você
+opera sem casos especiais e, no final, retorna `dummy.next` — que é a cabeça
+(possivelmente nova). Some um nó de papel, ganhe um código sem ramificações.
+
+## A teoria 2: dois ponteiros com distância fixa
+
+Para perguntas do tipo *"o n-ésimo a partir do fim"*, você não sabe onde é o
+fim sem percorrer. A sacada: mantenha dois ponteiros com um **intervalo fixo
+de n nós** entre eles.
+
+1. Avance o `fast` **n passos** à frente.
+2. Mova `fast` e `slow` **juntos** até `fast` chegar ao fim.
+3. Como a distância entre eles é n, quando `fast` acaba, `slow` está
+   exatamente **n nós antes do fim** — bem onde você precisa para religar.
+
+Uma passada, sem contar o tamanho antes. Combinado com o dummy (para o caso de
+remover a cabeça), o código fica limpo:
+
+<CodeRunner
+  python={`class ListNode:
+    def __init__(self, val=0, next=None):
+        self.val = val
+        self.next = next
+
+def remove_nth_from_end(head, n):
+    dummy = ListNode(0, head)   # sentinela antes da cabeça
+    fast = dummy
+    slow = dummy
+    for _ in range(n):          # abre distância de n nós
+        fast = fast.next
+    while fast.next:            # anda os dois até o fim
+        fast = fast.next
+        slow = slow.next
+    slow.next = slow.next.next  # slow está logo antes do alvo
+    return dummy.next
+
+# helpers para testar
+def build(arr):
+    d = ListNode(0)
+    c = d
+    for x in arr:
+        c.next = ListNode(x)
+        c = c.next
+    return d.next
+
+def to_list(head):
+    r = []
+    while head:
+        r.append(head.val)
+        head = head.next
+    return r
+
+print(to_list(remove_nth_from_end(build([1,2,3,4,5]), 2)))  # [1,2,3,5]
+print(to_list(remove_nth_from_end(build([1]), 1)))           # []  (removeu a cabeça)`}
+  javascript={`function ListNode(val, next) {
+  this.val = val;
+  this.next = next || null;
+}
+function removeNthFromEnd(head, n) {
+  var dummy = new ListNode(0, head); // sentinela antes da cabeça
+  var fast = dummy;
+  var slow = dummy;
+  for (var i = 0; i < n; i++) {      // abre distância de n nós
+    fast = fast.next;
+  }
+  while (fast.next) {                // anda os dois até o fim
+    fast = fast.next;
+    slow = slow.next;
+  }
+  slow.next = slow.next.next;        // slow está logo antes do alvo
+  return dummy.next;
+}
+
+function build(arr) {
+  var d = new ListNode(0), c = d;
+  for (var i = 0; i < arr.length; i++) { c.next = new ListNode(arr[i]); c = c.next; }
+  return d.next;
+}
+function toList(head) {
+  var r = [];
+  while (head) { r.push(head.val); head = head.next; }
+  return r;
+}
+
+console.log(toList(removeNthFromEnd(build([1,2,3,4,5]), 2))); // [1,2,3,5]
+console.log(toList(removeNthFromEnd(build([1]), 1)));          // []  (removeu a cabeça)`}
+/>
+
+### Por que é O(n) tempo e O(1) espaço?
+
+Cada ponteiro percorre a lista **uma vez** (`fast` anda n + resto; `slow` anda
+resto) — total O(n), uma única passada. Usamos só alguns ponteiros, nenhum
+array auxiliar → **O(1) de espaço**. A versão "contar e depois andar" também é
+O(n), mas faz **duas** passadas e precisa do caso especial da cabeça (que o
+dummy elimina).
+
+## Quando usar cada um
+
+- **Dummy node:** sempre que a operação pode mexer na **cabeça** (remover,
+  inserir no início, merge). Custa um nó e remove um monte de `if`.
+- **Dois ponteiros com gap:** "n-ésimo a partir do fim", "remova o do meio",
+  qualquer "posição relativa ao fim" em uma passada.
+
+<Quiz
+  title="Quiz de fixação"
+  questions={[
+    {
+      question: "Para que serve o nó dummy (sentinela)?",
+      options: [
+        "Para guardar o tamanho da lista",
+        "Para dar um 'nó anterior' à cabeça, eliminando o caso especial de operar no início da lista",
+        "Para deixar a lista ordenada",
+        "Para detectar ciclos",
+      ],
+      answer: 1,
+      explanation:
+        "Com o dummy apontando para a cabeça, todo nó real tem um anterior — inclusive a cabeça. Você opera sem ramificações e retorna dummy.next no fim.",
+    },
+    {
+      question:
+        "No 'n-ésimo a partir do fim', por que avançar o fast n passos antes de mover os dois juntos resolve em uma passada?",
+      options: [
+        "Porque conta o tamanho da lista",
+        "Porque cria uma distância fixa de n entre fast e slow; quando fast chega ao fim, slow está n nós antes dele",
+        "Porque o fast vai mais rápido",
+        "Porque ordena a lista",
+      ],
+      answer: 1,
+      explanation:
+        "A distância fixa é a chave: 'antes do fim' vira 'atrás do fast por n nós'. Sem precisar saber o tamanho, slow para no lugar certo.",
+    },
+    {
+      question:
+        "Por que o dummy é especialmente útil em 'remover o n-ésimo a partir do fim'?",
+      options: [
+        "Não é útil aqui",
+        "Porque o nó a remover pode ser a própria cabeça; com o dummy, slow para antes dela sem caso especial",
+        "Porque acelera a busca",
+        "Porque conta os nós",
+      ],
+      answer: 1,
+      explanation:
+        "Se n é igual ao tamanho da lista, o alvo é a cabeça. Começar slow/fast no dummy garante que slow.next aponte para o alvo mesmo quando ele é o primeiro nó.",
+    },
+    {
+      question: "Qual a complexidade do remove-nth com dois ponteiros + dummy?",
+      options: [
+        "O(n²) tempo",
+        "O(n) tempo e O(1) espaço, em uma única passada",
+        "O(n) tempo e O(n) espaço",
+        "O(log n) tempo",
+      ],
+      answer: 1,
+      explanation:
+        "Os ponteiros cruzam a lista uma vez (O(n)), usando apenas variáveis (O(1) de espaço). É a vantagem sobre contar-e-andar, que faz duas passadas.",
+    },
+  ]}
+/>
+
+## Resumo
+
+- **Dummy node**: um nó sentinela antes da cabeça remove os casos especiais de
+  operar no início; retorne `dummy.next`.
+- **Dois ponteiros com gap de n**: resolve "a partir do fim" em uma passada,
+  sem contar o tamanho.
+- Juntos: O(n) tempo, O(1) espaço, sem ramificações feias.
+
+Próxima aula: o padrão mais clássico da seção — **reversão in-place**.

@@ -1,0 +1,206 @@
+# Padrão 5: Combinando os padrões
+
+> Os problemas "difíceis" de lista ligada raramente trazem uma ideia nova —
+> eles **encaixam** os padrões que você já domina. Esta aula mostra como
+> compor meio + reversão + merge para resolver algo que, de cara, parece
+> assustador.
+
+<Challenge id="reorder-list" />
+
+> Tentou? Sem um plano, reordenar `L0 → Ln → L1 → Ln-1 → ...` no lugar parece
+> caótico. A teoria abaixo mostra que é só **três peças conhecidas** em
+> sequência.
+
+## A teoria: decompor em sub-problemas conhecidos
+
+O Reorder List pede transformar `L0 → L1 → ... → Ln` em
+`L0 → Ln → L1 → Ln-1 → ...` — intercalando a primeira metade com a segunda
+metade invertida. Em vez de atacar de uma vez, **decomponha**:
+
+1. **Ache o meio** da lista → padrão *lento/rápido* (aula 4).
+2. **Reverta a segunda metade** → padrão *reversão in-place* (aula 3).
+3. **Intercale** as duas metades, alternando um nó de cada → costura de
+   ponteiros (como no *merge*, aula 5).
+
+Cada peça é O(n) e O(1), feita uma após a outra — então o todo é **O(n) de
+tempo e O(1) de espaço**. O "difícil" virou três "fáceis" em sequência.
+
+```text
+1 → 2 → 3 → 4 → 5
+   (1) meio:        primeira [1,2,3]   |  segunda [4,5]
+   (2) reverte 2ª:  primeira [1,2,3]   |  segunda [5,4]
+   (3) intercala:   1 → 5 → 2 → 4 → 3
+```
+
+<CodeRunner
+  python={`class ListNode:
+    def __init__(self, val=0, next=None):
+        self.val = val
+        self.next = next
+
+def reorder_list(head):
+    if not head or not head.next:
+        return head
+    # 1) meio: lento/rápido
+    slow = fast = head
+    while fast.next and fast.next.next:
+        slow = slow.next
+        fast = fast.next.next
+    # 2) reverte a segunda metade (a partir de slow.next)
+    prev = None
+    curr = slow.next
+    slow.next = None        # corta a lista em duas
+    while curr:
+        nx = curr.next
+        curr.next = prev
+        prev = curr
+        curr = nx
+    # 3) intercala primeira metade (head) com a segunda invertida (prev)
+    first, second = head, prev
+    while second:
+        t1, t2 = first.next, second.next
+        first.next = second
+        second.next = t1
+        first, second = t1, t2
+    return head
+
+def build(arr):
+    d = ListNode(0); c = d
+    for x in arr:
+        c.next = ListNode(x); c = c.next
+    return d.next
+def to_list(h):
+    r = []
+    while h: r.append(h.val); h = h.next
+    return r
+
+print(to_list(reorder_list(build([1,2,3,4]))))     # [1,4,2,3]
+print(to_list(reorder_list(build([1,2,3,4,5]))))   # [1,5,2,4,3]`}
+  javascript={`function ListNode(val, next) {
+  this.val = val;
+  this.next = next || null;
+}
+function reorderList(head) {
+  if (!head || !head.next) return head;
+  // 1) meio: lento/rápido
+  var slow = head, fast = head;
+  while (fast.next && fast.next.next) {
+    slow = slow.next;
+    fast = fast.next.next;
+  }
+  // 2) reverte a segunda metade
+  var prev = null, curr = slow.next;
+  slow.next = null;          // corta a lista em duas
+  while (curr) {
+    var nx = curr.next;
+    curr.next = prev;
+    prev = curr;
+    curr = nx;
+  }
+  // 3) intercala
+  var first = head, second = prev;
+  while (second) {
+    var t1 = first.next, t2 = second.next;
+    first.next = second;
+    second.next = t1;
+    first = t1;
+    second = t2;
+  }
+  return head;
+}
+
+function build(arr) {
+  var d = new ListNode(0), c = d;
+  for (var i = 0; i < arr.length; i++) { c.next = new ListNode(arr[i]); c = c.next; }
+  return d.next;
+}
+function toList(h) {
+  var r = [];
+  while (h) { r.push(h.val); h = h.next; }
+  return r;
+}
+
+console.log(toList(reorderList(build([1,2,3,4]))));   // [1,4,2,3]
+console.log(toList(reorderList(build([1,2,3,4,5])))); // [1,5,2,4,3]`}
+/>
+
+## A estratégia geral: decompor
+
+Quando um problema de lista parecer grande demais, pergunte: **que peças
+conhecidas o compõem?** Vários "difíceis" se desmontam assim:
+
+| Problema | Peças que ele combina |
+| --- | --- |
+| Reorder List | meio + reversão + intercalar |
+| Palindrome Linked List | meio + reversão (da 2ª metade) + comparação |
+| Sort List (merge sort) | meio (dividir) + merge + recursão |
+| Reverse Nodes in k-Group | reversão (em blocos de k) + contagem |
+
+Repare: nenhum exige uma ideia inédita. O que separa quem trava de quem
+resolve é **ter os padrões automatizados** e enxergar a decomposição. Por isso
+investimos tanto em cada peça nas aulas anteriores.
+
+<Quiz
+  title="Quiz de fixação"
+  questions={[
+    {
+      question: "Qual é a estratégia central para problemas 'difíceis' de lista ligada?",
+      options: [
+        "Decorar uma solução para cada um",
+        "Decompor o problema em sub-problemas que são padrões já conhecidos (meio, reversão, merge) e aplicá-los em sequência",
+        "Converter tudo para array",
+        "Usar sempre recursão",
+      ],
+      answer: 1,
+      explanation:
+        "Os difíceis combinam peças simples. Reconhecer 'isto é meio + reversão + intercalar' transforma um problema assustador em três etapas conhecidas.",
+    },
+    {
+      question: "No Reorder List, por que fazer slow.next = None depois de achar o meio?",
+      options: [
+        "Para liberar memória",
+        "Para CORTAR a lista em duas metades independentes, e então reverter só a segunda sem afetar a primeira",
+        "Para detectar ciclo",
+        "Por engano",
+      ],
+      answer: 1,
+      explanation:
+        "Sem cortar, a primeira metade ainda apontaria para a segunda e a reversão/intercalação se embaralhariam. Cortar isola as duas metades para tratá-las separadamente.",
+    },
+    {
+      question: "Por que o Reorder List é O(n) de tempo e O(1) de espaço?",
+      options: [
+        "Porque usa recursão",
+        "Porque é a soma de três etapas, cada uma O(n)/O(1) (achar meio, reverter, intercalar) — em sequência, continua O(n)/O(1)",
+        "Porque copia para um array",
+        "Porque é O(n log n)",
+      ],
+      answer: 1,
+      explanation:
+        "Três passadas lineares em sequência somam O(n) (a constante cai), e nenhuma cria estrutura nova — só religa ponteiros — mantendo O(1) de espaço.",
+    },
+    {
+      question:
+        "'Verificar se uma lista é palíndromo em O(1) de espaço' decompõe em quais padrões?",
+      options: [
+        "Só reversão",
+        "Achar o meio (lento/rápido) + reverter a segunda metade + comparar as duas metades nó a nó",
+        "Merge + ciclo",
+        "Dummy node + ordenação",
+      ],
+      answer: 1,
+      explanation:
+        "Mesma receita: meio (aula 4) + reversão (aula 3) + uma comparação. As mesmas peças, recombinadas para uma pergunta diferente.",
+    },
+  ]}
+/>
+
+## Resumo
+
+- Problemas difíceis de lista = **combinação** dos padrões básicos, não ideias
+  novas.
+- Reorder List = meio (lento/rápido) + reverter 2ª metade + intercalar; cada
+  peça O(n)/O(1), logo o todo é O(n)/O(1).
+- A habilidade-chave é **decompor**: "que peças conhecidas formam isto?".
+
+Última parada: a **síntese** da seção e o quiz antes da prova final.
