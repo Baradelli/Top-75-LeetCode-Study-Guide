@@ -4,6 +4,12 @@
 > `racecar`. Dois ponteiros **convergindo das pontas** verificam um palíndromo;
 > dois ponteiros **divergindo de um centro** encontram todos eles.
 
+<Challenge id="valid-palindrome" />
+
+> Tentou? Uma saída comum é "limpar" a string (tirar pontuação, deixar
+> minúscula) e comparar com ela invertida — funciona, mas gasta O(n) de
+> memória. A teoria abaixo faz o mesmo com dois ponteiros e O(1) de espaço.
+
 ## A teoria 1: verificar com ponteiros convergentes
 
 A definição de palíndromo é simétrica: o 1º char tem que ser igual ao último,

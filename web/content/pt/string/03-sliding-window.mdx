@@ -4,6 +4,12 @@
 > da janela deixa de ser um número e passa a ser um **mapa de contagens**.
 > Com isso, ele resolve a maior família de problemas de string do LeetCode.
 
+<Challenge id="longest-substring" />
+
+> Tentou? Gerar todas as substrings e checar repetição em cada uma é O(n²) ou
+> O(n³). O incômodo: ao mover o começo, você recomeça a verificação do zero. A
+> teoria abaixo traz o sliding window de volta — agora com um estado mais rico.
+
 ## A teoria: a janela ganha um estado mais rico
 
 Lembre do template da janela variável (seção Array): `right` expande, e um

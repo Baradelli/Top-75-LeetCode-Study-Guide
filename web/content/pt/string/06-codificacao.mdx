@@ -5,6 +5,13 @@
 > string e depois recuperá-la *exatamente*? A resposta ensina um princípio que
 > vai bem além de strings.
 
+<Challenge id="encode-decode" />
+
+> Tentou? A primeira ideia quase sempre é juntar com um separador (vírgula, `#`)
+> — e ela quebra assim que um dado contém esse separador (veja o caso
+> `"a#2#b"`). A teoria abaixo mostra por que separadores são ambíguos e qual
+> é a solução robusta.
+
 ## A teoria: o problema da ambiguidade
 
 Quero juntar `["abc", "de"]` numa só string para transmitir, e depois separar

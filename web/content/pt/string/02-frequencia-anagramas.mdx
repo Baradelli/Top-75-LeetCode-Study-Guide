@@ -4,6 +4,12 @@
 > em qualquer ordem**. A ferramenta que captura isso é o mapa de frequência —
 > a "impressão digital" de uma string que ignora a ordem.
 
+<Challenge id="valid-anagram" />
+
+> Tentou? Comparar todas as permutações é O(k!) — inviável. Ordenar as duas
+> strings e comparar funciona (O(k log k)), mas há algo ainda mais direto. A
+> teoria abaixo mostra a "assinatura" que identifica anagramas em O(n).
+
 ## A teoria: a assinatura de frequência
 
 Como saber se `"listen"` e `"silent"` são a mesma coisa rearranjada? Comparar

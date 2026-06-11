@@ -4,6 +4,13 @@
 > entrar é o primeiro a sair. É a ferramenta natural para casar aberturas e
 > fechamentos e para resolver o que está "mais aninhado" primeiro.
 
+<Challenge id="valid-parentheses" />
+
+> Tentou? Talvez você tenha pensado em remover pares "()" repetidamente até não
+> dar mais — funciona, mas é O(n²) e desajeitado com tipos misturados. O nó da
+> questão: cada fechamento casa com a abertura mais recente. A teoria abaixo
+> mostra a estrutura feita pra isso.
+
 ## A teoria: por que LIFO casa com aninhamento
 
 Pense numa pilha de pratos: você tira de cima, o último que colocou. Em código,

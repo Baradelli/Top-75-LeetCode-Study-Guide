@@ -1,6 +1,6 @@
 # Plano — Curso Interativo de LeetCode e Algoritmos
 
-> Status: Seção "Comece aqui" + Fundamentos + Array (formato attempt-first) + String completas; progresso visível. Array é o piloto do novo formato "tente primeiro" (aguardando avaliação). Falta aplicar attempt-first a Fundamentos e String. Próxima seção de conteúdo: Binary. Última atualização: 2026-06-10.
+> Status: "Comece aqui" + Fundamentos + Array + String completas. Array e String já no formato attempt-first ("tente primeiro"). Próxima seção de conteúdo: Binary (já nascendo no novo formato). Última atualização: 2026-06-10.
 
 ## 1. Visão
 
