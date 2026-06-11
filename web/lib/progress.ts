@@ -10,16 +10,26 @@ import { useSyncExternalStore } from "react";
 export interface ProgressData {
   /** Chaves "secao/aula" das aulas concluídas. */
   completedLessons: string[];
+  /** Chaves "secao/problema" dos problemas de prova aprovados. */
+  passedExamProblems: string[];
 }
 
 export interface ProgressStore {
   get(): ProgressData;
   setLessonComplete(lessonKey: string, complete: boolean): void;
+  setExamProblemPassed(problemKey: string): void;
   subscribe(listener: () => void): () => void;
 }
 
 const STORAGE_KEY = "leetcode-course-progress-v1";
-const EMPTY: ProgressData = { completedLessons: [] };
+const EMPTY: ProgressData = { completedLessons: [], passedExamProblems: [] };
+
+function normalize(raw: Partial<ProgressData> | null): ProgressData {
+  return {
+    completedLessons: raw?.completedLessons ?? [],
+    passedExamProblems: raw?.passedExamProblems ?? [],
+  };
+}
 
 function createLocalStorageStore(): ProgressStore {
   const listeners = new Set<() => void>();
@@ -31,7 +41,7 @@ function createLocalStorageStore(): ProgressStore {
     if (typeof window === "undefined") return EMPTY;
     try {
       const raw = window.localStorage.getItem(STORAGE_KEY);
-      cache = raw ? (JSON.parse(raw) as ProgressData) : EMPTY;
+      cache = raw ? normalize(JSON.parse(raw) as Partial<ProgressData>) : EMPTY;
     } catch {
       cache = EMPTY;
     }
@@ -59,6 +69,14 @@ function createLocalStorageStore(): ProgressStore {
         set.delete(lessonKey);
       }
       write({ ...current, completedLessons: [...set] });
+    },
+    setExamProblemPassed(problemKey) {
+      const current = read();
+      if (current.passedExamProblems.includes(problemKey)) return;
+      write({
+        ...current,
+        passedExamProblems: [...current.passedExamProblems, problemKey],
+      });
     },
     subscribe(listener) {
       listeners.add(listener);
@@ -92,4 +110,12 @@ export function useLessonComplete(section: string, lesson: string) {
   const setComplete = (complete: boolean) =>
     progressStore.setLessonComplete(key, complete);
   return { isComplete, setComplete };
+}
+
+export function useExamProblem(section: string, problem: string) {
+  const progress = useProgress();
+  const key = lessonKey(section, problem);
+  const isPassed = progress.passedExamProblems.includes(key);
+  const markPassed = () => progressStore.setExamProblemPassed(key);
+  return { isPassed, markPassed };
 }

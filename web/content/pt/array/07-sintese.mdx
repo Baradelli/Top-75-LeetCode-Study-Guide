@@ -1,0 +1,192 @@
+# Síntese: qual padrão usar?
+
+> Você conhece os 5 padrões. Falta a habilidade que vale a entrevista:
+> **bater o olho num enunciado novo e saber qual usar** — com justificativa.
+
+## A árvore de decisão da seção
+
+Diante de um problema de array, percorra estas perguntas em ordem:
+
+```text
+1. A pergunta é sobre um TRECHO CONTÍGUO (subarray)?
+   ├── Sim, e os valores são todos positivos (ou janela de tamanho fixo)
+   │     → SLIDING WINDOW (estado entra/sai pelas bordas)
+   ├── Sim, mas há NEGATIVOS
+   │     ├── "maior soma/produto"      → KADANE (estender ou recomeçar)
+   │     └── "quantos somam k" /
+   │         perguntas de intervalo    → PREFIX (+ hash map para contar)
+   └── Não, continue ↓
+
+2. Procuro PARES/TRIOS de elementos?
+   ├── Preciso de valores EXATOS (complemento) e/ou dos índices originais
+   │     → HASH MAP (pergunte ao passado, registre para o futuro)
+   └── Array ordenado (ou posso ordenar) / condição de DESIGUALDADE
+         → TWO POINTERS (descarte provado em bloco)
+
+3. Pergunto repetidamente "já vi? quantas vezes? existe?"
+      → HASH MAP
+
+4. "Para cada posição, algo sobre TODO o resto" (esquerda × direita)
+      → PREFIX + SUFFIX (duas passadas)
+```
+
+E o teste de sanidade final, sempre: **os limites**. n até 10⁵-10⁶ pede
+O(n) ou O(n log n) — se o seu plano é O(n²), volte à árvore.
+
+## O mapa completo da seção
+
+| Padrão | Desperdício que elimina | Pergunta-chave | Tempo | Espaço |
+| --- | --- | --- | --- | --- |
+| Hash map | busca repetida | "já vi o que procuro?" | O(n) | O(n) |
+| Two pointers | pares sem chance | "qual lado abandono — e por quê?" | O(n)* | O(1) |
+| Sliding window | recálculo de janelas | "o que entra, o que sai?" | O(n) | O(1)** |
+| Prefix/Suffix | resoma de trechos | "posso pré-acumular?" | O(n) | O(1)-O(n) |
+| Kadane | reavaliar todo começo | "estendo ou recomeço?" | O(n) | O(1) |
+
+\* + O(n log n) se precisar ordenar antes. &nbsp;&nbsp; \*\* depende do
+estado da janela (um escalar = O(1); um mapa de contagens = O(k)).
+
+Repare no que todos têm em comum: **uma passada (ou duas) com trabalho O(1)
+por elemento**, cada um com seu truque para nunca revisitar trabalho feito.
+Esse é o espírito de tudo que derrota O(n²).
+
+## Quiz da seção
+
+O teste de verdade: enunciados que você **não viu** nas aulas. Para cada um,
+identifique o padrão — e, mais importante, saiba dizer o porquê. 7+ acertos:
+você está pronto para a prova final.
+
+<Quiz
+  title="Quiz da seção: Array"
+  questions={[
+    {
+      question:
+        "'Dado um array e k, retorne a MAIOR MÉDIA entre todos os subarrays de exatamente k elementos.' Qual padrão?",
+      options: ["Hash map", "Sliding window (janela fixa)", "Kadane", "Prefix + hash map"],
+      answer: 1,
+      explanation:
+        "Subarray contíguo de tamanho FIXO k: janela deslizante na forma mais pura — soma += entra, -= sai, O(1) por posição. Média é soma ÷ k.",
+    },
+    {
+      question:
+        "'Num array ORDENADO, encontre dois números cuja soma é mais PRÓXIMA de zero.' Qual padrão e por quê?",
+      options: [
+        "Hash map, procurando o complemento",
+        "Two pointers: ordenado + critério de proximidade (desigualdade) — soma negativa move left, positiva move right",
+        "Kadane",
+        "Força bruta, não tem padrão",
+      ],
+      answer: 1,
+      explanation:
+        "'Mais próximo' não é valor exato — hash map não tem o que buscar. Ordenado + raciocínio de descarte (soma < 0: só aumentar left ajuda) = two pointers, O(n).",
+    },
+    {
+      question:
+        "'Conte quantos subarrays contíguos têm soma exatamente k. O array tem números NEGATIVOS.' Qual padrão?",
+      options: [
+        "Sliding window variável",
+        "Two pointers",
+        "Prefix + hash map: conte quantas vezes o prefixo (soma_atual - k) já apareceu",
+        "Kadane",
+      ],
+      answer: 2,
+      explanation:
+        "Negativos eliminam o sliding window (sem monotonia). soma[i..j] = k vira prefix[i] = prefix_atual - k: contar valores já vistos é hash map. O combo das aulas 1 + 5.",
+    },
+    {
+      question:
+        "'Encontre o subarray contíguo de maior soma' (com negativos). Qual padrão?",
+      options: ["Sliding window", "Kadane", "Prefix + suffix", "Two pointers"],
+      answer: 1,
+      explanation:
+        "É O problema do Kadane: melhor subarray terminando aqui = max(recomeçar, estender). O(n), O(1) — onde o sliding window quebra, Kadane assume.",
+    },
+    {
+      question:
+        "'Para cada posição i, retorne a SOMA de todos os elementos exceto nums[i].' Qual abordagem O(n)?",
+      options: [
+        "Para cada i, somar os outros (n passadas)",
+        "Soma total uma vez; answer[i] = total - nums[i] — o prefix/suffix degenerado em um escalar",
+        "Hash map de somas",
+        "Ordenar primeiro",
+      ],
+      answer: 1,
+      explanation:
+        "'Tudo exceto i' com soma é mais simples que com produto: a soma tem 'divisão' (subtração) sem pegadinha de zero. Uma passada para o total + uma para preencher = O(n).",
+    },
+    {
+      question:
+        "'Verifique se alguma dupla de elementos IGUAIS está a no máximo k posições de distância.' Qual padrão?",
+      options: [
+        "Two pointers convergentes",
+        "Hash map de valor → último índice visto: ao rever um valor, cheque a distância",
+        "Kadane",
+        "Prefix",
+      ],
+      answer: 1,
+      explanation:
+        "'Já vi esse valor? ONDE?' é a pergunta canônica do hash map (guardando índices). Pergunte ao passado, registre o índice novo. O(n).",
+    },
+    {
+      question:
+        "Sua solução é O(n²) e o enunciado diz n ≤ 10⁶. O que a árvore de decisão manda fazer?",
+      options: [
+        "Submeter mesmo assim para ver",
+        "Reconhecer o Time Limit Exceeded antecipado (10¹² passos) e procurar o desperdício que algum padrão elimina",
+        "Trocar de linguagem para uma mais rápida",
+        "Reduzir o array",
+      ],
+      answer: 1,
+      explanation:
+        "10¹² passos não passam em nenhuma linguagem. Os limites ditam a complexidade-alvo; o caminho é achar qual trabalho está sendo repetido e qual padrão o elimina.",
+    },
+    {
+      question:
+        "'Retorne os ÍNDICES de dois números (array NÃO ordenado) que somam o alvo.' Por que two pointers NÃO é a melhor escolha?",
+      options: [
+        "Porque two pointers só funciona com strings",
+        "Ordenar embaralharia os índices originais (e custaria O(n log n)); o hash map resolve em O(n) preservando índices",
+        "Porque two pointers é O(n²) aqui",
+        "É a melhor escolha",
+      ],
+      answer: 1,
+      explanation:
+        "Two pointers exige ordem, e ordenar destrói exatamente o que o enunciado pede (índices). Hash map: O(n), uma passada, índices intactos. Cada padrão tem seu requisito de entrada.",
+    },
+    {
+      question:
+        "'Maior PRODUTO de subarray contíguo' (com negativos). Qual o cuidado extra sobre o Kadane básico?",
+      options: [
+        "Nenhum, é idêntico ao da soma",
+        "Carregar também o PIOR produto terminando em i — dois negativos viram o melhor positivo",
+        "Usar dois hash maps",
+        "Ordenar antes",
+      ],
+      answer: 1,
+      explanation:
+        "O padrão generalizado é 'derive o estado em i do estado em i-1' — e no produto o estado precisa de melhor E pior. Quem decorou a fórmula erra; quem entendeu o padrão adapta.",
+    },
+    {
+      question:
+        "Qual é a ideia-mãe que TODOS os padrões da seção compartilham?",
+      options: [
+        "Usar sempre memória extra",
+        "Nunca repetir trabalho: cada elemento é processado O(1) vez(es), seja lembrando (hash), descartando (pointers), deslizando (window), acumulando (prefix) ou decidindo localmente (Kadane)",
+        "Ordenar o array antes de tudo",
+        "Evitar loops",
+      ],
+      answer: 1,
+      explanation:
+        "Todos derrotam o O(n²) da mesma forma: garantindo que nenhum trabalho seja refeito. Essa lente — 'que trabalho estou repetindo?' — é o que você leva para TODAS as próximas seções.",
+    },
+  ]}
+/>
+
+## Pronto para a prova?
+
+A prova final tem **três problemas inéditos** — um fácil, um médio e um
+difícil — com casos de teste ocultos, como no LeetCode real. Tudo que você
+precisa está nas 7 aulas desta seção (e uma dica honesta: a árvore de decisão
+lá de cima resolve a escolha do padrão dos três).
+
+**Boa prova!** Volte para a página da seção e clique em "Prova final".

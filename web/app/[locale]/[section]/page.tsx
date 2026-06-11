@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getLessons, getSection, SECTIONS } from "@/lib/sections";
+import { getExam } from "@/lib/exams";
 import { isLocale, LOCALES, t } from "@/lib/i18n";
 
 export function generateStaticParams() {
@@ -22,6 +23,7 @@ export default async function SectionPage({
   if (!section) notFound();
   const strings = t(locale);
   const lessons = getLessons(sectionSlug);
+  const exam = getExam(sectionSlug);
 
   return (
     <div>
@@ -62,6 +64,24 @@ export default async function SectionPage({
             </li>
           ))}
         </ol>
+      )}
+
+      {exam && (
+        <Link
+          href={`/${locale}/${sectionSlug}/prova`}
+          className="mt-6 block rounded-xl border-2 border-dashed border-amber-400 p-4 transition hover:border-amber-500 hover:shadow-md dark:border-amber-700"
+        >
+          <span className="font-mono text-xs text-amber-600 dark:text-amber-400">
+            🏁 PROVA FINAL
+          </span>
+          <h3 className="mt-1 font-semibold">
+            1 fácil + 1 médio + 1 difícil — problemas inéditos
+          </h3>
+          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+            Com casos de teste ocultos, como no LeetCode de verdade. É aqui que
+            você confirma que sai da seção resolvendo qualquer problema do tema.
+          </p>
+        </Link>
       )}
     </div>
   );

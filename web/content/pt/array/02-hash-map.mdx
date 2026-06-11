@@ -1,0 +1,211 @@
+# Padrão 1: Hash Map
+
+> O padrão mais usado do LeetCode. A ideia cabe numa frase: **troque memória
+> por tempo, lembrando o que você já viu.**
+
+## A teoria: que problema o hash map resolve?
+
+Um array é ótimo em responder *"o que existe na posição i?"* — custo O(1).
+Mas é péssimo em responder a pergunta inversa: *"o valor x existe? onde?"* —
+custo O(n), porque é preciso olhar item por item.
+
+O hash map (dicionário do Python, objeto/Map do JS) **inverte a pergunta**:
+ele indexa pelo *valor*, não pela posição. Com ele, *"já vi x? onde?"* custa
+O(1) em média.
+
+Por que O(1)? A intuição: o hash map calcula, a partir do valor, *em qual
+gaveta ele estaria* (a função de hash) — e vai direto na gaveta, sem
+procurar. É como saber a estante exata do livro pela ficha catalográfica, em
+vez de varrer a biblioteca.
+
+### Os sinais no enunciado
+
+Pense em hash map quando o problema pedir alguma dessas perguntas, repetidas
+muitas vezes:
+
+- **"Existe um par que..."** — para cada elemento, procuro um *complemento*
+  (soma, diferença, dobro...).
+- **"Tem repetido? Quantas vezes aparece?"** — contar ou detectar duplicatas.
+- **"Agrupe os que..."** — agrupar por alguma característica.
+- O enunciado pede **uma única passada** ou tempo O(n) num problema que
+  parece exigir comparações de pares.
+
+### O template mental
+
+Quase toda solução com hash map tem este formato:
+
+```text
+mapa = vazio
+para cada elemento x do array:
+    1. PERGUNTE ao mapa o que você precisa saber sobre o passado
+       ("já vi o complemento de x?", "quantos x já vi?")
+    2. Se a resposta resolve o problema → pronto
+    3. REGISTRE x no mapa para o futuro
+```
+
+O pulo do gato: perguntar **antes** de registrar. Assim cada elemento é
+comparado só com o passado, cada par é considerado exatamente uma vez, e uma
+única passada basta.
+
+## Exemplo 1 — Two Sum (o cartão de visitas do padrão)
+
+*"Dado um array e um alvo, retorne os índices de dois números que somam o
+alvo."*
+
+Aplicando o método da aula anterior:
+
+- **Força bruta:** para cada `nums[i]`, varrer o resto atrás de
+  `alvo - nums[i]`. São todos os pares: O(n²) — espaço O(1).
+- **O desperdício:** a busca pelo complemento refaz, a cada volta, um
+  trabalho de O(n) sobre valores que já passaram pelos nossos olhos.
+- **O padrão:** guarde cada valor visto (e seu índice) num hash map. A busca
+  pelo complemento vira uma consulta O(1).
+
+Veja a solução rodando passo a passo — repare que o mapa `seen` só cresce
+com o **passado**, e a pergunta vem sempre antes do registro:
+
+<TraceDemo id="two-sum" />
+
+### Por que é O(n)? (justificando, como prometido)
+
+- O loop roda **n vezes** — uma por elemento.
+- Dentro dele só há operações de hash map (`in`/consulta/inserção), cada uma
+  **O(1) em média** (regra 4 da seção de fundamentos).
+- n voltas × O(1) = **O(n) de tempo**.
+- O mapa pode acabar guardando todos os n elementos = **O(n) de espaço**.
+
+Compare: a força bruta era O(n²) de tempo com O(1) de espaço. O hash map
+comprou tempo pagando memória — o trade-off da aula de fundamentos,
+acontecendo na prática.
+
+| Solução | Tempo | Espaço | Por quê |
+| --- | --- | --- | --- |
+| Força bruta | O(n²) | O(1) | testa todos os pares |
+| Hash map | O(n) | O(n) | 1 passada × consultas O(1) |
+
+## Exemplo 2 — Contains Duplicate
+
+*"O array tem algum valor repetido?"* — é o padrão na sua forma mais pura:
+a pergunta ao passado é simplesmente *"já vi você?"*.
+
+Implemente você mesmo no editor abaixo (esqueleto pronto). Dica: aqui não
+precisamos de índices, então um **set** (hash map só de chaves) basta.
+
+<CodeRunner
+  python={`def contains_duplicate(nums):
+    vistos = set()
+    for x in nums:
+        # 1. pergunte ao passado
+        if x in vistos:
+            return True
+        # 3. registre para o futuro
+        vistos.add(x)
+    return False
+
+print(contains_duplicate([1, 2, 3, 1]))      # esperado: True
+print(contains_duplicate([1, 2, 3, 4]))      # esperado: False
+print(contains_duplicate([1, 1, 1, 3, 3]))   # esperado: True`}
+  javascript={`function containsDuplicate(nums) {
+  var vistos = {};
+  for (var i = 0; i < nums.length; i++) {
+    // 1. pergunte ao passado
+    if (vistos[nums[i]]) {
+      return true;
+    }
+    // 3. registre para o futuro
+    vistos[nums[i]] = true;
+  }
+  return false;
+}
+
+console.log(containsDuplicate([1, 2, 3, 1]));    // esperado: true
+console.log(containsDuplicate([1, 2, 3, 4]));    // esperado: false
+console.log(containsDuplicate([1, 1, 1, 3, 3])); // esperado: true`}
+/>
+
+Alternativa que vale conhecer: **ordenar e olhar vizinhos** — duplicatas
+ficam lado a lado. Tempo O(n log n) (o sort domina), espaço O(1). É o
+trade-off invertido: economiza memória pagando tempo.
+
+| Solução | Tempo | Espaço |
+| --- | --- | --- |
+| Força bruta (todos os pares) | O(n²) | O(1) |
+| Sort + vizinhos | O(n log n) | O(1) |
+| Hash set | O(n) | O(n) |
+
+## Onde mais esse padrão aparece
+
+Você vai reencontrar o hash map em *Group Anagrams* e *Valid Anagram*
+(seção String — agrupando e contando), no *Subarray Sum Equals K* (combinado
+com prefix, aula 5) e em metade dos problemas de grafos (guardando visitados).
+É o canivete suíço do curso.
+
+<Quiz
+  title="Quiz de fixação"
+  questions={[
+    {
+      question:
+        "No template do padrão, por que perguntar ao mapa ANTES de registrar o elemento atual?",
+      options: [
+        "Por desempenho: perguntar é mais rápido que registrar",
+        "Para cada par ser considerado uma única vez e evitar casar o elemento com ele mesmo",
+        "Porque o mapa não aceita registro antes de consulta",
+        "É só estilo, a ordem não importa",
+      ],
+      answer: 1,
+      explanation:
+        "Perguntando antes, cada elemento se compara só com o passado. No Two Sum com alvo 6 e nums [3, 3]: registrar antes faria o primeiro 3 'encontrar' a si mesmo.",
+    },
+    {
+      question:
+        "Por que a solução do Two Sum com hash map é O(n) e não O(n²)?",
+      options: [
+        "Porque tem só um loop, e loops únicos são sempre O(n)",
+        "Porque o loop roda n vezes e cada operação de mapa custa O(1) em média — n × O(1) = O(n)",
+        "Porque o hash map ordena os valores internamente",
+        "Porque arrays pequenos são rápidos",
+      ],
+      answer: 1,
+      explanation:
+        "A justificativa precisa das duas partes: n voltas E custo O(1) por volta. Se dentro do loop houvesse um `in` de lista (O(n)), o loop único ainda assim seria O(n²).",
+    },
+    {
+      question:
+        "Para Contains Duplicate, a solução 'ordenar e comparar vizinhos' (O(n log n), O(1) de espaço) faz sentido quando...",
+      options: [
+        "Nunca — hash set é sempre melhor",
+        "Quando memória extra é cara ou proibida pelo enunciado",
+        "Quando o array tem números negativos",
+        "Quando n é menor que 10",
+      ],
+      answer: 1,
+      explanation:
+        "É o trade-off invertido: paga O(n log n) de tempo para usar O(1) de espaço. Se o follow-up for 'sem memória extra', essa é a resposta.",
+    },
+    {
+      question:
+        "Enunciado novo: 'encontre dois números cuja DIFERENÇA é k'. Como o padrão hash map se aplica?",
+      options: [
+        "Não se aplica, é problema de two pointers",
+        "Para cada x, pergunte ao mapa se já viu x - k ou x + k",
+        "Guarde as diferenças de todos os pares no mapa",
+        "Ordene o mapa por valor",
+      ],
+      answer: 1,
+      explanation:
+        "O padrão generaliza trocando o complemento: na soma era alvo - x; na diferença, x - k (ou x + k). A estrutura — perguntar ao passado, registrar — é idêntica. Isso é pensar no padrão, não no problema.",
+    },
+  ]}
+/>
+
+## Resumo
+
+- Hash map responde *"já vi x? onde? quantas vezes?"* em **O(1) médio** —
+  array responde isso em O(n).
+- Template: **pergunte ao passado → registre para o futuro**, nessa ordem.
+- Sinais: pares com complemento, duplicatas, contagem, agrupamento, "uma
+  passada só".
+- Custo: tempo O(n), espaço O(n) — memória comprando tempo.
+
+Próxima aula: quando o desperdício não é busca repetida, mas **comparar pares
+que não têm chance** — two pointers.

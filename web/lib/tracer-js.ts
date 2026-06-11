@@ -16,8 +16,10 @@ import {
  * instrumentação de AST é uma evolução futura.
  */
 
-/** Limite de micro-passos do interpretador (cada statement gera vários). */
-const MAX_MICRO_STEPS = 200_000;
+/** Limite de micro-passos no modo trace (cada statement gera vários). */
+const MAX_MICRO_STEPS_TRACE = 200_000;
+/** Limite no modo execução simples (sem gravar trace, só correr o código). */
+const MAX_MICRO_STEPS_RUN = 5_000_000;
 
 const STATEMENT_TYPES = new Set([
   "VariableDeclaration",
@@ -108,7 +110,12 @@ function formatLogValue(value: unknown): string {
   }
 }
 
-export function traceJavaScript(code: string): TraceResult {
+export function traceJavaScript(
+  code: string,
+  options?: { record?: boolean },
+): TraceResult {
+  const record = options?.record ?? true;
+  const maxMicroSteps = record ? MAX_MICRO_STEPS_TRACE : MAX_MICRO_STEPS_RUN;
   let stdout = "";
   let error: string | null = null;
   let truncated = false;
@@ -152,10 +159,11 @@ export function traceJavaScript(code: string): TraceResult {
     while (running) {
       running = interpreter.step();
       microSteps++;
-      if (microSteps > MAX_MICRO_STEPS || steps.length >= MAX_TRACE_STEPS) {
+      if (microSteps > maxMicroSteps || steps.length >= MAX_TRACE_STEPS) {
         truncated = true;
         break;
       }
+      if (!record) continue;
       const stack = interpreter.stateStack;
       const top = stack[stack.length - 1];
       if (!top || !top.node.loc || !STATEMENT_TYPES.has(top.node.type)) {
@@ -187,6 +195,11 @@ export function runJavaScript(code: string): {
   stdout: string;
   error: string | null;
 } {
-  const result = traceJavaScript(code);
-  return { stdout: result.stdout, error: result.error };
+  const result = traceJavaScript(code, { record: false });
+  return {
+    stdout: result.stdout,
+    error: result.truncated
+      ? "Execução interrompida: limite de passos atingido (loop muito longo ou infinito?)"
+      : result.error,
+  };
 }

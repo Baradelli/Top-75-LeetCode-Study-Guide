@@ -26,6 +26,10 @@ const UI = {
     completed: "Concluída ✓",
     patterns: "Padrões",
     noLessons: "As aulas desta seção ainda estão sendo preparadas.",
+    prevLesson: "Aula anterior",
+    nextLesson: "Próxima aula",
+    allLessons: "Todas as aulas da seção",
+    goToExam: "Ir para a prova final",
   },
   en: {
     courseTitle: "LeetCode & Algorithms Course",
@@ -41,6 +45,10 @@ const UI = {
     completed: "Completed ✓",
     patterns: "Patterns",
     noLessons: "Lessons for this section are still being prepared.",
+    prevLesson: "Previous lesson",
+    nextLesson: "Next lesson",
+    allLessons: "All lessons in this section",
+    goToExam: "Go to final exam",
   },
 } as const;
 

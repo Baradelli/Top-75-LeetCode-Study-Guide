@@ -1,65 +1,142 @@
-# Introdução + POC: two-sum linha a linha
+# Reconhecendo problemas de array
 
-> Esta aula é a prova de conceito da fundação técnica do curso: código de
-> verdade executando no seu navegador, com visualização passo a passo.
+> O objetivo desta seção não é decorar a solução de 8 problemas — é você sair
+> daqui resolvendo **qualquer** problema de array, inclusive os difíceis que
+> nunca viu. Esta aula ensina o método; as próximas, os padrões.
 
-## O problema
+## Por que array é a primeira seção
 
-Dado um array de números e um alvo, encontre os índices de dois números que
-somados dão o alvo. É o problema nº 1 do LeetCode — e o exemplo perfeito do
-padrão **hash map**.
+Quase todo problema de LeetCode passa por um array em algum momento. Os cinco
+padrões que você vai aprender aqui — hash map, two pointers, sliding window,
+prefix e Kadane — reaparecem disfarçados em strings, matrizes, intervalos e
+até em árvores. Dominar esta seção é dominar o alicerce.
 
-## Veja o algoritmo funcionando
+## O método geral (serve para qualquer problema)
 
-Use os controles abaixo para executar o algoritmo passo a passo. Repare como o
-hash map `seen` vai guardando cada número visitado, e como em cada posição o
-algoritmo pergunta: *"o complemento que eu preciso já passou por aqui?"*
+Diante de qualquer enunciado de array, siga estes 4 passos. Eles são o
+"algoritmo para escolher o algoritmo":
 
-<TwoSumDemo />
+### Passo 1 — Resolva no braço primeiro
 
-## Experimente você mesmo
+Pegue o exemplo do enunciado e resolva **na mão**, sem código. Se você não
+consegue resolver com papel e caneta, nenhum padrão vai salvar. Esse passo
+também revela os casos especiais: array vazio? um elemento só? números
+negativos? duplicados?
 
-Edite o código abaixo e execute. Troque o array, o alvo, ou quebre a solução
-de propósito para ver o que acontece — o código roda de verdade, aqui no
-navegador.
+### Passo 2 — Escreva a força bruta (mentalmente)
 
-<CodeRunner
-  python={`def two_sum(nums, target):
-    seen = {}
-    for i in range(len(nums)):
-        complement = target - nums[i]
-        if complement in seen:
-            return [seen[complement], i]
-        seen[nums[i]] = i
-    return []
+Qual é a solução burra que testa tudo? Quase sempre é "para cada elemento,
+olhe todos os outros" — dois loops, O(n²). Ela é seu ponto de partida, não
+sua vergonha: numa entrevista, *falar* a força bruta primeiro mostra que você
+entendeu o problema.
 
-print(two_sum([2, 7, 11, 15], 9))
-print(two_sum([3, 2, 4], 6))
-print(two_sum([3, 3], 6))`}
-  javascript={`function twoSum(nums, target) {
-  var seen = {};
-  for (var i = 0; i < nums.length; i++) {
-    var complement = target - nums[i];
-    if (seen[complement] !== undefined) {
-      return [seen[complement], i];
-    }
-    seen[nums[i]] = i;
-  }
-  return [];
-}
+### Passo 3 — Ache o desperdício
 
-console.log(twoSum([2, 7, 11, 15], 9));
-console.log(twoSum([3, 2, 4], 6));
-console.log(twoSum([3, 3], 6));`}
+Esta é a pergunta de ouro: **que trabalho a força bruta repete sem
+necessidade?** Cada padrão da seção elimina um tipo específico de
+desperdício:
+
+| O desperdício da força bruta | O padrão que o elimina |
+| --- | --- |
+| "Procuro o mesmo valor várias vezes" | **Hash map** — lembre o que já viu |
+| "Comparo pares que obviamente não podem ser a resposta" | **Two pointers** — descarte candidatos em bloco |
+| "Recalculo a janela inteira que mal mudou" | **Sliding window** — atualize só a borda |
+| "Resomo o mesmo intervalo várias vezes" | **Prefix** — pré-calcule acumulados |
+| "Reavalio todos os começos de subarray" | **Kadane** — decida localmente: estender ou recomeçar |
+
+### Passo 4 — Confira contra os limites
+
+O enunciado sempre diz o tamanho máximo da entrada — e isso **dita** a
+complexidade que você precisa (lembra da tabela de Big-O?):
+
+| Limite de n | Complexidade necessária | Tradução |
+| --- | --- | --- |
+| n ≤ ~500 | O(n²) ou até O(n³) passa | força bruta pode bastar |
+| n ≤ ~100.000 | O(n log n) | provavelmente tem um sort no caminho |
+| n ≤ ~1.000.000 | O(n) ou O(n log n) | precisa de um dos padrões |
+
+Se sua solução é O(n²) e n vai a 10⁵, você já sabe o veredito antes de
+submeter: Time Limit Exceeded. Volte ao passo 3.
+
+## O método em ação (sem spoiler)
+
+Pegue o problema clássico: *"encontre dois números que somam um alvo"*
+(Two Sum). Aplicando o método:
+
+1. **No braço:** `[2, 7, 11, 15]`, alvo 9 → 2 + 7 = 9. Fácil manualmente:
+   você olha um número e *procura* o que falta.
+2. **Força bruta:** para cada `nums[i]`, percorra o resto procurando
+   `alvo - nums[i]`. Dois loops, O(n²).
+3. **Desperdício:** a cada volta eu *procuro de novo, do zero,* um valor no
+   array — sendo que já passei por ele! Se eu **lembrasse** o que já vi,
+   a busca seria instantânea.
+4. **Limites:** n até 10⁴ — O(n²) até passa raspando, mas o follow-up da
+   entrevista é certo: "consegue fazer em uma passada?"
+
+"Lembrar o que já vi com busca instantânea" tem nome: **hash map** — a
+próxima aula. Cada aula de padrão desta seção segue essa mesma trilha:
+primeiro o desperdício, depois a ideia que o elimina, depois os problemas
+onde ela brilha.
+
+## Os 8 problemas da seção
+
+Estes são os problemas do Top 75 que vamos usar como **exemplos** dos
+padrões (o objetivo é o padrão, não o problema):
+
+- Two Sum e Contains Duplicate → *hash map*
+- Container With Most Water e 3Sum → *two pointers*
+- Best Time to Buy and Sell Stock → *sliding window / mínimo móvel*
+- Product of Array Except Self → *prefix e suffix*
+- Maximum Subarray e Maximum Product Subarray → *Kadane*
+
+E na prova final: três problemas **inéditos** para você aplicar tudo isso
+sem rede de proteção.
+
+<Quiz
+  title="Quiz de fixação"
+  questions={[
+    {
+      question:
+        "Qual é a 'pergunta de ouro' do passo 3 do método, depois de pensar na força bruta?",
+      options: [
+        "Qual estrutura de dados é mais moderna?",
+        "Que trabalho a força bruta repete sem necessidade?",
+        "Como deixar o código mais curto?",
+        "Qual linguagem é mais rápida?",
+      ],
+      answer: 1,
+      explanation:
+        "Cada padrão existe para eliminar um desperdício específico da força bruta. Identificar o desperdício é o que aponta o padrão certo.",
+    },
+    {
+      question:
+        "O enunciado diz n ≤ 100.000 e sua solução é O(n²). O que você conclui ANTES de submeter?",
+      options: [
+        "Vai passar com folga",
+        "Vai dar Time Limit Exceeded (~10 bilhões de passos): preciso de um padrão melhor",
+        "Vai dar erro de memória",
+        "Impossível saber sem testar",
+      ],
+      answer: 1,
+      explanation:
+        "(10⁵)² = 10¹⁰ passos — ordens de grandeza acima do que roda em 1-2s. Os limites do enunciado ditam a complexidade alvo: aqui, O(n) ou O(n log n).",
+    },
+    {
+      question:
+        "Num problema, você percebe que a força bruta fica procurando, repetidamente, se um valor existe no array. Qual padrão ataca exatamente esse desperdício?",
+      options: ["Kadane", "Sliding window", "Hash map", "Prefix"],
+      answer: 2,
+      explanation:
+        "Procurar repetidamente = desperdício de busca. O hash map lembra o que já foi visto e responde 'já vi esse valor?' em O(1).",
+    },
+  ]}
 />
 
-## Complexidade
+## Resumo
 
-- **Tempo:** O(n) — uma única passada pelo array.
-- **Espaço:** O(n) — o hash map pode guardar todos os elementos.
+- O método: **resolver no braço → força bruta → achar o desperdício →
+  conferir limites.**
+- Os limites do enunciado **ditam** a complexidade necessária.
+- Os 5 padrões da seção são 5 respostas a 5 desperdícios diferentes.
 
-## O que vem a seguir
-
-Esta é só a demonstração da fundação. A seção Array completa terá aulas de
-todos os padrões (hash map, two pointers, sliding window, prefix product e
-Kadane), quizzes e a prova final.
+Próxima aula: o padrão mais usado do LeetCode inteiro — **hash map**.

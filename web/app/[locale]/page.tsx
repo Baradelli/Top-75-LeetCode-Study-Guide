@@ -37,7 +37,7 @@ export default async function HomePage({
             >
               <div className="flex items-center justify-between">
                 <span className="font-mono text-xs text-zinc-400">
-                  {String(index + 1).padStart(2, "0")}
+                  {String(index).padStart(2, "0")}
                 </span>
                 <span
                   className={`rounded-full px-2 py-0.5 text-xs ${

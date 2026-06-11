@@ -1,0 +1,162 @@
+# Padrão 4: Prefix e Suffix
+
+> Pague O(n) **uma vez** para pré-calcular acumulados — e depois responda
+> perguntas sobre qualquer trecho do array em O(1) cada.
+
+## A teoria: que problema o prefix resolve?
+
+Pense num array de somas. Quanto custa responder *"qual a soma do trecho
+entre i e j?"*. Do jeito ingênuo, O(n) por pergunta — e um problema que faz
+n perguntas vira O(n²).
+
+O desperdício: cada pergunta resoma elementos que já foram somados em
+perguntas anteriores. A solução é **acumular uma vez e reusar para sempre**:
+
+```text
+prefix[i] = soma de TODOS os elementos antes da posição i
+prefix[0] = 0 (não há nada antes do início)
+
+soma do trecho [i..j] = prefix[j + 1] - prefix[i]
+```
+
+Por que a subtração funciona? `prefix[j+1]` soma tudo até j; `prefix[i]`
+soma tudo antes de i. A diferença é exatamente o miolo `[i..j]` — qualquer
+trecho, em uma subtração: **O(1) por pergunta** depois de O(n) de preparo.
+
+### Os sinais no enunciado
+
+- Perguntas repetidas sobre **somas/produtos de trechos** ("range sum").
+- **"Para cada posição, considere todo o resto"** — tudo à esquerda ×
+  tudo à direita.
+- "Quantos subarrays somam exatamente k?" — prefix combinado com hash map.
+- Subarrays contíguos **com números negativos** (onde sliding window
+  quebrou, lembra?).
+
+### Prefix + hash map: o combo
+
+Eis a conexão mais bonita entre as aulas. *"Quantos subarrays somam k?"*:
+todo subarray `[i..j]` com soma k satisfaz `prefix[j+1] - prefix[i] = k`,
+ou seja: `prefix[i] = prefix[j+1] - k`.
+
+Percorra o array acumulando a soma e pergunte ao hash map: *"quantas vezes
+já vi o prefixo `soma_atual - k`?"* — é o template do Two Sum, aplicado a
+prefixos! Pergunte ao passado, registre para o futuro. O(n) total para um
+problema cuja força bruta é O(n²). (Guarde esse combo: ele vai ser útil em
+breve... 😉)
+
+## Exemplo — Product of Array Except Self
+
+*"Retorne um array onde `answer[i]` é o produto de todos os elementos,
+EXCETO `nums[i]` — sem usar divisão, em O(n)."*
+
+- **Força bruta:** para cada i, multiplicar os outros n-1 elementos —
+  O(n²).
+- **A tentação:** produto total ÷ `nums[i]`. Além de proibida pelo
+  enunciado, a divisão **quebra com zeros** (divisão por zero, e com dois
+  zeros tudo é zero).
+- **O padrão:** "tudo exceto i" = (tudo à **esquerda** de i) × (tudo à
+  **direita** de i). São exatamente um prefix e um suffix de produtos!
+
+```text
+passada 1 (esquerda → direita): answer[i] = produto de tudo antes de i
+passada 2 (direita → esquerda): answer[i] *= produto de tudo depois de i
+```
+
+Veja as duas passadas no visualizador — repare no acumulador `prefix`
+preenchendo o `answer` na ida, e no `suffix` completando na volta:
+
+<TraceDemo id="product-except-self" />
+
+### Por que é O(n)? E por que o espaço é O(1)?
+
+- **Tempo:** duas passadas em sequência — O(n) + O(n) = O(n) (regra 1:
+  sequência soma, constante cai).
+- **Espaço:** o truque fino — em vez de criar arrays `prefix[]` e
+  `suffix[]` (O(n) cada), carregamos **um acumulador escalar** em cada
+  passada e escrevemos direto no `answer`. Como o array de resposta não
+  conta como espaço extra (ele É a resposta), o extra são duas variáveis:
+  **O(1)**.
+
+| Solução | Tempo | Espaço extra | Por quê |
+| --- | --- | --- | --- |
+| Força bruta | O(n²) | O(1) | n produtos de n-1 fatores |
+| Divisão | O(n) | O(1) | ❌ quebra com zeros (e é proibida) |
+| Arrays prefix + suffix | O(n) | O(n) | dois arrays auxiliares |
+| Acumuladores nas 2 passadas | O(n) | **O(1)** | escreve direto na resposta |
+
+## Generalize: prefix não é só de soma
+
+O acumulado pode ser qualquer operação que se constrói da esquerda para a
+direita: soma, produto, máximo ("maior elemento até aqui"), contagem
+("quantos pares até aqui"). Você já usou um sem perceber: o `min_price` da
+aula passada era um **prefix de mínimo** carregado como escalar! E o
+`suffix` é o mesmo filme de trás para frente.
+
+<Quiz
+  title="Quiz de fixação"
+  questions={[
+    {
+      question:
+        "Com o array de prefixos pronto, por que a soma de QUALQUER trecho [i..j] custa O(1)?",
+      options: [
+        "Porque o array de prefixos é pequeno",
+        "Porque vira uma subtração: prefix[j+1] - prefix[i] — o trabalho de somar já foi pago no preparo",
+        "Porque o trecho é sempre curto",
+        "Não custa O(1), custa O(j - i)",
+      ],
+      answer: 1,
+      explanation:
+        "Pague O(n) uma vez, responda infinitas perguntas a O(1) cada. n perguntas: O(n) total em vez de O(n²). Pré-computação trocando preparo por consulta.",
+    },
+    {
+      question:
+        "No Product Except Self, por que 'produto total dividido por nums[i]' não serve?",
+      options: [
+        "Porque divisão é lenta",
+        "Porque o enunciado proíbe — e com zeros no array a estratégia quebra de vez",
+        "Porque dá overflow sempre",
+        "Serve perfeitamente",
+      ],
+      answer: 1,
+      explanation:
+        "Um zero no array: divisão por zero ao calcular answer desse índice. A decomposição esquerda × direita resolve sem divisão e sem caso especial.",
+    },
+    {
+      question:
+        "Como a versão final do Product Except Self consegue espaço extra O(1)?",
+      options: [
+        "Comprimindo os arrays auxiliares",
+        "Carregando o acumulado como UMA variável escalar por passada e escrevendo direto no array de resposta (que não conta como extra)",
+        "Usando recursão",
+        "Não consegue — é O(n)",
+      ],
+      answer: 1,
+      explanation:
+        "O prefix não precisa existir inteiro na memória: na passada da esquerda, basta o acumulado ATÉ AQUI. O array de resposta é obrigatório de qualquer forma, então não conta como espaço extra.",
+    },
+    {
+      question:
+        "'Quantos subarrays contíguos somam exatamente k?' (com negativos). Qual a estratégia O(n)?",
+      options: [
+        "Sliding window clássico",
+        "Acumular a soma e perguntar a um hash map quantas vezes o prefixo (soma_atual - k) já apareceu — Two Sum sobre prefixos",
+        "Ordenar e usar two pointers",
+        "Kadane",
+      ],
+      answer: 1,
+      explanation:
+        "soma[i..j] = k equivale a prefix[i] = prefix_atual - k. Contar ocorrências de um valor já visto é o hash map da aula 1. Negativos quebram sliding window, mas prefix + hash map não se abala.",
+    },
+  ]}
+/>
+
+## Resumo
+
+- Prefix = **pague O(n) uma vez, responda trechos em O(1) para sempre**.
+- "Tudo exceto i" = prefix(esquerda) × suffix(direita) — duas passadas.
+- Acumulador escalar + escrever na resposta = espaço extra O(1).
+- **Prefix + hash map** resolve contagem de subarrays com soma k — inclusive
+  com negativos.
+
+Próxima aula: o último padrão da seção e o mais elegante — **Kadane**, a
+decisão local que resolve o subarray máximo em uma passada.

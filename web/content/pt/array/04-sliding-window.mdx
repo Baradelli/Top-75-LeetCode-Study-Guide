@@ -1,0 +1,205 @@
+# Padrão 3: Sliding Window
+
+> Quando a pergunta é sobre **trechos contíguos** (janelas) do array, não
+> recalcule cada janela do zero: **deslize** — atualize só o que entrou e o
+> que saiu.
+
+## A teoria: que problema o sliding window resolve?
+
+Reconheça os enunciados: *"o maior subarray que..."*, *"a menor janela
+contendo..."*, *"a soma de cada trecho de k dias..."*. A palavra-chave é
+**contíguo** — os elementos da resposta são vizinhos no array.
+
+A força bruta testa todas as janelas: O(n²) janelas possíveis, e ainda paga
+O(n) para avaliar cada uma — até O(n³)! O desperdício é gritante: a janela
+`[i..j]` e a janela `[i+1..j+1]` compartilham quase todos os elementos, e a
+força bruta recalcula tudo como se nunca os tivesse visto.
+
+A ideia do padrão: trate a janela como um **estado vivo**. Ao deslizar, um
+elemento **entra** pela direita e um **sai** pela esquerda — atualize o
+estado com esses dois toques de O(1) e pronto: a nova janela está avaliada.
+
+### As duas variantes
+
+**Janela fixa** (tamanho k dado pelo enunciado):
+
+```text
+calcule o estado da primeira janela [0..k-1]
+para right de k até n-1:
+    estado += entrada de nums[right]
+    estado -= saída de nums[right - k]
+    registre o melhor
+```
+
+**Janela variável** (procurando a maior/menor janela que satisfaz uma
+condição):
+
+```text
+left = 0
+para right de 0 até n-1:
+    nums[right] entra no estado
+    enquanto o estado VIOLA a condição:
+        nums[left] sai do estado
+        left += 1
+    registre o melhor (janela [left..right] é válida)
+```
+
+### Por que a janela variável é O(n) — e não O(n²)?
+
+O `while` interno engana: parece loop dentro de loop. Mas conte de outro
+jeito: **cada elemento entra na janela exatamente 1 vez (right passa por
+ele) e sai no máximo 1 vez (left passa por ele)**. São no máximo 2n
+movimentos de ponteiro no total, cada um com trabalho O(1). Total: **O(n)**
+— mesmo argumento de "progresso irreversível" do two pointers (não por
+acaso: sliding window É um two pointers andando na mesma direção).
+
+### Os sinais no enunciado
+
+- "Subarray/substring **contíguo**" + "maior/menor/melhor".
+- Janelas de tamanho fixo k ("média de cada k dias").
+- Uma condição que a janela deve satisfazer ("no máximo k caracteres
+  distintos", "soma ≥ alvo").
+- **Cuidado:** com números negativos, "aumentar a janela" pode não aumentar
+  a soma — aí o sliding window de soma falha e o padrão certo muda (prefix,
+  próxima aula, ou Kadane).
+
+## Exemplo — Best Time to Buy and Sell Stock
+
+*"Dado o preço da ação em cada dia, escolha um dia para comprar e um dia
+posterior para vender, maximizando o lucro."*
+
+- **Força bruta:** todo par (compra, venda) com venda depois da compra —
+  O(n²).
+- **O desperdício:** para cada dia de venda, a força bruta reprocura o menor
+  preço do passado — que mal mudou de um dia para o outro.
+- **O padrão:** deslize o dia de venda (`i`) e carregue como estado o
+  **menor preço já visto** (`min_price`). A cada dia: lucro se vender hoje =
+  `preço - min_price`; depois atualize o `min_price`.
+
+É uma janela variável onde o estado é um único número — o mínimo da janela
+`[0..i]`. Veja o estado sendo carregado em vez de recalculado:
+
+<TraceDemo id="best-time-stock" />
+
+### Por que é O(n)?
+
+Uma única passada (n voltas), e o estado se atualiza com duas comparações
+O(1) por volta — porque o mínimo do prefixo é **incremental**: o mínimo até
+hoje é `min(mínimo até ontem, preço de hoje)`. n × O(1) = **O(n) de tempo,
+O(1) de espaço** (o estado são duas variáveis).
+
+| Solução | Tempo | Espaço | Por quê |
+| --- | --- | --- | --- |
+| Força bruta | O(n²) | O(1) | todos os pares compra/venda |
+| Janela com mínimo móvel | O(n) | O(1) | estado incremental, 1 passada |
+
+## O template em ação: janela fixa
+
+Para fixar a mecânica de entrada/saída, um exemplo clássico: *maior soma de
+uma janela de k elementos*. Repare nas duas linhas que fazem toda a magia —
+sem nenhum recálculo:
+
+<CodeRunner
+  python={`def maior_soma_janela(nums, k):
+    soma = sum(nums[:k])        # primeira janela: O(k), uma vez so
+    melhor = soma
+    for right in range(k, len(nums)):
+        soma += nums[right]       # entrou pela direita
+        soma -= nums[right - k]   # saiu pela esquerda
+        melhor = max(melhor, soma)
+    return melhor
+
+print(maior_soma_janela([2, 1, 5, 1, 3, 2], 3))   # esperado: 9 (5+1+3)
+print(maior_soma_janela([2, 3, 4, 1, 5], 2))      # esperado: 7 (3+4)`}
+  javascript={`function maiorSomaJanela(nums, k) {
+  var soma = 0;
+  for (var i = 0; i < k; i++) soma += nums[i]; // primeira janela
+  var melhor = soma;
+  for (var right = k; right < nums.length; right++) {
+    soma += nums[right];       // entrou pela direita
+    soma -= nums[right - k];   // saiu pela esquerda
+    melhor = Math.max(melhor, soma);
+  }
+  return melhor;
+}
+
+console.log(maiorSomaJanela([2, 1, 5, 1, 3, 2], 3)); // esperado: 9 (5+1+3)
+console.log(maiorSomaJanela([2, 3, 4, 1, 5], 2));    // esperado: 7 (3+4)`}
+/>
+
+## Onde o padrão mostra força total
+
+O sliding window brilha mesmo na seção **String**: *Longest Substring
+Without Repeating Characters* (janela variável + hash set como estado),
+*Minimum Window Substring* (janela variável + mapa de contagens). O estado
+fica mais rico, mas o esqueleto é exatamente o template desta aula — quem
+domina o template aqui, chega lá só trocando o estado.
+
+<Quiz
+  title="Quiz de fixação"
+  questions={[
+    {
+      question: "Qual é o desperdício que o sliding window elimina?",
+      options: [
+        "Buscar valores repetidamente no array",
+        "Recalcular do zero janelas que compartilham quase todos os elementos com a anterior",
+        "Comparar pares sem chance de ser resposta",
+        "Usar memória demais",
+      ],
+      answer: 1,
+      explanation:
+        "Janelas vizinhas diferem em só 2 elementos (um entra, um sai). Atualizar o estado com esses 2 toques de O(1) substitui um recálculo de O(n) por janela.",
+    },
+    {
+      question:
+        "Na janela variável há um while dentro do for. Por que ainda é O(n)?",
+      options: [
+        "Porque o while quase nunca roda",
+        "Porque cada elemento entra 1 vez e sai no máximo 1 vez da janela: no máximo 2n movimentos no total",
+        "Porque o compilador otimiza",
+        "Não é — é O(n²)",
+      ],
+      answer: 1,
+      explanation:
+        "Conte movimentos de ponteiro, não voltas de loop: right anda n vezes, left anda no máximo n vezes. 2n × O(1) = O(n). É o argumento de progresso irreversível de novo.",
+    },
+    {
+      question:
+        "Por que o sliding window de soma FALHA com números negativos (ex.: 'maior soma de subarray qualquer')?",
+      options: [
+        "Negativos estouram a memória",
+        "A lógica 'janela maior = soma maior' quebra: encolher a janela pode AUMENTAR a soma, e o padrão perde a resposta",
+        "O while vira loop infinito",
+        "Não falha, sempre funciona",
+      ],
+      answer: 1,
+      explanation:
+        "O shrink/expand depende de monotonia: crescer ajuda, encolher corrige. Negativos quebram isso. Para 'maior soma de subarray' com negativos, o padrão certo é Kadane (aula 6).",
+    },
+    {
+      question:
+        "No Best Time to Buy and Sell Stock, qual é o 'estado' que a janela carrega e por que ele se atualiza em O(1)?",
+      options: [
+        "Todos os preços já vistos, reordenados a cada dia",
+        "O menor preço já visto: mínimo até hoje = min(mínimo até ontem, preço de hoje)",
+        "O lucro de todos os pares possíveis",
+        "A média dos preços",
+      ],
+      answer: 1,
+      explanation:
+        "O mínimo de um prefixo é incremental — uma comparação por dia. Estado incremental é o que define um bom sliding window: se atualizar o estado custasse O(n), o padrão não ganharia nada.",
+    },
+  ]}
+/>
+
+## Resumo
+
+- Sinais: **subarray/substring contíguo** + maior/menor/condição.
+- A janela é um **estado vivo**: um elemento entra, um sai, O(1) por passo.
+- Janela variável: `right` expande, `left` encolhe quando a condição viola —
+  O(n) porque cada elemento entra/sai no máximo 1 vez.
+- Negativos quebram a monotonia da soma → use prefix (aula 5) ou Kadane
+  (aula 6).
+
+Próxima aula: e quando as janelas que importam **não** são vizinhas?
+Pré-calcule tudo — **prefix e suffix**.

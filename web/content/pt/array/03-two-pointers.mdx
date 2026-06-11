@@ -1,0 +1,234 @@
+# Padrão 2: Two Pointers
+
+> Dois índices que se movem com inteligência. O segredo do padrão não são os
+> ponteiros — é o **argumento que permite descartar candidatos em bloco** sem
+> nem olhar para eles.
+
+## A teoria: que problema o two pointers resolve?
+
+Muitos problemas pedem o melhor **par** (ou trio) de elementos: o par que
+soma o alvo, o par que forma o maior recipiente, o trio que soma zero. A
+força bruta testa todos os pares: O(n²).
+
+O two pointers ataca o desperdício central dessa força bruta: **ela testa
+pares que não têm nenhuma chance de ser a resposta.** Se o array tem alguma
+*estrutura* — está ordenado, ou a qualidade do par depende do menor lado —
+dá para provar que blocos inteiros de pares são inúteis e pulá-los de uma
+vez.
+
+### A mecânica clássica (ponteiros convergentes)
+
+```text
+left  = início do array
+right = fim do array
+enquanto left < right:
+    avalie o par (left, right)
+    decida QUAL ponteiro mover — e o movimento descarta
+    todos os pares que envolviam a posição abandonada
+```
+
+Cada passo elimina **uma posição inteira** (e todos os pares com ela). São
+n posições, então o loop roda no máximo n vezes: **O(n)**. A mágica está na
+decisão de qual ponteiro mover — e ela exige uma justificativa.
+
+### O exemplo perfeito: par que soma o alvo, em array ORDENADO
+
+Array ordenado, procuro dois números que somam `alvo`:
+
+- Se `nums[left] + nums[right]` é **menor** que o alvo → a soma precisa
+  crescer. Mover `right` para a esquerda só *diminui* a soma. Logo, o único
+  movimento útil é `left += 1`. E mais: acabamos de **provar** que
+  `nums[left]` não forma par com ninguém (até o maior elemento foi pouco) —
+  descartamos n pares de uma vez.
+- Se a soma é **maior** → simétrico: `right -= 1`.
+
+Esse é o coração do padrão: cada movimento vem com uma **prova de descarte**.
+Sem a prova, two pointers é chute.
+
+### Os sinais no enunciado
+
+- O array está **ordenado** (ou ordenar não estraga a resposta).
+- A pergunta envolve **pares/trios** com alguma condição de soma, distância
+  ou tamanho.
+- Dá para raciocinar: "se o par atual falha por *excesso*, mover o ponteiro X
+  não ajuda".
+- Pedem O(1) de espaço (hash map gastaria O(n)).
+
+## Exemplo 1 — Container With Most Water
+
+*"Cada posição é uma parede de altura `heights[i]`. Escolha duas paredes que
+formem o recipiente com mais água."* A água é limitada pela parede **menor**:
+`área = (right - left) × min(altura_left, altura_right)`.
+
+- **Força bruta:** todas as combinações de paredes — O(n²).
+- **O desperdício:** se a parede da esquerda é a menor, *qualquer* outro par
+  com ela e uma parede mais próxima é pior: a largura encolhe e a altura
+  continua travada pela mesma parede menor. Todos esses pares são inúteis.
+- **O padrão:** comece com o recipiente mais largo (pontas) e, a cada passo,
+  **abandone a parede menor** — é a única esperança de achar algo melhor.
+
+Veja a regra de decisão funcionando (repare: o ponteiro que se move é sempre
+o da barra mais baixa):
+
+<TraceDemo id="container-with-most-water" />
+
+### Por que é O(n)?
+
+A cada volta do loop, `left` sobe ou `right` desce — os ponteiros só andam
+**um em direção ao outro** e nunca voltam. Eles se cruzam depois de no
+máximo n-1 movimentos, e cada volta faz só trabalho O(1) (comparações e
+aritmética). Total: **O(n) de tempo, O(1) de espaço** — nem memória extra
+este padrão pede.
+
+| Solução | Tempo | Espaço | Por quê |
+| --- | --- | --- | --- |
+| Força bruta | O(n²) | O(1) | todos os pares de paredes |
+| Two pointers | O(n) | O(1) | cada passo descarta uma parede para sempre |
+
+## Exemplo 2 — 3Sum (o padrão composto)
+
+*"Encontre todos os trios que somam zero, sem repetir trios."* Parece outro
+universo, mas é o problema do "par que soma o alvo" usado como peça:
+
+1. **Ordene** o array — O(n log n). (Agora two pointers fica disponível!)
+2. **Fixe** o primeiro número `nums[i]` — um loop O(n).
+3. O resto virou: *"no trecho ordenado à direita de i, ache pares que somam
+   `-nums[i]`"* — exatamente o exemplo da teoria, O(n) com dois ponteiros.
+4. Pule valores repetidos ao avançar (para não duplicar trios).
+
+### Por que é O(n²)?
+
+Loop de fora O(n) × varredura de ponteiros O(n) = O(n²); o sort O(n log n)
+fica menor e some na soma (regra 1 dos fundamentos). Para um problema que
+tem O(n³) de força bruta, O(n²) com espaço O(1) é o estado da arte.
+
+<CodeRunner
+  python={`def three_sum(nums):
+    nums.sort()
+    resultado = []
+    for i in range(len(nums)):
+        if i > 0 and nums[i] == nums[i - 1]:
+            continue  # pula primeiro numero repetido
+        left, right = i + 1, len(nums) - 1
+        while left < right:
+            soma = nums[i] + nums[left] + nums[right]
+            if soma < 0:
+                left += 1      # soma precisa crescer
+            elif soma > 0:
+                right -= 1     # soma precisa diminuir
+            else:
+                resultado.append([nums[i], nums[left], nums[right]])
+                left += 1
+                while left < right and nums[left] == nums[left - 1]:
+                    left += 1  # pula duplicados do meio
+    return resultado
+
+print(three_sum([-1, 0, 1, 2, -1, -4]))  # esperado: [[-1,-1,2],[-1,0,1]]`}
+  javascript={`function threeSum(nums) {
+  nums.sort(function (a, b) { return a - b; });
+  var resultado = [];
+  for (var i = 0; i < nums.length; i++) {
+    if (i > 0 && nums[i] === nums[i - 1]) continue; // pula repetido
+    var left = i + 1;
+    var right = nums.length - 1;
+    while (left < right) {
+      var soma = nums[i] + nums[left] + nums[right];
+      if (soma < 0) {
+        left++;        // soma precisa crescer
+      } else if (soma > 0) {
+        right--;       // soma precisa diminuir
+      } else {
+        resultado.push([nums[i], nums[left], nums[right]]);
+        left++;
+        while (left < right && nums[left] === nums[left - 1]) {
+          left++;      // pula duplicados do meio
+        }
+      }
+    }
+  }
+  return resultado;
+}
+
+console.log(JSON.stringify(threeSum([-1, 0, 1, 2, -1, -4])));
+// esperado: [[-1,-1,2],[-1,0,1]]`}
+/>
+
+## Hash map ou two pointers? (os dois resolvem pares!)
+
+| Situação | Melhor escolha | Por quê |
+| --- | --- | --- |
+| Array sem ordem, preciso dos **índices originais** | Hash map | ordenar destruiria os índices |
+| Array já ordenado (ou posso ordenar) | Two pointers | O(1) de espaço, sem custo de hash |
+| Pares com condição de **desigualdade** (soma < alvo, distância ≤ k) | Two pointers | hash map só acha valores exatos |
+| Espaço O(1) exigido | Two pointers | hash map paga O(n) |
+
+<Quiz
+  title="Quiz de fixação"
+  questions={[
+    {
+      question:
+        "No Container With Most Water, por que mover sempre o ponteiro da parede MENOR?",
+      options: [
+        "Porque a parede maior pode quebrar",
+        "Porque manter a parede menor trava a altura: com largura encolhendo, nenhum par futuro com ela supera o atual",
+        "Para o loop terminar mais rápido",
+        "É convenção, mover o maior também funciona",
+      ],
+      answer: 1,
+      explanation:
+        "A área é largura × altura da MENOR parede. Mantendo a menor, a altura não passa dela e a largura só cai — todos esses pares estão provadamente descartados. Mover o maior pode perder a resposta ótima.",
+    },
+    {
+      question:
+        "Por que two pointers convergentes garante O(n) e não O(n²)?",
+      options: [
+        "Porque usa dois ponteiros, e 2 × n = O(n)",
+        "Porque cada volta move um ponteiro só para dentro, sem nunca voltar — no máximo n movimentos até se cruzarem",
+        "Porque o array está ordenado",
+        "Porque não usa memória extra",
+      ],
+      answer: 1,
+      explanation:
+        "A justificativa é o progresso irreversível: cada iteração consome uma posição para sempre. n posições → no máximo n iterações × trabalho O(1).",
+    },
+    {
+      question:
+        "No 3Sum, qual é a divisão de trabalho que leva a O(n²)?",
+      options: [
+        "Sort O(n log n) × ponteiros O(n)",
+        "Fixar o 1º número (loop O(n)) e, para cada um, resolver 'par que soma o alvo' com ponteiros (O(n))",
+        "Três loops aninhados otimizados",
+        "Hash map dentro de hash map",
+      ],
+      answer: 1,
+      explanation:
+        "Aninhamento multiplica: n × n = O(n²). O sort entra em sequência (soma) e desaparece por ser menor. Reduzir um problema novo a um padrão já dominado é a habilidade central do curso.",
+    },
+    {
+      question:
+        "Enunciado novo: 'num array ordenado, conte os pares com soma MENOR que k'. Hash map ou two pointers — e por quê?",
+      options: [
+        "Hash map, porque é sempre O(n)",
+        "Two pointers: desigualdade não tem 'complemento exato' para buscar no mapa, mas se nums[left]+nums[right] < k, TODOS os pares (left, x) com x entre left e right valem de uma vez",
+        "Nenhum, só força bruta resolve",
+        "Tanto faz, são equivalentes",
+      ],
+      answer: 1,
+      explanation:
+        "Hash map busca valores exatos; desigualdades são o território do two pointers. E o descarte em bloco vira contagem em bloco: right - left pares válidos de uma só vez.",
+    },
+  ]}
+/>
+
+## Resumo
+
+- Two pointers = **descarte provado de candidatos em bloco**; a prova de cada
+  movimento é obrigatória.
+- Convergentes: O(n) porque o progresso é irreversível — cada passo consome
+  uma posição.
+- Custa **O(1) de espaço** — vantagem sobre o hash map quando o array é
+  ordenado ou a condição é desigualdade.
+- Problemas de trio = fixe um + two pointers no resto (3Sum, O(n²)).
+
+Próxima aula: quando a pergunta é sobre **trechos contíguos** do array —
+sliding window.

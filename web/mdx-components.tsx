@@ -1,6 +1,7 @@
 import type { MDXComponents } from "mdx/types";
 import CodeRunner from "@/components/CodeRunner";
-import TwoSumDemo from "@/components/TwoSumDemo";
+import TraceDemo from "@/components/TraceDemo";
+import Quiz from "@/components/Quiz";
 
 /**
  * Componentes disponíveis dentro de qualquer aula MDX, além do mapeamento
@@ -9,7 +10,8 @@ import TwoSumDemo from "@/components/TwoSumDemo";
 export function useMDXComponents(): MDXComponents {
   return {
     CodeRunner,
-    TwoSumDemo,
+    TraceDemo,
+    Quiz,
     h1: ({ children }) => (
       <h1 className="mt-2 text-3xl font-bold tracking-tight">{children}</h1>
     ),
@@ -50,6 +52,26 @@ export function useMDXComponents(): MDXComponents {
       <blockquote className="my-4 border-l-4 border-emerald-500 pl-4 text-zinc-600 italic dark:text-zinc-400">
         {children}
       </blockquote>
+    ),
+    table: ({ children }) => (
+      <div className="my-5 overflow-x-auto">
+        <table className="w-full border-collapse text-sm">{children}</table>
+      </div>
+    ),
+    thead: ({ children }) => (
+      <thead className="border-b-2 border-zinc-300 dark:border-zinc-700">
+        {children}
+      </thead>
+    ),
+    th: ({ children }) => (
+      <th className="px-3 py-2 text-left font-semibold text-zinc-900 dark:text-zinc-100">
+        {children}
+      </th>
+    ),
+    td: ({ children }) => (
+      <td className="border-b border-zinc-200 px-3 py-2 align-top text-zinc-700 dark:border-zinc-800 dark:text-zinc-300">
+        {children}
+      </td>
     ),
   };
 }

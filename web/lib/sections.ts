@@ -9,10 +9,22 @@ export interface Section {
 }
 
 /**
- * As 10 seções do curso na ordem didática definida no PLAN.md:
- * fundamentos → estruturas → recursão → DP por último.
+ * As seções do curso na ordem didática definida no PLAN.md: fundamentos de
+ * Big-O primeiro (seção 0), padrões simples → estruturas → recursão → DP.
  */
 export const SECTIONS: Section[] = [
+  {
+    slug: "fundamentos",
+    title: "Fundamentos: Big-O",
+    description:
+      "Antes de qualquer padrão: como medir e justificar a eficiência de qualquer código.",
+    patterns: [
+      "Classes de crescimento",
+      "Regras de análise",
+      "Complexidade de espaço",
+    ],
+    status: "available",
+  },
   {
     slug: "array",
     title: "Array",
@@ -124,12 +136,68 @@ export interface Lesson {
 
 /** Aulas disponíveis por seção (conteúdo em web/content/<locale>/<section>/<lesson>.mdx). */
 export const LESSONS: Record<string, Lesson[]> = {
+  fundamentos: [
+    {
+      slug: "01-o-que-e-big-o",
+      title: "O que é Big-O Notation",
+      description:
+        "Por que contamos passos e não segundos, e as classes de crescimento que você vai ver em todo problema.",
+    },
+    {
+      slug: "02-como-analisar",
+      title: "Como analisar a complexidade de qualquer código",
+      description:
+        "As quatro regras práticas para olhar um código e dizer — com justificativa — qual é o Big-O.",
+    },
+    {
+      slug: "03-espaco-e-quiz",
+      title: "Complexidade de espaço + quiz da seção",
+      description:
+        "O custo de memória das soluções e o quiz que fecha os fundamentos.",
+    },
+  ],
   array: [
     {
       slug: "01-introducao",
-      title: "Introdução + POC: two-sum linha a linha",
+      title: "Reconhecendo problemas de array",
       description:
-        "Demonstração da fundação técnica: código executando de verdade com visualização passo a passo.",
+        "O método geral para atacar qualquer problema de array e o mapa dos padrões da seção.",
+    },
+    {
+      slug: "02-hash-map",
+      title: "Padrão 1: Hash Map",
+      description:
+        "Trocar espaço por tempo: a pergunta “eu já vi o que procuro?” respondida em O(1).",
+    },
+    {
+      slug: "03-two-pointers",
+      title: "Padrão 2: Two Pointers",
+      description:
+        "Dois índices que se movem com inteligência para eliminar comparações inúteis.",
+    },
+    {
+      slug: "04-sliding-window",
+      title: "Padrão 3: Sliding Window",
+      description:
+        "Reaproveitar o trabalho da janela anterior em vez de recalcular do zero.",
+    },
+    {
+      slug: "05-prefix-product",
+      title: "Padrão 4: Prefix e Suffix",
+      description:
+        "Pré-calcular acumulados para responder qualquer intervalo em O(1).",
+    },
+    {
+      slug: "06-kadane",
+      title: "Padrão 5: Kadane",
+      description:
+        "A decisão local que resolve o melhor subarray em uma única passada.",
+    },
+    {
+      slug: "07-sintese",
+      title: "Síntese: qual padrão usar?",
+      description:
+        "A árvore de decisão da seção e o quiz geral antes da prova final.",
     },
   ],
 };

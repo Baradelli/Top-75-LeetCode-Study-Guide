@@ -1,0 +1,202 @@
+# Padrão 5: Kadane
+
+> O problema do **maior subarray** parece pedir força bruta — são O(n²)
+> candidatos! Kadane o resolve em uma passada com uma única decisão local:
+> **estender o que eu carrego, ou recomeçar do zero?**
+
+## A teoria: a ideia que destrava tudo
+
+*"Encontre o subarray contíguo de maior soma"* (com negativos no meio —
+senão a resposta seria o array todo, lembra da aula de sliding window?).
+
+A força bruta testa cada par (início, fim): O(n²) subarrays. O desperdício:
+subarrays que compartilham o mesmo final são recalculados como estranhos.
+
+A sacada de Kadane é mudar a pergunta. Em vez de *"qual o melhor subarray?"*
+(global, difícil), pergunte: **"qual o melhor subarray que TERMINA exatamente
+aqui, na posição i?"** (local, fácil). Por quê? Porque essa versão tem uma
+recorrência de uma linha:
+
+```text
+melhor_terminando_em(i) = max(
+    nums[i],                              ← recomeçar aqui
+    melhor_terminando_em(i-1) + nums[i]   ← estender o anterior
+)
+```
+
+A leitura humana: chegando na posição i, eu carrego a melhor sequência que
+vinha de trás. Se essa bagagem é **positiva**, ela me ajuda — estendo. Se é
+**negativa**, ela só atrapalha — largo tudo e recomeço em `nums[i]`.
+
+E o pulo final: **todo subarray termina em alguma posição.** Então a resposta
+global é o máximo entre todos os `melhor_terminando_em(i)` — que vamos
+colhendo durante a própria passada. Dois acumuladores e acabou:
+
+```text
+current = melhor soma terminando AQUI
+best    = melhor soma vista em QUALQUER lugar
+```
+
+### Por que isso é correto? (a prova em duas linhas)
+
+O melhor subarray que termina em i ou tem tamanho 1 (só `nums[i]`), ou é uma
+extensão do melhor que terminava em i-1 — não existe terceira opção, pois
+subarrays são contíguos. O `max` da recorrência considera as duas. E como
+todo subarray termina em algum i, varrer todos os i cobre todos os candidatos.
+Nada escapou.
+
+### Os sinais no enunciado
+
+- "**Maior/menor subarray contíguo**" (soma, produto...) — especialmente
+  **com números negativos**, onde o sliding window quebra.
+- A resposta em cada posição depende só da resposta na posição **anterior**.
+- (Spoiler do futuro: essa recorrência é Programação Dinâmica no seu estado
+  mais puro — Kadane é sua primeira aula de DP sem saber.)
+
+## Exemplo 1 — Maximum Subarray
+
+O clássico `[-2, 1, -3, 4, -1, 2, 1, -5, 4]` (resposta: 6, do subarray
+`[4, -1, 2, 1]`). Acompanhe os dois acumuladores — repare em `current`
+recomeçando quando a bagagem fica negativa, e em `best` segurando o recorde:
+
+<TraceDemo id="kadane" />
+
+### Por que é O(n)?
+
+Uma única passada (n voltas) e, por volta, dois `max` — trabalho O(1). Total
+**O(n) de tempo e O(1) de espaço** (dois acumuladores). A força bruta de
+pares custa O(n²) — e com a soma recalculada por dentro, O(n³).
+
+| Solução | Tempo | Espaço | Por quê |
+| --- | --- | --- | --- |
+| Força bruta (todos os pares + resoma) | O(n³) | O(1) | n² subarrays × O(n) para somar |
+| Força bruta com soma incremental | O(n²) | O(1) | n² subarrays × O(1) |
+| Kadane | O(n) | O(1) | 1 passada, decisão local O(1) |
+
+## Exemplo 2 — Maximum Product Subarray (o padrão posto à prova)
+
+Mesmo enunciado, trocando soma por **produto**: `[2, 3, -2, 4]` → resposta 6.
+
+Será que Kadane direto funciona? Quase — mas o produto tem uma pegadinha que
+a soma não tem: **dois negativos se multiplicam num positivo.** O pior
+produto carregado até aqui (bem negativo) pode virar o **melhor** no próximo
+passo, se `nums[i]` for negativo.
+
+A adaptação: carregue **dois** acumuladores em vez de um — o melhor E o pior
+produto terminando aqui:
+
+<CodeRunner
+  python={`def max_product(nums):
+    melhor = nums[0]
+    cur_max = nums[0]   # melhor produto terminando aqui
+    cur_min = nums[0]   # pior produto terminando aqui (pode salvar o futuro!)
+    for i in range(1, len(nums)):
+        x = nums[i]
+        candidatos = (x, cur_max * x, cur_min * x)
+        cur_max = max(candidatos)
+        cur_min = min(candidatos)
+        melhor = max(melhor, cur_max)
+    return melhor
+
+print(max_product([2, 3, -2, 4]))      # esperado: 6  (2*3)
+print(max_product([-2, 0, -1]))        # esperado: 0
+print(max_product([-2, 3, -4]))        # esperado: 24 (-2*3*-4)`}
+  javascript={`function maxProduct(nums) {
+  var melhor = nums[0];
+  var curMax = nums[0]; // melhor produto terminando aqui
+  var curMin = nums[0]; // pior produto terminando aqui (pode salvar o futuro!)
+  for (var i = 1; i < nums.length; i++) {
+    var x = nums[i];
+    var a = curMax * x;
+    var b = curMin * x;
+    curMax = Math.max(x, Math.max(a, b));
+    curMin = Math.min(x, Math.min(a, b));
+    melhor = Math.max(melhor, curMax);
+  }
+  return melhor;
+}
+
+console.log(maxProduct([2, 3, -2, 4]));  // esperado: 6  (2*3)
+console.log(maxProduct([-2, 0, -1]));    // esperado: 0
+console.log(maxProduct([-2, 3, -4]));    // esperado: 24 (-2*3*-4)`}
+/>
+
+Teste o terceiro caso na mão: em `[-2, 3, -4]`, o pior produto até o 3 é
+-6... que multiplicado por -4 explode para 24. **Carregar o pior caso é o
+que permite ao melhor caso existir.** A complexidade não muda: uma passada,
+O(1) por volta → O(n).
+
+A lição de generalização: o padrão não é "a fórmula do Kadane" — é **"defina
+o melhor estado terminando em i e derive-o do estado em i-1"**. Mudou a
+operação? Repense quais estados precisa carregar (no produto: dois).
+
+<Quiz
+  title="Quiz de fixação"
+  questions={[
+    {
+      question:
+        "Qual é a decisão local de Kadane em cada posição i?",
+      options: [
+        "Ordenar o subarray até i",
+        "max(nums[i], current + nums[i]): recomeçar em i ou estender a sequência que vinha de trás",
+        "Comparar nums[i] com todos os anteriores",
+        "Dividir o array ao meio",
+      ],
+      answer: 1,
+      explanation:
+        "Se a bagagem (current) é positiva, ela soma — estenda. Se é negativa, só atrapalha — recomece. É a recorrência inteira do algoritmo.",
+    },
+    {
+      question:
+        "Por que olhar só os 'melhores subarrays terminando em cada i' não perde nenhum candidato?",
+      options: [
+        "Porque os outros subarrays são sempre piores",
+        "Porque todo subarray termina em ALGUMA posição — varrer todos os finais cobre todos os subarrays",
+        "Porque o array é ordenado",
+        "Perde sim, por isso existe o best",
+      ],
+      answer: 1,
+      explanation:
+        "É o argumento de cobertura: cada subarray tem um último elemento. Se em cada posição eu sei o melhor que termina ali, o máximo global está garantidamente entre eles.",
+    },
+    {
+      question:
+        "No Maximum PRODUCT Subarray, por que carregar também o PIOR produto terminando em i?",
+      options: [
+        "Para detectar zeros",
+        "Porque um produto muito negativo × um número negativo vira muito positivo — o pior de hoje pode gerar o melhor de amanhã",
+        "Para economizar memória",
+        "Por simetria, mas não muda o resultado",
+      ],
+      answer: 1,
+      explanation:
+        "Em [-2, 3, -4]: o pior até o 3 é -6; vem o -4 e -6 × -4 = 24, o recorde. Sem carregar o cur_min, esse caminho seria descartado e a resposta sairia errada.",
+    },
+    {
+      question:
+        "Kadane é O(n) com negativos no array. Por que o sliding window não consegue o mesmo neste problema?",
+      options: [
+        "Sliding window só funciona em strings",
+        "Com negativos, crescer a janela pode diminuir a soma — a monotonia que guia o expande/encolhe não existe; Kadane substitui isso pela decisão estender/recomeçar",
+        "Sliding window é O(n log n)",
+        "Consegue, são equivalentes",
+      ],
+      answer: 1,
+      explanation:
+        "O sliding window precisa de uma direção confiável ('crescer ajuda'). Negativos a destroem. Kadane não move fronteiras às cegas: decide com base no sinal da bagagem.",
+    },
+  ]}
+/>
+
+## Resumo
+
+- Kadane troca a pergunta global pela local: **melhor subarray terminando
+  aqui** = max(recomeçar, estender).
+- Correto porque todo subarray termina em algum lugar — varrer finais cobre
+  tudo.
+- **O(n)/O(1)**: uma passada, decisão O(1), dois acumuladores.
+- No produto, carregue **melhor e pior** (negativos se redimem).
+- É a porta de entrada da Programação Dinâmica — você vai reencontrá-lo lá.
+
+Última parada antes da prova: a **síntese** — a árvore de decisão que escolhe
+o padrão certo para qualquer enunciado novo.

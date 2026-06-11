@@ -1,6 +1,6 @@
 # Plano — Curso Interativo de LeetCode e Algoritmos
 
-> Status: Fase 0 (fundação técnica) implementada em `web/` — aguardando validação no navegador. Última atualização: 2026-06-10.
+> Status: Fase 1 implementada — Seção 0 (Fundamentos de Big-O, 3 aulas) e seção Array completa (7 aulas + quizzes + prova final com LocalJudge). Aguardando avaliação didática do piloto. Última atualização: 2026-06-10.
 
 ## 1. Visão
 
@@ -71,22 +71,29 @@ leetcode/
 
 ## 4. Template pedagógico de uma seção
 
+Princípio central (feedback da validação da Fase 0): **ensinar a resolver o padrão, não o problema**. A teoria vem primeiro e generaliza — sinais no enunciado, raciocínio, template mental — e só então os problemas específicos aparecem como exemplos que concretizam o padrão. Toda complexidade é sempre **justificada** ("por que O(n)?"), nunca só afirmada.
+
 Toda seção segue o mesmo esqueleto (validado primeiro na seção piloto):
 
-1. **Aula 0 — Reconhecendo o tipo.** Como identificar que um problema é deste tipo; erros comuns; mapa dos padrões da seção.
-2. **Aulas de padrão (1 por padrão).** Cada aula:
-   - teoria curta e direta (estilo dos READMEs atuais);
-   - visualização interativa do padrão isolado;
-   - código PY + JS lado a lado com walkthrough linha a linha;
-   - 1–2 problemas dos 75 resolvidos com **múltiplas soluções** (força bruta → ótima) e tabela comparativa de complexidade;
+1. **Aula 0 — Reconhecendo o tipo.** Como identificar que um problema é deste tipo; o método geral para atacar qualquer problema do tipo (força bruta primeiro → identificar o desperdício → escolher o padrão); mapa dos padrões da seção.
+2. **Aulas de padrão (1 por padrão).** Cada aula, nesta ordem:
+   - **teoria do padrão** (a parte maior da aula): que problema ele resolve em geral, quais sinais no enunciado pedem esse padrão, o raciocínio por trás, o template em pseudocódigo;
+   - visualização interativa do padrão;
+   - código PY + JS com walkthrough linha a linha;
+   - 1–2 problemas dos 75 **como exemplos do padrão** (força bruta → ótima), com tabela comparativa;
+   - **complexidade com justificativa** — por que cada solução tem aquele tempo/espaço;
    - mini-quiz de fixação (3–5 perguntas).
 3. **Aula de síntese.** Árvore de decisão do tipo: "vi X no enunciado → penso no padrão Y".
 4. **Quiz da seção.** Cobre todos os padrões, inclui prever saída de código e identificar o padrão certo para enunciados novos.
 5. **Prova final.** 1 fácil + 1 médio + 1 difícil do mesmo tema, **problemas inéditos** (fora dos resolvidos em aula), no LocalJudge com casos ocultos. Aprovação desbloqueia o "concluído" da seção.
 
+### Seção 0 — Fundamentos (Big-O Notation)
+
+Antes da primeira seção de padrões, uma seção dedicada só a análise de complexidade: o que é Big-O, as classes de crescimento, as regras práticas para analisar qualquer código (sequência soma, aninhamento multiplica, metade vira log) e complexidade de espaço. Todas as seções seguintes referenciam esses fundamentos ao justificar complexidades.
+
 ## 5. Mapa das seções (ordem didática)
 
-A ordem abaixo foi desenhada para que cada seção prepare a seguinte: padrões simples primeiro, recursão no meio, e DP — que combina tudo — por último.
+A ordem abaixo foi desenhada para que cada seção prepare a seguinte: padrões simples primeiro, recursão no meio, e DP — que combina tudo — por último. Antes de todas vem a **Seção 0 — Fundamentos (Big-O)**, descrita no template.
 
 | #   | Seção                   | Problemas no repo | Padrões/algoritmos a ensinar                                                                             | Por que nesta posição                                                                                  |
 | --- | ----------------------- | ----------------- | -------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------ |
@@ -126,6 +133,11 @@ Observações sobre o mapa:
 ### Fase 2 — Consolidação do template
 
 - Aplicar o feedback do piloto; extrair os padrões de aula/quiz/prova como estrutura reutilizável para acelerar as próximas seções.
+- **Visualização de progresso (pedido pós-Fase 1):** o `ProgressTracker` já guarda aulas concluídas e provas aprovadas em localStorage — falta expor isso na interface:
+  - **Indicador por aula:** marca de "concluída ✓" (ou bolinha vazia) ao lado de cada aula na página da seção e na home, lendo `useProgress()`.
+  - **Barra/percentual por seção:** "4/7 aulas · prova pendente" no card de cada seção.
+  - **Tela de perfil** (`/[locale]/perfil`): visão geral do progresso em todas as seções — aulas feitas, provas aprovadas, percentual total, e atalho para "continuar de onde parei". Sem login (localStorage), com botão de exportar/limpar progresso.
+  - Componentes serão client-side (o progresso vive no navegador) e devem evitar mismatch de hidratação (mesmo cuidado já usado no `LessonCompleteButton`).
 
 ### Fases 3–11 — Demais seções, uma a uma
 
