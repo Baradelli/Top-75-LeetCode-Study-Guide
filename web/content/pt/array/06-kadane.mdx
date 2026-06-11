@@ -4,6 +4,13 @@
 > candidatos! Kadane o resolve em uma passada com uma única decisão local:
 > **estender o que eu carrego, ou recomeçar do zero?**
 
+<Challenge id="kadane" />
+
+> Tentou? Testar todos os subarrays é O(n²) (ou O(n³) se você resoma cada um).
+> O que trava: parece que é preciso considerar todo começo e todo fim
+> possíveis. A teoria abaixo mostra a virada — perguntar só "qual o melhor
+> subarray que termina aqui?" — que resolve tudo em uma passada.
+
 ## A teoria: a ideia que destrava tudo
 
 *"Encontre o subarray contíguo de maior soma"* (com negativos no meio —

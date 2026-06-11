@@ -3,6 +3,13 @@
 > Pague O(n) **uma vez** para pré-calcular acumulados — e depois responda
 > perguntas sobre qualquer trecho do array em O(1) cada.
 
+<Challenge id="product-except-self" />
+
+> Tentou? A maioria pensa em "produto total ÷ nums[i]" — mas o enunciado
+> proíbe divisão (e ela quebraria com zeros). A força bruta sem divisão
+> multiplica os outros n−1 elementos para cada i: O(n²). A teoria abaixo
+> resolve em O(n) decompondo "tudo exceto i" em esquerda × direita.
+
 ## A teoria: que problema o prefix resolve?
 
 Pense num array de somas. Quanto custa responder *"qual a soma do trecho

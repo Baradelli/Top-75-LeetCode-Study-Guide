@@ -14,6 +14,14 @@ export interface Section {
  */
 export const SECTIONS: Section[] = [
   {
+    slug: "comece-aqui",
+    title: "Comece aqui",
+    description:
+      "O que é LeetCode, por que aprender padrões e como usar este curso (tente → aprenda).",
+    patterns: ["O mundo do LeetCode", "Como ler um problema", "Como estudar"],
+    status: "available",
+  },
+  {
     slug: "fundamentos",
     title: "Fundamentos: Big-O",
     description:
@@ -136,6 +144,20 @@ export interface Lesson {
 
 /** Aulas disponíveis por seção (conteúdo em web/content/<locale>/<section>/<lesson>.mdx). */
 export const LESSONS: Record<string, Lesson[]> = {
+  "comece-aqui": [
+    {
+      slug: "01-o-mundo-do-leetcode",
+      title: "O que é LeetCode e por que isto importa",
+      description:
+        "O jogo, por que entrevistas usam isso, e por que aprender padrões em vez de decorar soluções.",
+    },
+    {
+      slug: "02-como-usar-o-curso",
+      title: "Como ler um problema e usar este curso",
+      description:
+        "A anatomia de um enunciado, o que são casos de teste e o método tente → aprenda.",
+    },
+  ],
   fundamentos: [
     {
       slug: "01-o-que-e-big-o",

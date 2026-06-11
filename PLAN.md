@@ -1,6 +1,6 @@
 # Plano — Curso Interativo de LeetCode e Algoritmos
 
-> Status: Fundamentos (Big-O) + Array + String completas (7 aulas cada, quizzes e provas finais), progresso visível (indicadores, barra, perfil). Próxima seção de conteúdo: Binary. Última atualização: 2026-06-10.
+> Status: Seção "Comece aqui" + Fundamentos + Array (formato attempt-first) + String completas; progresso visível. Array é o piloto do novo formato "tente primeiro" (aguardando avaliação). Falta aplicar attempt-first a Fundamentos e String. Próxima seção de conteúdo: Binary. Última atualização: 2026-06-10.
 
 ## 1. Visão
 
@@ -73,19 +73,26 @@ leetcode/
 
 Princípio central (feedback da validação da Fase 0): **ensinar a resolver o padrão, não o problema**. A teoria vem primeiro e generaliza — sinais no enunciado, raciocínio, template mental — e só então os problemas específicos aparecem como exemplos que concretizam o padrão. Toda complexidade é sempre **justificada** ("por que O(n)?"), nunca só afirmada.
 
+**Aprender fazendo (attempt-first):** a pessoa tenta resolver o problema ANTES de ver a teoria — sente a dificuldade, e aí o ensino encaixa (decisão pós-feedback: um aluno não entende um padrão que nunca precisou usar). Antes de tudo vem a seção **"Comece aqui"**, que introduz o mundo do LeetCode para o ensino fazer sentido.
+
 Toda seção segue o mesmo esqueleto (validado primeiro na seção piloto):
 
 1. **Aula 0 — Reconhecendo o tipo.** Como identificar que um problema é deste tipo; o método geral para atacar qualquer problema do tipo (força bruta primeiro → identificar o desperdício → escolher o padrão); mapa dos padrões da seção.
-2. **Aulas de padrão (1 por padrão).** Cada aula, nesta ordem:
-   - **teoria do padrão** (a parte maior da aula): que problema ele resolve em geral, quais sinais no enunciado pedem esse padrão, o raciocínio por trás, o template em pseudocódigo;
-   - visualização interativa do padrão;
-   - código PY + JS com walkthrough linha a linha;
+2. **Aulas de padrão (1 por padrão).** Cada aula, nesta ordem (arco attempt-first):
+   - **🎯 Tente primeiro** — desafio interativo (`<Challenge>`: editor + testes + dica + "ver solução") com o problema que a aula vai ensinar. A pessoa tenta/erra antes da teoria;
+   - **por que travou** — reconhecer a força bruta que ela tentou e nomear o desperdício;
+   - **a ideia que destrava** (teoria do padrão): que problema resolve em geral, sinais no enunciado, raciocínio, template em pseudocódigo;
+   - solução guiada + visualização interativa do padrão (código PY + JS);
    - 1–2 problemas dos 75 **como exemplos do padrão** (força bruta → ótima), com tabela comparativa;
    - **complexidade com justificativa** — por que cada solução tem aquele tempo/espaço;
    - mini-quiz de fixação (3–5 perguntas).
 3. **Aula de síntese.** Árvore de decisão do tipo: "vi X no enunciado → penso no padrão Y".
 4. **Quiz da seção.** Cobre todos os padrões, inclui prever saída de código e identificar o padrão certo para enunciados novos.
 5. **Prova final.** 1 fácil + 1 médio + 1 difícil do mesmo tema, **problemas inéditos** (fora dos resolvidos em aula), no LocalJudge com casos ocultos. Aprovação desbloqueia o "concluído" da seção.
+
+### Seção "Comece aqui" (boas-vindas)
+
+Antes de Fundamentos: o que é LeetCode, por que aprender padrões (entrevistas e raciocínio), a anatomia de um enunciado, o que significam casos de teste, e como usar este curso (tente → aprenda). Objetivo: dar contexto para que todo o resto faça sentido.
 
 ### Seção 0 — Fundamentos (Big-O Notation)
 

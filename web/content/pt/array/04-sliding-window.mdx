@@ -4,6 +4,13 @@
 > recalcule cada janela do zero: **deslize** — atualize só o que entrou e o
 > que saiu.
 
+<Challenge id="best-time-stock" />
+
+> Tentou? A força bruta testa **todos os pares (compra, venda)** — O(n²). E,
+> de novo, ela recalcula a cada dia algo que mal mudou: o menor preço até
+> ali. A teoria abaixo mostra como carregar esse "estado" em vez de
+> recalculá-lo.
+
 ## A teoria: que problema o sliding window resolve?
 
 Reconheça os enunciados: *"o maior subarray que..."*, *"a menor janela

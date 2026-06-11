@@ -1,0 +1,95 @@
+# Como ler um problema e usar este curso
+
+> Metade da dificuldade do LeetCode é **entender o que o problema pede**. Esta
+> aula te dá um roteiro para ler qualquer enunciado sem pânico — e mostra como
+> aproveitar ao máximo cada aula.
+
+## A anatomia de um enunciado
+
+Todo problema de LeetCode tem as mesmas partes. Aprenda a procurá-las:
+
+| Parte | O que é | Por que importa |
+| --- | --- | --- |
+| **Descrição** | o que você precisa calcular/retornar | o objetivo |
+| **Exemplos** | entradas com a saída esperada | é aqui que o problema fica concreto |
+| **Restrições** | tamanho máximo da entrada, faixa dos valores | **dita a complexidade que você precisa** |
+| **Assinatura** | o nome e os parâmetros da função | o que você implementa |
+
+A dica de ouro: **comece pelos exemplos, não pela descrição.** Pegue a entrada
+de exemplo e resolva **na mão**, no papel. Se você não consegue resolver
+manualmente, nenhum código vai sair. Resolver na mão também revela os casos
+estranhos: e se a lista estiver vazia? e se tiver um elemento só? e números
+negativos?
+
+## O que são "casos de teste"
+
+Quando você submete uma solução, o site roda sua função com várias entradas e
+compara o resultado com a resposta esperada. Há dois tipos:
+
+- **Visíveis:** os que você vê (geralmente os exemplos do enunciado).
+- **Ocultos:** entradas que você **não** vê — incluindo casos extremos e
+  entradas gigantes para testar velocidade.
+
+É por isso que uma solução pode "funcionar nos exemplos" mas ainda falhar: ela
+quebra num caso oculto (uma lista vazia, um número negativo) ou é **lenta
+demais** para uma entrada grande. Neste curso, as provas finais também têm
+casos ocultos — como no LeetCode de verdade.
+
+## As restrições ditam a solução
+
+Esta é a parte que ninguém te conta no começo. O enunciado quase sempre diz o
+tamanho máximo da entrada (`n`), e isso **decide** que tipo de solução você
+precisa:
+
+| Se n vai até... | Você precisa de algo em torno de... |
+| --- | --- |
+| ~500 | O(n²) ou até O(n³) passa |
+| ~100.000 | O(n log n) |
+| ~1.000.000 ou mais | O(n) ou O(n log n) |
+
+Não entendeu o "O(n²)"? Sem problema — é a **notação Big-O**, e a próxima
+seção (Fundamentos) é dedicada só a isso. Por ora, guarde a ideia: *o tamanho
+da entrada te avisa, de antemão, se a sua ideia vai ser rápida o bastante.*
+
+## O método deste curso: tente → aprenda
+
+Cada aula de padrão segue sempre o mesmo arco:
+
+1. **🎯 Tente primeiro.** Você recebe um problema num editor e tenta resolver
+   — em Python ou JavaScript, do seu jeito. Pode rodar os testes, errar, usar
+   a dica. **Não pule esta parte.** Mesmo que você não resolva, o esforço
+   prepara seu cérebro para a explicação.
+2. **Por que travou.** A gente nomeia a solução "óbvia" (a força bruta) e
+   mostra exatamente onde ela desperdiça trabalho.
+3. **A ideia que destrava.** O padrão — apresentado como a resposta à
+   frustração que você acabou de sentir.
+4. **Solução guiada + visualização.** O algoritmo rodando passo a passo, linha
+   a linha, com a estrutura de dados desenhada na tela.
+5. **Complexidade, com o porquê.** Nunca só "é O(n)" — sempre *por que* é O(n).
+6. **Quiz** rápido para fixar.
+
+E uma ferramenta poderosa em todo o curso: o **visualizador**. Você vê o código
+executando de verdade, uma linha por vez, com as variáveis e a estrutura de
+dados mudando na tela. Use os controles de avançar/voltar à vontade — ver o
+algoritmo "se mexer" vale por mil explicações.
+
+## Como aproveitar de verdade
+
+- **Tente antes de ver a solução.** A tentação de pular direto pra resposta é
+  grande; resista. O travamento é parte do aprendizado.
+- **Use o visualizador devagar.** Avance passo a passo até *prever* o próximo
+  passo antes de clicar.
+- **Refaça os quizzes** se errar — eles apontam o que reler.
+- **Encare as provas finais.** Resolver um problema inédito sozinho é a prova
+  de que o padrão virou seu.
+
+## Resumo
+
+- Leia pelos **exemplos** e resolva **na mão** primeiro.
+- **Casos de teste** (visíveis e ocultos) verificam correção e velocidade.
+- As **restrições** dizem qual complexidade você precisa (mais sobre isso em
+  Fundamentos).
+- O método é **tente → aprenda**: não pule o desafio inicial de cada aula.
+
+Pronto. Agora vá para **Fundamentos: Big-O** — a linguagem que usamos pra
+falar de "rápido o bastante" — e depois para a primeira seção de padrões.

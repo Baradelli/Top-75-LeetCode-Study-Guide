@@ -2,6 +2,7 @@ import type { MDXComponents } from "mdx/types";
 import CodeRunner from "@/components/CodeRunner";
 import TraceDemo from "@/components/TraceDemo";
 import Quiz from "@/components/Quiz";
+import Challenge from "@/components/Challenge";
 
 /**
  * Componentes disponíveis dentro de qualquer aula MDX, além do mapeamento
@@ -12,6 +13,7 @@ export function useMDXComponents(): MDXComponents {
     CodeRunner,
     TraceDemo,
     Quiz,
+    Challenge,
     h1: ({ children }) => (
       <h1 className="mt-2 text-3xl font-bold tracking-tight">{children}</h1>
     ),
