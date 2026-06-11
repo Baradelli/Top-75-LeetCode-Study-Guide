@@ -1,0 +1,97 @@
+# Reconhecendo problemas de matriz
+
+> Uma matriz (grid) é um **array de arrays**: linhas e colunas. Tudo que você
+> sabe de arrays continua valendo — só que agora em **duas dimensões**. Isso
+> traz coordenadas `(linha, coluna)`, vizinhos, e uma nova cara para o Big-O.
+
+> Como nas seções anteriores, cada aula de padrão abre com um **🎯 Tente
+> primeiro**.
+
+## Pensando em duas dimensões
+
+Você acessa uma célula por **linha e coluna**: `grid[r][c]`. Convenção quase
+universal no LeetCode: `r` (row) cresce para **baixo**, `c` (col) cresce para a
+**direita**. O canto superior esquerdo é `(0, 0)`.
+
+```text
+        c=0   c=1   c=2
+ r=0  [  1  ,  2  ,  3  ]
+ r=1  [  4  ,  5  ,  6  ]
+ r=2  [  7  ,  8  ,  9  ]
+```
+
+Dimensões: `linhas = len(grid)` e `colunas = len(grid[0])`. Uma matriz não
+precisa ser quadrada — pode ser `m × n` (m linhas, n colunas).
+
+## Big-O em 2D: O(m·n), e por que não O(n²)
+
+Esta é a novidade de complexidade da seção. Para visitar **todas** as células
+de uma matriz `m × n`, você faz dois laços aninhados — um por linha, outro por
+coluna:
+
+```text
+para r de 0 até m-1:
+    para c de 0 até n-1:
+        ... O(1) por célula
+```
+
+O corpo executa `m × n` vezes. A complexidade é **O(m·n)** — o número de
+células. Repare: **não** é O(n²)! Só seria n² se a matriz fosse quadrada
+(m = n). Chamar de "O(n²)" quando a matriz é, digamos, `1000 × 3` seria
+enganoso: o trabalho é 3.000, não 1.000.000. **Sempre que houver duas
+dimensões diferentes, nomeie as duas.** É a justificativa honesta.
+
+E o espaço? Se você criar uma matriz auxiliar do mesmo tamanho (ex.: um grid
+`visitado`), isso custa **O(m·n) de espaço**. Vários padrões da seção brigam
+para evitar essa cópia e ficar em O(1).
+
+## A ferramenta que se repete: vizinhos e limites
+
+Quase todo problema de grid precisa visitar os **vizinhos** de uma célula. Os 4
+vizinhos ortogonais de `(r, c)` são:
+
+```text
+(r-1, c)  cima       (r+1, c)  baixo
+(r, c-1)  esquerda   (r, c+1)  direita
+```
+
+Um truque que deixa o código limpo é a **lista de direções**:
+
+```python
+direcoes = [(1, 0), (-1, 0), (0, 1), (0, -1)]
+for dr, dc in direcoes:
+    nr, nc = r + dr, c + dc
+    if 0 <= nr < linhas and 0 <= nc < colunas:   # checa os limites!
+        ... grid[nr][nc]
+```
+
+E o erro nº 1 da seção: **esquecer de checar os limites** antes de acessar
+`grid[nr][nc]`, estourando o índice. Toda vez que calcular um vizinho,
+pergunte: "ele está dentro do grid?".
+
+## Grid é um grafo disfarçado
+
+Guarde esta ideia, que vale ouro daqui até a seção de Grafos: **um grid é um
+grafo**. Cada célula é um "nó", e há uma "aresta" entre células vizinhas. Por
+isso, percorrer regiões conectadas de um grid usa **DFS** e **BFS** — os mesmos
+algoritmos dos grafos. A seção Matriz é, na prática, sua introdução prática a
+DFS/BFS antes da teoria geral.
+
+## Os problemas da seção
+
+- Spiral Matrix → *travessia por camadas*
+- Rotate Image, Set Matrix Zeroes → *transformação in-place*
+- Number of Islands → *DFS / flood fill*
+- Word Search → *backtracking em grid*
+- Shortest Path → *BFS em grid*
+
+## Resumo
+
+- Matriz = array 2D; acesso por `grid[r][c]`, com `r` para baixo e `c` para a
+  direita.
+- Visitar tudo é **O(m·n)** — nomeie as duas dimensões; só é O(n²) se for
+  quadrada.
+- Use **lista de direções** e **sempre cheque os limites** antes de acessar.
+- Grid é um **grafo**: DFS e BFS são as ferramentas centrais.
+
+Próxima aula: percorrer a matriz em **espiral**, controlando quatro limites.

@@ -26,6 +26,341 @@ export interface Challenge {
 }
 
 export const CHALLENGES: Record<string, Challenge> = {
+  "spiral-order": {
+    title: "Spiral Matrix",
+    statement: `Dada uma matriz \`m × n\`, retorne **todos** os seus elementos em ordem **espiral** (sentido horário, começando no canto superior esquerdo).
+
+Exemplo: \`[[1,2,3],[4,5,6],[7,8,9]]\` → \`[1,2,3,6,9,8,7,4,5]\`.`,
+    functionName: { python: "spiral_order", javascript: "spiralOrder" },
+    starter: {
+      python: `def spiral_order(matriz):
+    # percorra em espiral e retorne a lista de valores
+    pass`,
+      javascript: `function spiralOrder(matriz) {
+  // percorra em espiral e retorne a lista de valores
+}`,
+    },
+    tests: [
+      { args: [[[1, 2, 3], [4, 5, 6], [7, 8, 9]]], expected: [1, 2, 3, 6, 9, 8, 7, 4, 5] },
+      { args: [[[1, 2, 3, 4]]], expected: [1, 2, 3, 4] },
+      { args: [[[1], [2], [3]]], expected: [1, 2, 3] },
+      {
+        args: [[[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12]]],
+        expected: [1, 2, 3, 4, 8, 12, 11, 10, 9, 5, 6, 7],
+      },
+    ],
+    hint: "Mantenha quatro limites: top, bottom, left, right. Percorra a borda de cima (left→right), a da direita (top→bottom), a de baixo (right→left) e a da esquerda (bottom→top); depois encolha os limites para dentro. Repita enquanto top<=bottom e left<=right.",
+    solution: {
+      python: `def spiral_order(matriz):
+    if not matriz:
+        return []
+    top, bottom = 0, len(matriz) - 1
+    left, right = 0, len(matriz[0]) - 1
+    res = []
+    while top <= bottom and left <= right:
+        for c in range(left, right + 1):
+            res.append(matriz[top][c])
+        top += 1
+        for r in range(top, bottom + 1):
+            res.append(matriz[r][right])
+        right -= 1
+        if top <= bottom:
+            for c in range(right, left - 1, -1):
+                res.append(matriz[bottom][c])
+            bottom -= 1
+        if left <= right:
+            for r in range(bottom, top - 1, -1):
+                res.append(matriz[r][left])
+            left += 1
+    return res`,
+      javascript: `function spiralOrder(matriz) {
+  if (matriz.length === 0) return [];
+  var top = 0, bottom = matriz.length - 1;
+  var left = 0, right = matriz[0].length - 1;
+  var res = [];
+  while (top <= bottom && left <= right) {
+    for (var c = left; c <= right; c++) res.push(matriz[top][c]);
+    top++;
+    for (var r = top; r <= bottom; r++) res.push(matriz[r][right]);
+    right--;
+    if (top <= bottom) {
+      for (var c2 = right; c2 >= left; c2--) res.push(matriz[bottom][c2]);
+      bottom--;
+    }
+    if (left <= right) {
+      for (var r2 = bottom; r2 >= top; r2--) res.push(matriz[r2][left]);
+      left++;
+    }
+  }
+  return res;
+}`,
+    },
+    solutionIdea:
+      "Quatro limites que encolhem para dentro a cada camada percorrida. Cada célula é visitada uma vez: O(m·n).",
+  },
+
+  "rotate-image": {
+    title: "Rotate Image",
+    statement: `Dada uma matriz \`n × n\`, gire-a **90° no sentido horário, no lugar** (sem usar outra matriz). Retorne a matriz girada.
+
+Exemplo: \`[[1,2,3],[4,5,6],[7,8,9]]\` → \`[[7,4,1],[8,5,2],[9,6,3]]\`.`,
+    functionName: { python: "rotate", javascript: "rotate" },
+    starter: {
+      python: `def rotate(matriz):
+    # gire 90° no sentido horário, no lugar, e retorne a matriz
+    pass`,
+      javascript: `function rotate(matriz) {
+  // gire 90° no sentido horário, no lugar, e retorne a matriz
+}`,
+    },
+    tests: [
+      { args: [[[1, 2, 3], [4, 5, 6], [7, 8, 9]]], expected: [[7, 4, 1], [8, 5, 2], [9, 6, 3]] },
+      { args: [[[1, 2], [3, 4]]], expected: [[3, 1], [4, 2]] },
+      { args: [[[1]]], expected: [[1]] },
+    ],
+    hint: "Truque clássico em dois passos, ambos O(1) de espaço: (1) TRANSPONHA a matriz (troque matriz[i][j] com matriz[j][i]); (2) inverta cada LINHA. O resultado é a rotação de 90° horária.",
+    solution: {
+      python: `def rotate(matriz):
+    n = len(matriz)
+    # 1) transpõe (espelha na diagonal)
+    for i in range(n):
+        for j in range(i + 1, n):
+            matriz[i][j], matriz[j][i] = matriz[j][i], matriz[i][j]
+    # 2) inverte cada linha
+    for linha in matriz:
+        linha.reverse()
+    return matriz`,
+      javascript: `function rotate(matriz) {
+  var n = matriz.length;
+  // 1) transpõe (espelha na diagonal)
+  for (var i = 0; i < n; i++) {
+    for (var j = i + 1; j < n; j++) {
+      var tmp = matriz[i][j];
+      matriz[i][j] = matriz[j][i];
+      matriz[j][i] = tmp;
+    }
+  }
+  // 2) inverte cada linha
+  for (var r = 0; r < n; r++) matriz[r].reverse();
+  return matriz;
+}`,
+    },
+    solutionIdea:
+      "Transpor + inverter cada linha = rotação 90° horária, no lugar. O(n²) tempo, O(1) espaço.",
+  },
+
+  "number-of-islands": {
+    title: "Number of Islands",
+    statement: `Dado um grid de \`1\` (terra) e \`0\` (água), conte o número de **ilhas**. Uma ilha é um grupo de \`1\`s conectados na horizontal/vertical.
+
+Exemplo: \`[[1,1,0,0],[1,0,0,1],[0,0,1,1]]\` → \`2\`.`,
+    functionName: { python: "num_islands", javascript: "numIslands" },
+    starter: {
+      python: `def num_islands(grid):
+    # conte os grupos de 1s conectados
+    pass`,
+      javascript: `function numIslands(grid) {
+  // conte os grupos de 1s conectados
+}`,
+    },
+    tests: [
+      { args: [[[1, 1, 0, 0], [1, 0, 0, 1], [0, 0, 1, 1]]], expected: 2 },
+      { args: [[[1, 1, 1], [1, 1, 1]]], expected: 1 },
+      { args: [[[0, 0], [0, 0]]], expected: 0 },
+      {
+        args: [[[1, 0, 1, 0, 1]]],
+        expected: 3,
+      },
+    ],
+    hint: "Percorra o grid; ao achar um 1 ainda não visitado, é uma NOVA ilha (+1) — então faça um DFS/flood fill a partir dele marcando toda a terra conectada como visitada. Assim cada ilha é contada uma vez.",
+    solution: {
+      python: `def num_islands(grid):
+    if not grid:
+        return 0
+    R, C = len(grid), len(grid[0])
+    visitado = [[False] * C for _ in range(R)]
+
+    def dfs(r, c):
+        if r < 0 or c < 0 or r >= R or c >= C:
+            return
+        if visitado[r][c] or grid[r][c] == 0:
+            return
+        visitado[r][c] = True
+        dfs(r + 1, c); dfs(r - 1, c); dfs(r, c + 1); dfs(r, c - 1)
+
+    ilhas = 0
+    for i in range(R):
+        for j in range(C):
+            if grid[i][j] == 1 and not visitado[i][j]:
+                ilhas += 1
+                dfs(i, j)
+    return ilhas`,
+      javascript: `function numIslands(grid) {
+  if (grid.length === 0) return 0;
+  var R = grid.length, C = grid[0].length;
+  var visitado = [];
+  for (var k = 0; k < R; k++) { var row = []; for (var m = 0; m < C; m++) row.push(false); visitado.push(row); }
+  function dfs(r, c) {
+    if (r < 0 || c < 0 || r >= R || c >= C) return;
+    if (visitado[r][c] || grid[r][c] === 0) return;
+    visitado[r][c] = true;
+    dfs(r + 1, c); dfs(r - 1, c); dfs(r, c + 1); dfs(r, c - 1);
+  }
+  var ilhas = 0;
+  for (var i = 0; i < R; i++) {
+    for (var j = 0; j < C; j++) {
+      if (grid[i][j] === 1 && !visitado[i][j]) { ilhas++; dfs(i, j); }
+    }
+  }
+  return ilhas;
+}`,
+    },
+    solutionIdea:
+      "Para cada terra nova, +1 e DFS afundando a ilha inteira (marcando visitado). Cada célula é tocada uma vez: O(m·n).",
+  },
+
+  "word-search": {
+    title: "Word Search",
+    statement: `Dado um grid de letras \`board\` e uma \`word\`, retorne \`true\` se a palavra pode ser formada por letras **adjacentes** (horizontal/vertical), sem reusar a mesma célula.
+
+Exemplo: board \`[["A","B","C","E"],["S","F","C","S"],["A","D","E","E"]]\`, word \`"ABCCED"\` → \`true\`.`,
+    functionName: { python: "exist", javascript: "exist" },
+    starter: {
+      python: `def exist(board, word):
+    # a palavra existe no grid por células adjacentes?
+    pass`,
+      javascript: `function exist(board, word) {
+  // a palavra existe no grid por células adjacentes?
+}`,
+    },
+    tests: [
+      { args: [[["A", "B", "C", "E"], ["S", "F", "C", "S"], ["A", "D", "E", "E"]], "ABCCED"], expected: true },
+      { args: [[["A", "B", "C", "E"], ["S", "F", "C", "S"], ["A", "D", "E", "E"]], "SEE"], expected: true },
+      { args: [[["A", "B", "C", "E"], ["S", "F", "C", "S"], ["A", "D", "E", "E"]], "ABCB"], expected: false },
+      { args: [[["A"]], "A"], expected: true },
+    ],
+    hint: "DFS com backtracking a partir de cada célula: se board[r][c] == word[i], marque a célula como usada, tente os 4 vizinhos para word[i+1], e — ao voltar — DESMARQUE a célula (backtrack) para que outros caminhos possam usá-la.",
+    solution: {
+      python: `def exist(board, word):
+    R, C = len(board), len(board[0])
+
+    def dfs(r, c, i):
+        if i == len(word):
+            return True
+        if r < 0 or c < 0 or r >= R or c >= C or board[r][c] != word[i]:
+            return False
+        temp = board[r][c]
+        board[r][c] = "#"            # marca como usada
+        achou = (dfs(r + 1, c, i + 1) or dfs(r - 1, c, i + 1) or
+                 dfs(r, c + 1, i + 1) or dfs(r, c - 1, i + 1))
+        board[r][c] = temp           # backtrack
+        return achou
+
+    for i in range(R):
+        for j in range(C):
+            if dfs(i, j, 0):
+                return True
+    return False`,
+      javascript: `function exist(board, word) {
+  var R = board.length, C = board[0].length;
+  function dfs(r, c, i) {
+    if (i === word.length) return true;
+    if (r < 0 || c < 0 || r >= R || c >= C || board[r][c] !== word[i]) return false;
+    var temp = board[r][c];
+    board[r][c] = "#";             // marca como usada
+    var achou = dfs(r + 1, c, i + 1) || dfs(r - 1, c, i + 1) ||
+                dfs(r, c + 1, i + 1) || dfs(r, c - 1, i + 1);
+    board[r][c] = temp;            // backtrack
+    return achou;
+  }
+  for (var i = 0; i < R; i++) {
+    for (var j = 0; j < C; j++) {
+      if (dfs(i, j, 0)) return true;
+    }
+  }
+  return false;
+}`,
+    },
+    solutionIdea:
+      "DFS com backtracking: marca a célula ao entrar, desmarca ao sair, liberando-a para outros caminhos. O caminho é desfeito a cada falha.",
+  },
+
+  "shortest-path-binary-matrix": {
+    title: "Shortest Path in Binary Matrix",
+    statement: `Num grid \`n × n\` de \`0\` (livre) e \`1\` (bloqueado), retorne o **comprimento** do caminho mais curto do canto superior esquerdo ao inferior direito, andando nas **8 direções** por células \`0\`. Se não houver, retorne \`-1\`. (O comprimento conta as células visitadas, início e fim incluídos.)
+
+Exemplo: \`[[0,0,0],[1,1,0],[1,1,0]]\` → \`4\`.`,
+    functionName: {
+      python: "shortest_path_binary_matrix",
+      javascript: "shortestPathBinaryMatrix",
+    },
+    starter: {
+      python: `def shortest_path_binary_matrix(grid):
+    # caminho mais curto (8 direções) do topo-esquerda ao fundo-direita
+    pass`,
+      javascript: `function shortestPathBinaryMatrix(grid) {
+  // caminho mais curto (8 direções) do topo-esquerda ao fundo-direita
+}`,
+    },
+    tests: [
+      { args: [[[0, 1], [1, 0]]], expected: 2 },
+      { args: [[[0, 0, 0], [1, 1, 0], [1, 1, 0]]], expected: 4 },
+      { args: [[[1, 0, 0], [1, 1, 0], [1, 1, 0]]], expected: -1 },
+      { args: [[[0]]], expected: 1 },
+    ],
+    hint: "Caminho MAIS CURTO em grafo sem pesos = BFS. Use uma fila começando na célula (0,0) com distância 1; expanda para os 8 vizinhos livres não visitados, somando 1 à distância. O primeiro a chegar no destino tem a menor distância. Marque visitados para não repetir.",
+    solution: {
+      python: `from collections import deque
+
+def shortest_path_binary_matrix(grid):
+    n = len(grid)
+    if grid[0][0] != 0 or grid[n - 1][n - 1] != 0:
+        return -1
+    fila = deque([(0, 0, 1)])
+    visto = set([(0, 0)])
+    while fila:
+        r, c, d = fila.popleft()
+        if r == n - 1 and c == n - 1:
+            return d
+        for dr in (-1, 0, 1):
+            for dc in (-1, 0, 1):
+                if dr == 0 and dc == 0:
+                    continue
+                nr, nc = r + dr, c + dc
+                if 0 <= nr < n and 0 <= nc < n and grid[nr][nc] == 0 and (nr, nc) not in visto:
+                    visto.add((nr, nc))
+                    fila.append((nr, nc, d + 1))
+    return -1`,
+      javascript: `function shortestPathBinaryMatrix(grid) {
+  var n = grid.length;
+  if (grid[0][0] !== 0 || grid[n - 1][n - 1] !== 0) return -1;
+  var fila = [[0, 0, 1]];
+  var visto = {};
+  visto["0,0"] = true;
+  var cabeca = 0;
+  while (cabeca < fila.length) {
+    var atual = fila[cabeca++];
+    var r = atual[0], c = atual[1], d = atual[2];
+    if (r === n - 1 && c === n - 1) return d;
+    for (var dr = -1; dr <= 1; dr++) {
+      for (var dc = -1; dc <= 1; dc++) {
+        if (dr === 0 && dc === 0) continue;
+        var nr = r + dr, nc = c + dc;
+        var chave = nr + "," + nc;
+        if (nr >= 0 && nr < n && nc >= 0 && nc < n && grid[nr][nc] === 0 && !visto[chave]) {
+          visto[chave] = true;
+          fila.push([nr, nc, d + 1]);
+        }
+      }
+    }
+  }
+  return -1;
+}`,
+    },
+    solutionIdea:
+      "BFS a partir de (0,0): a fila explora por camadas de distância, então o primeiro a alcançar o destino traz o caminho mais curto. O(n²).",
+  },
+
   "reverse-list": {
     title: "Reverse Linked List",
     statement: `Inverta uma lista ligada e retorne a nova cabeça. A lista é \`head = ListNode\` (cada nó tem \`.val\` e \`.next\`; o último aponta para \`None\`/\`null\`).

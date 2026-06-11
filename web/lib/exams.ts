@@ -438,6 +438,99 @@ Exemplo: \`1 → 2 → 3 → 4 → 5\`, \`k = 2\` → \`2 → 1 → 4 → 3 → 
       linked: { listArgs: [0], listReturn: true },
     },
   ],
+
+  matrix: [
+    {
+      slug: "flood-fill",
+      title: "Flood Fill",
+      difficulty: "facil",
+      leetcodeUrl: "https://leetcode.com/problems/flood-fill/",
+      statement: `Dada uma imagem (grid de inteiros), uma posição inicial \`(sr, sc)\` e uma \`cor\` nova, pinte a região conectada à célula inicial (mesma cor original, vizinhança horizontal/vertical) com a cor nova. Retorne a imagem.
+
+Exemplo: \`[[1,1,1],[1,1,0],[1,0,1]]\`, \`sr=1, sc=1, cor=2\` → \`[[2,2,2],[2,2,0],[2,0,1]]\`.`,
+      functionName: { python: "flood_fill", javascript: "floodFill" },
+      starter: {
+        python: `def flood_fill(image, sr, sc, cor):
+    # escreva sua solução aqui
+    pass`,
+        javascript: `function floodFill(image, sr, sc, cor) {
+  // escreva sua solução aqui
+}`,
+      },
+      tests: [
+        { args: [[[1, 1, 1], [1, 1, 0], [1, 0, 1]], 1, 1, 2], expected: [[2, 2, 2], [2, 2, 0], [2, 0, 1]] },
+        { args: [[[0, 0, 0], [0, 0, 0]], 0, 0, 5], expected: [[5, 5, 5], [5, 5, 5]] },
+        { args: [[[1, 2], [3, 4]], 0, 0, 9], expected: [[9, 2], [3, 4]], hidden: true },
+        { args: [[[0, 0, 0], [0, 1, 1]], 1, 1, 1], expected: [[0, 0, 0], [0, 1, 1]], hidden: true },
+      ],
+      hint: "É o flood fill (DFS/BFS) clássico: guarde a cor original da célula inicial; a partir dela, visite vizinhos que têm essa cor original e pinte-os com a nova. Cuidado com o caso em que a cor nova é igual à original (evite loop infinito retornando logo).",
+    },
+    {
+      slug: "spiral-matrix-ii",
+      title: "Spiral Matrix II",
+      difficulty: "medio",
+      leetcodeUrl: "https://leetcode.com/problems/spiral-matrix-ii/",
+      statement: `Dado um inteiro \`n\`, gere uma matriz \`n × n\` preenchida com os números de \`1\` a \`n²\` em ordem **espiral** (horário, a partir do canto superior esquerdo).
+
+Exemplo: \`n = 3\` → \`[[1,2,3],[8,9,4],[7,6,5]]\`.`,
+      functionName: { python: "generate_matrix", javascript: "generateMatrix" },
+      starter: {
+        python: `def generate_matrix(n):
+    # escreva sua solução aqui
+    pass`,
+        javascript: `function generateMatrix(n) {
+  // escreva sua solução aqui
+}`,
+      },
+      tests: [
+        { args: [3], expected: [[1, 2, 3], [8, 9, 4], [7, 6, 5]] },
+        { args: [1], expected: [[1]] },
+        { args: [2], expected: [[1, 2], [4, 3]], hidden: true },
+        {
+          args: [4],
+          expected: [[1, 2, 3, 4], [12, 13, 14, 5], [11, 16, 15, 6], [10, 9, 8, 7]],
+          hidden: true,
+        },
+      ],
+      hint: "Mesma ideia do Spiral Matrix, mas ESCREVENDO em vez de ler: mantenha os quatro limites (top/bottom/left/right) e um contador que começa em 1. Preencha cada borda na ordem espiral, incrementando o contador, e encolha os limites.",
+    },
+    {
+      slug: "surrounded-regions",
+      title: "Surrounded Regions",
+      difficulty: "dificil",
+      leetcodeUrl: "https://leetcode.com/problems/surrounded-regions/",
+      statement: `Num grid de \`"X"\` e \`"O"\`, capture todas as regiões de \`"O"\` que estão **totalmente cercadas** por \`"X"\` (trocando esses \`"O"\` por \`"X"\`). Um \`"O"\` **não** é capturado se estiver conectado a um \`"O"\` na **borda** do grid. Retorne o grid.
+
+Exemplo: a região central de \`"O"\` cercada vira \`"X"\`; os \`"O"\` que tocam a borda permanecem.`,
+      functionName: { python: "solve", javascript: "solve" },
+      starter: {
+        python: `def solve(board):
+    # capture as regiões cercadas; retorne o board
+    pass`,
+        javascript: `function solve(board) {
+  // capture as regiões cercadas; retorne o board
+}`,
+      },
+      tests: [
+        {
+          args: [[["X", "X", "X", "X"], ["X", "O", "O", "X"], ["X", "X", "O", "X"], ["X", "O", "X", "X"]]],
+          expected: [["X", "X", "X", "X"], ["X", "X", "X", "X"], ["X", "X", "X", "X"], ["X", "O", "X", "X"]],
+        },
+        { args: [[["X"]]], expected: [["X"]] },
+        {
+          args: [[["O", "O"], ["O", "O"]]],
+          expected: [["O", "O"], ["O", "O"]],
+          hidden: true,
+        },
+        {
+          args: [[["X", "O", "X"], ["O", "X", "O"], ["X", "O", "X"]]],
+          expected: [["X", "O", "X"], ["O", "X", "O"], ["X", "O", "X"]],
+          hidden: true,
+        },
+      ],
+      hint: "Inverta o problema: em vez de achar os 'O' cercados, ache os que NÃO são. Faça DFS a partir de cada 'O' da BORDA, marcando todos os conectados como seguros. No fim, todo 'O' não-marcado vira 'X' (estava cercado) e os marcados voltam a ser 'O'.",
+    },
+  ],
 };
 
 export function getExam(section: string): ExamProblem[] | undefined {

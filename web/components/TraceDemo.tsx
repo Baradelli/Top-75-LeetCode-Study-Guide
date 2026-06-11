@@ -6,6 +6,7 @@ import ArrayTraceVisualizer from "./visualizers/ArrayTraceVisualizer";
 import StringTraceVisualizer from "./visualizers/StringTraceVisualizer";
 import BitTraceVisualizer from "./visualizers/BitTraceVisualizer";
 import LinkedListVisualizer from "./visualizers/LinkedListVisualizer";
+import GridTraceVisualizer from "./visualizers/GridTraceVisualizer";
 import { DEMOS } from "@/lib/demos";
 
 /**
@@ -38,6 +39,13 @@ export default function TraceDemo({ id }: { id: string }) {
         return <LinkedListVisualizer {...props} config={config} />;
       }
       return LinkedBound;
+    }
+    if ("grid" in demo) {
+      const config = demo.grid;
+      function GridBound(props: VisualizerProps) {
+        return <GridTraceVisualizer {...props} config={config} />;
+      }
+      return GridBound;
     }
     const config = demo.string;
     function StringBound(props: VisualizerProps) {

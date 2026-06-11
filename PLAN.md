@@ -1,6 +1,6 @@
 # Plano — Curso Interativo de LeetCode e Algoritmos
 
-> Status: "Comece aqui" + Fundamentos + Array + String + Binary + Linked List completas (attempt-first). Linked List trouxe o LinkedListVisualizer e suporte a ListNode no LocalJudge (conversão array↔lista). Próxima seção de conteúdo: Matrix. Última atualização: 2026-06-10.
+> Status: "Comece aqui" + Fundamentos + Array + String + Binary + Linked List + Matrix completas (attempt-first). Matrix trouxe o GridTraceVisualizer (cursor/visitado/caminho/limites + legenda), O(m·n) justificado, e demos de DFS/backtracking/BFS. Próxima seção de conteúdo: Tree. Última atualização: 2026-06-10.
 
 ## 1. Visão
 

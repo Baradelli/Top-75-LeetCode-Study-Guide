@@ -1,0 +1,168 @@
+# Síntese: qual padrão usar?
+
+> Cinco padrões de matriz cobertos. Hora de treinar o reflexo: ler um problema
+> de grid e saber qual ferramenta sacar — com justificativa.
+
+## A árvore de decisão da seção
+
+```text
+1. Preciso PERCORRER/PRODUZIR a matriz numa ordem especial (espiral, camadas)?
+   → TRAVESSIA POR CAMADAS (quatro limites que encolhem)
+
+2. Preciso TRANSFORMAR a matriz sem memória extra (girar, zerar)?
+   → IN-PLACE: decompor (transpor + inverter) e/ou usar a 1ª linha/coluna
+     como marcadores
+
+3. A pergunta é sobre REGIÕES CONECTADAS (ilhas, áreas, preencher)?
+   → DFS / FLOOD FILL (marca permanente; cobre a região)
+
+4. Preciso achar/contar CAMINHOS específicos (palavra, todos os caminhos)?
+   → BACKTRACKING (DFS com marca temporária: marca → explora → desmarca)
+
+5. A pergunta é "o caminho MAIS CURTO / menos passos"?
+   → BFS (fila, camadas de distância crescente)
+```
+
+E os reflexos da seção inteira: **nomeie as duas dimensões no Big-O** (O(m·n),
+não O(n²)), **sempre cheque os limites** antes de acessar um vizinho, e lembre
+que **grid é grafo** — DFS/BFS são as ferramentas centrais.
+
+## O mapa completo da seção
+
+| Padrão | Pergunta-chave | Estrutura | Tempo | Espaço |
+| --- | --- | --- | --- | --- |
+| Travessia espiral | "percorrer em espiral/camadas" | 4 limites | O(m·n) | O(1) |
+| Transformação in-place | "girar/zerar sem cópia" | índices + marcadores | O(m·n) | O(1) |
+| DFS / flood fill | "regiões conectadas" | pilha (recursão) | O(m·n) | O(m·n) |
+| Backtracking | "caminho específico / todos" | DFS + desfazer | O(m·n·4ᴸ) | O(L) |
+| BFS | "caminho mais curto" | fila | O(m·n) | O(m·n) |
+
+A ideia que une metade da seção: **o grid é um grafo**, e DFS (fundo),
+backtracking (fundo + desfazer) e BFS (largura) são três modos de percorrê-lo,
+cada um para um tipo de pergunta. Você sai daqui pronto para a seção de
+**Grafos**, onde esses mesmos algoritmos aparecem sem a "muleta" da grade
+regular.
+
+## Quiz da seção
+
+Enunciados que você **não viu** nas aulas. Identifique o padrão e o porquê. 7+
+acertos: pronto para a prova.
+
+<Quiz
+  title="Quiz da seção: Matriz"
+  questions={[
+    {
+      question:
+        "'Calcule a área da maior ilha de 1s num grid.' Qual padrão?",
+      options: [
+        "BFS para caminho mais curto",
+        "DFS / flood fill: cada ilha é uma região conectada; o DFS conta o tamanho de cada uma e você guarda o máximo",
+        "Travessia espiral",
+        "Backtracking",
+      ],
+      answer: 1,
+      explanation:
+        "É 'regiões conectadas' com uma medida (tamanho). DFS afunda cada ilha somando células; o maior total é a resposta. A marca é permanente (cobrir a região).",
+    },
+    {
+      question:
+        "'Quantos passos para uma laranja podre apodrecer todas as vizinhas, em minutos?' (multi-fonte). Qual padrão?",
+      options: [
+        "DFS",
+        "BFS — em camadas de tempo, partindo de TODAS as podres ao mesmo tempo; o número de camadas é o tempo até apodrecer tudo",
+        "Travessia espiral",
+        "Transformação in-place",
+      ],
+      answer: 1,
+      explanation:
+        "'Quantos passos/minutos' = distância mínima em camadas = BFS. Começar com todas as fontes na fila (multi-fonte) propaga as ondas simultaneamente.",
+    },
+    {
+      question:
+        "'Gere uma matriz n×n preenchida em espiral com 1..n².' Qual padrão?",
+      options: [
+        "DFS",
+        "Travessia por camadas (mesma dos quatro limites), mas ESCREVENDO um contador crescente em vez de ler",
+        "BFS",
+        "Backtracking",
+      ],
+      answer: 1,
+      explanation:
+        "É a espiral ao contrário: o controle de limites é idêntico, só que você preenche cada borda com um contador. Ler ou escrever, a navegação é a mesma.",
+    },
+    {
+      question:
+        "'Encontre se existe um caminho que soletra uma palavra por células adjacentes (sem reusar).' Qual padrão?",
+      options: [
+        "BFS",
+        "Backtracking (DFS com marca temporária): casa letra a letra, marca a célula no caminho e desmarca ao retroceder",
+        "Flood fill com marca permanente",
+        "Travessia espiral",
+      ],
+      answer: 1,
+      explanation:
+        "É um caminho específico que precisa poder tentar rotas alternativas — marca temporária. Flood fill (marca permanente) bloquearia células e perderia caminhos.",
+    },
+    {
+      question:
+        "'Distância de cada célula até o 0 mais próximo (01 Matrix).' Qual padrão?",
+      options: [
+        "DFS de cada célula",
+        "BFS multi-fonte a partir de todos os 0s ao mesmo tempo — cada camada é uma distância",
+        "Travessia espiral",
+        "Backtracking",
+      ],
+      answer: 1,
+      explanation:
+        "'Mais próximo' = distância mínima = BFS. Iniciar a fila com todos os 0s propaga distâncias crescentes para o resto do grid em O(m·n).",
+    },
+    {
+      question:
+        "Por que a complexidade de visitar uma matriz 1000×3 é O(m·n) = 3000, e não O(n²) = 1.000.000?",
+      options: [
+        "Porque a matriz é pequena",
+        "Porque há duas dimensões DIFERENTES (m=1000, n=3); o trabalho é m·n. Chamar de n² só faz sentido em matriz quadrada",
+        "Porque é O(m+n)",
+        "Porque ignoramos linhas",
+      ],
+      answer: 1,
+      explanation:
+        "O número de células é m·n. Nomear as duas dimensões evita superestimar grosseiramente o custo quando a matriz é bem retangular.",
+    },
+    {
+      question:
+        "Qual a ideia-mãe que conecta DFS, backtracking e BFS nesta seção?",
+      options: [
+        "Ordenar a matriz",
+        "Que o grid é um GRAFO: as três são formas de percorrer células conectadas — fundo (DFS), fundo-com-desfazer (backtracking) e largura (BFS)",
+        "Que tudo é O(1) de espaço",
+        "Que matrizes são sempre quadradas",
+      ],
+      answer: 1,
+      explanation:
+        "Vizinhança = arestas. Os três algoritmos são modos de explorar esse grafo, cada um adequado a um tipo de pergunta. É a ponte direta para a seção de Grafos.",
+    },
+    {
+      question:
+        "'Capture as regiões de O cercadas por X (as que não tocam a borda).' Qual a sacada?",
+      options: [
+        "DFS de cada O interno",
+        "Inverter o problema: DFS/BFS a partir dos O da BORDA para marcar os 'seguros'; o que sobrar sem marca estava cercado",
+        "Travessia espiral",
+        "Ordenar as bordas",
+      ],
+      answer: 1,
+      explanation:
+        "É mais fácil achar os NÃO-cercados (conectados à borda) do que os cercados. Marque os seguros a partir das bordas; os O restantes são os capturados.",
+    },
+  ]}
+/>
+
+## Pronto para a prova?
+
+A prova final da seção Matriz tem **três problemas inéditos** — fácil, médio e
+difícil — com casos ocultos. O difícil (capturar regiões cercadas) pede a
+sacada de **inverter o problema** e fazer DFS a partir das bordas: exatamente o
+tipo de raciocínio que a árvore de decisão acima treina.
+
+**Boa prova!** Volte para a página da seção e clique em "Prova final".

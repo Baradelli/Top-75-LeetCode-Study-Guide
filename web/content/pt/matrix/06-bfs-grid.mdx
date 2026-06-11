@@ -1,0 +1,136 @@
+# Padrão 5: BFS em grid (caminho mais curto)
+
+> DFS vai **fundo** num caminho antes de voltar. BFS faz o oposto: explora em
+> **camadas**, como ondas concêntricas a partir do ponto inicial. Essa ordem é
+> exatamente o que responde "qual o caminho **mais curto**?".
+
+<Challenge id="shortest-path-binary-matrix" />
+
+> Tentou? Se você tentou um DFS, percebeu que ele acha *um* caminho, não
+> necessariamente o **mais curto**. A teoria abaixo mostra por que a busca em
+> largura (BFS) resolve "o mais curto" naturalmente.
+
+## A teoria: explorar em camadas com uma fila
+
+A BFS usa uma **fila** (FIFO: o primeiro a entrar é o primeiro a sair). Você
+começa pela célula inicial (distância 1), e a cada passo tira a mais antiga da
+fila e adiciona seus vizinhos ainda não visitados (com distância + 1).
+
+```text
+fila = [(início, distância 1)];  marca início como visitado
+enquanto a fila não está vazia:
+    (r, c, d) = tira o mais antigo da fila
+    se (r,c) é o destino → retorna d   (primeiro a chegar = mais curto!)
+    para cada vizinho livre não visitado:
+        marca como visitado
+        adiciona à fila com distância d + 1
+```
+
+A mágica: como a fila processa **todas** as células à distância `d` antes de
+qualquer uma à distância `d+1`, a busca avança em camadas. O **primeiro**
+momento em que o destino sai da fila, ele veio pelo caminho mais curto — não
+existe rota mais curta, senão ela teria sido processada antes.
+
+Compare as duas buscas no mesmo grid aberto. **BFS** — repare que a célula
+atual salta em "anéis" cada vez mais distantes da origem:
+
+<TraceDemo id="bfs-grid" />
+
+E o **DFS** da aula 4, para contraste — ele mergulha fundo num sentido antes de
+voltar:
+
+<TraceDemo id="number-of-islands" />
+
+### Por que é O(m·n) e por que dá o caminho mais curto?
+
+- **Tempo:** cada célula entra na fila **no máximo uma vez** (marcamos visitado
+  ao enfileirar, não ao desenfileirar — detalhe que evita duplicatas). Para
+  cada uma, olhamos um número constante de vizinhos → **O(m·n)**. Espaço
+  O(m·n) (fila + visitado).
+- **Mais curto:** a BFS expande por distância crescente. Num grafo **sem
+  pesos** (cada passo "custa 1"), a primeira vez que se alcança o destino é,
+  necessariamente, pela menor quantidade de passos.
+
+> Detalhe que causa bugs: **marque o vizinho como visitado no momento de
+> enfileirá-lo**, não quando ele sai da fila. Senão, a mesma célula pode ser
+> adicionada várias vezes (por vizinhos diferentes) antes de ser processada,
+> inflando a fila e até quebrando a contagem.
+
+## DFS ou BFS? A pergunta decide
+
+Os dois percorrem tudo que está conectado e custam O(m·n). A escolha depende da
+**pergunta**:
+
+| A pergunta é... | Use | Por quê |
+| --- | --- | --- |
+| "existe? quantos? cobrir a região" | **DFS** (mais simples de escrever) | a ordem não importa |
+| "qual o caminho **mais curto**? menos passos?" | **BFS** | expande por distância crescente |
+| "todos os caminhos / um caminho específico" | **backtracking** (DFS + desfazer) | precisa explorar e voltar |
+
+<Quiz
+  title="Quiz de fixação"
+  questions={[
+    {
+      question: "Por que a BFS encontra o caminho mais curto num grid sem pesos?",
+      options: [
+        "Porque usa recursão",
+        "Porque explora em camadas de distância crescente (fila FIFO): processa tudo à distância d antes da distância d+1, então a primeira chegada ao destino é a mais curta",
+        "Porque ordena as células",
+        "Porque vai fundo primeiro",
+      ],
+      answer: 1,
+      explanation:
+        "A fila garante a ordem por distância. Quando o destino é alcançado, nenhuma rota mais curta foi deixada para trás — ela teria sido processada antes.",
+    },
+    {
+      question:
+        "Qual a diferença de comportamento entre DFS e BFS na exploração?",
+      options: [
+        "Nenhuma",
+        "DFS mergulha fundo num caminho antes de voltar; BFS expande em anéis concêntricos (camadas) a partir da origem",
+        "BFS é sempre mais rápido",
+        "DFS não visita todas as células",
+      ],
+      answer: 1,
+      explanation:
+        "DFS usa pilha (vai fundo); BFS usa fila (vai largo, camada a camada). Por isso BFS é natural para 'mais curto' e DFS para 'cobrir/existe'.",
+    },
+    {
+      question:
+        "Por que marcar a célula como visitada ao ENFILEIRÁ-LA (e não ao desenfileirar)?",
+      options: [
+        "Por estilo",
+        "Para que a mesma célula não seja adicionada à fila várias vezes por vizinhos diferentes antes de ser processada — o que infla a fila e pode quebrar as distâncias",
+        "Para economizar memória apenas",
+        "É indiferente",
+      ],
+      answer: 1,
+      explanation:
+        "Se só marcasse ao sair, vários vizinhos poderiam enfileirar a mesma célula antes de ela ser processada. Marcar ao entrar garante cada célula uma única vez na fila.",
+    },
+    {
+      question:
+        "Você precisa do MENOR número de passos para sair de um labirinto em grid. DFS ou BFS?",
+      options: [
+        "DFS, porque acha um caminho",
+        "BFS, porque garante o caminho de menor número de passos num grafo sem pesos",
+        "Tanto faz",
+        "Backtracking",
+      ],
+      answer: 1,
+      explanation:
+        "'Menor número de passos' = caminho mais curto sem pesos = BFS. DFS acharia um caminho qualquer, não necessariamente o mais curto.",
+    },
+  ]}
+/>
+
+## Resumo
+
+- **BFS** usa uma **fila** e explora em **camadas** de distância crescente.
+- Num grafo sem pesos, a primeira chegada ao destino é o **caminho mais
+  curto**.
+- Marque visitado **ao enfileirar**; O(m·n) tempo e espaço.
+- DFS para "existe/cobrir", **BFS para "mais curto"**, backtracking para
+  "todos os caminhos".
+
+Última parada: a **síntese** da seção Matriz e o quiz antes da prova.

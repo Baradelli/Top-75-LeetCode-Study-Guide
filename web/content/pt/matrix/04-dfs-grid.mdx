@@ -1,0 +1,133 @@
+# Padrão 3: DFS em grid (flood fill)
+
+> Aqui o grid revela sua natureza de **grafo**: células vizinhas estão
+> "conectadas". Para explorar uma região conectada inteira, a busca em
+> profundidade (DFS) "inunda" a partir de uma célula, espalhando-se pelos
+> vizinhos — como o balde de tinta de um editor de imagens.
+
+<Challenge id="number-of-islands" />
+
+> Tentou? Talvez você tenha tentado contar 1s ou achar bordas — e se perdido em
+> casos. A teoria abaixo dá o arcabouço certo: cada ilha nova dispara uma
+> inundação que marca toda a terra conectada.
+
+## A teoria: flood fill com DFS
+
+Pense em "preencher com o balde de tinta": a partir de uma célula, você se
+espalha para os vizinhos **da mesma região**, e dos vizinhos para os vizinhos
+deles, até a região acabar. Isso é **DFS** num grid:
+
+```text
+dfs(r, c):
+    se (r,c) está fora do grid       → para
+    se (r,c) não é da região,
+       ou já foi visitada            → para
+    marca (r,c) como visitada
+    dfs(r+1, c); dfs(r-1, c)         # os 4 vizinhos
+    dfs(r, c+1); dfs(r, c-1)
+```
+
+As duas primeiras linhas são os **casos-base** que param a recursão (o
+equivalente, no grid, a "bater na parede"). Marcar como visitada é o que
+impede voltar e cair em loop infinito.
+
+Para o *Number of Islands*: percorra o grid; **toda vez** que encontrar terra
+ainda não visitada, é uma **ilha nova** (+1), e você dispara um DFS que afunda
+a ilha inteira. Como o DFS marca tudo que é conectado, cada ilha é contada
+exatamente uma vez. Veja o DFS inundando — a célula atual em destaque, o azul
+mostrando o que já foi visitado:
+
+<TraceDemo id="number-of-islands" />
+
+### Por que é O(m·n) tempo e O(m·n) espaço?
+
+- **Tempo:** o laço externo passa por todas as células; o DFS visita cada
+  célula **no máximo uma vez** no total (depois de marcada, ela é ignorada).
+  Somando, cada célula é processada um número constante de vezes →
+  **O(m·n)**.
+- **Espaço:** o grid `visitado` é O(m·n); e a pilha de recursão pode chegar a
+  O(m·n) no pior caso (uma ilha que serpenteia por todas as células). Dá para
+  economizar marcando no próprio grid (afundando a terra em água) em vez de um
+  grid à parte.
+
+## DFS recursivo = pilha implícita
+
+A recursão usa a **pilha de chamadas** para lembrar por onde voltar — é a mesma
+pilha que você viu na seção String, agora trabalhando para você de graça. Dá
+para escrever o mesmo DFS de forma **iterativa** com uma pilha explícita
+(`stack`), útil quando a recursão fica funda demais e estoura. As duas formas
+exploram na mesma ordem "vai fundo primeiro".
+
+## Onde DFS em grid aparece
+
+Contar/medir regiões conectadas (ilhas, área máxima de ilha), preencher
+regiões (flood fill, capturar regiões cercadas), e detectar formas. Sempre que
+a pergunta for sobre **"o que está conectado a quê"** num grid, DFS (ou BFS, da
+aula 6) é a ferramenta. E essa é exatamente a ponte para a seção de **Grafos**:
+o grid é só um grafo com vizinhança regular.
+
+<Quiz
+  title="Quiz de fixação"
+  questions={[
+    {
+      question: "Por que tratamos um grid como um grafo no flood fill?",
+      options: [
+        "Para deixar o código maior",
+        "Porque cada célula é como um nó e células vizinhas são 'conectadas' — explorar a região conectada é DFS/BFS de grafo",
+        "Porque grids são ordenados",
+        "Porque é mais rápido que um laço",
+      ],
+      answer: 1,
+      explanation:
+        "Vizinhança = arestas. Percorrer tudo que está conectado a uma célula é o mesmo problema de percorrer um componente conexo de um grafo.",
+    },
+    {
+      question:
+        "No Number of Islands, por que cada DFS conta exatamente uma ilha?",
+      options: [
+        "Porque conta as células",
+        "Porque o DFS marca como visitada TODA a terra conectada à célula inicial; o laço externo só dispara um novo DFS (+1) ao achar terra ainda não visitada",
+        "Porque o grid é pequeno",
+        "Porque ordena as ilhas",
+      ],
+      answer: 1,
+      explanation:
+        "Ao afundar a ilha inteira de uma vez, nenhuma de suas células dispara outro DFS. Logo, o número de DFS iniciados pelo laço externo é o número de ilhas.",
+    },
+    {
+      question: "Qual o papel de 'marcar como visitada' no DFS em grid?",
+      options: [
+        "Acelerar a contagem",
+        "Impedir revisitar células já exploradas — sem isso, o DFS voltaria pelos vizinhos e entraria em loop infinito",
+        "Ordenar as células",
+        "Economizar memória",
+      ],
+      answer: 1,
+      explanation:
+        "Como vizinhos apontam um para o outro, sem marcar visitados o DFS oscilaria entre duas células para sempre. A marcação garante que cada célula é processada uma vez.",
+    },
+    {
+      question:
+        "DFS recursivo usa a pilha de chamadas. O que isso implica sobre o espaço?",
+      options: [
+        "Nada, é sempre O(1)",
+        "A profundidade da recursão (e o tamanho da pilha) pode chegar a O(m·n) no pior caso — uma região que serpenteia por todas as células",
+        "Usa O(log n)",
+        "A pilha não consome memória",
+      ],
+      answer: 1,
+      explanation:
+        "Cada chamada pendente ocupa a pilha. Numa região muito longa, a recursão pode ir fundo por todas as células — O(m·n) de espaço de pilha. Versão iterativa com pilha explícita tem o mesmo custo.",
+    },
+  ]}
+/>
+
+## Resumo
+
+- Grid é grafo; **flood fill com DFS** explora uma região conectada inteira.
+- Casos-base (fora do grid / não pertence / já visitado) param a recursão;
+  **marcar visitado** evita loop.
+- Number of Islands: +1 e DFS a cada terra nova → cada ilha contada uma vez.
+- **O(m·n)** tempo; espaço O(m·n) (visitado + pilha de recursão).
+
+Próxima aula: quando o caminho importa e pode ser **desfeito** — backtracking.

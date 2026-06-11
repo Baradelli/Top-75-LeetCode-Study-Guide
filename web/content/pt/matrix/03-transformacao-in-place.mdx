@@ -1,0 +1,212 @@
+# Padrão 2: Transformação in-place
+
+> Transformar uma matriz **sem usar outra matriz** (O(1) de espaço extra) é um
+> tipo de problema que parece exigir uma cópia — mas truques de índice
+> resolvem. Dois clássicos: **girar a imagem** e **zerar linhas/colunas**.
+
+<Challenge id="rotate-image" />
+
+> Tentou? Copiar para uma nova matriz girada funciona, mas gasta O(n²) de
+> memória. A teoria abaixo gira **no lugar** com dois passos simples.
+
+## A teoria 1: girar = transpor + inverter
+
+Girar 90° no sentido horário parece complicado de fazer no lugar — mas se
+decompõe em duas operações fáceis:
+
+1. **Transpor**: espelhar na diagonal principal (trocar `m[i][j]` com
+   `m[j][i]`). Linhas viram colunas.
+2. **Inverter cada linha**: espelhar horizontalmente.
+
+```text
+1 2 3      transpõe     1 4 7    inverte linhas   7 4 1
+4 5 6   ───────────▶   2 5 8   ──────────────▶   8 5 2
+7 8 9                   3 6 9                      9 6 3
+```
+
+Faça as contas com uma célula para se convencer: o `1` em `(0,0)` vai para
+`(0,0)` na transposta e depois para `(0,2)` ao inverter a linha — exatamente
+onde o `1` deve ficar após girar 90°. Os dois passos compõem a rotação.
+
+<CodeRunner
+  python={`def rotate(m):
+    n = len(m)
+    # 1) transpõe: troca m[i][j] com m[j][i] (só metade acima da diagonal)
+    for i in range(n):
+        for j in range(i + 1, n):
+            m[i][j], m[j][i] = m[j][i], m[i][j]
+    # 2) inverte cada linha
+    for linha in m:
+        linha.reverse()
+    return m
+
+print(rotate([[1, 2, 3], [4, 5, 6], [7, 8, 9]]))   # [[7,4,1],[8,5,2],[9,6,3]]
+print(rotate([[1, 2], [3, 4]]))                      # [[3,1],[4,2]]`}
+  javascript={`function rotate(m) {
+  var n = m.length;
+  // 1) transpõe: troca m[i][j] com m[j][i] (só metade acima da diagonal)
+  for (var i = 0; i < n; i++) {
+    for (var j = i + 1; j < n; j++) {
+      var tmp = m[i][j];
+      m[i][j] = m[j][i];
+      m[j][i] = tmp;
+    }
+  }
+  // 2) inverte cada linha
+  for (var r = 0; r < n; r++) m[r].reverse();
+  return m;
+}
+
+console.log(JSON.stringify(rotate([[1,2,3],[4,5,6],[7,8,9]]))); // [[7,4,1],[8,5,2],[9,6,3]]
+console.log(JSON.stringify(rotate([[1,2],[3,4]])));             // [[3,1],[4,2]]`}
+/>
+
+Detalhe que evita um bug clássico: na transposição, o `j` começa em `i + 1`. Se
+você percorresse a matriz inteira, trocaria cada par **duas vezes** e voltaria
+ao original. Trocar só a metade acima da diagonal faz cada troca uma vez.
+**O(n²)** de tempo (toca cada célula uma vez), **O(1)** de espaço.
+
+## A teoria 2: usar a própria matriz como bloco de notas
+
+*Set Matrix Zeroes*: se uma célula é 0, zere toda a sua linha e coluna. O
+perigo é fazer isso "na hora" — o primeiro 0 zeraria células que, lidas
+depois, disparariam zeros falsos em cascata.
+
+A solução ingênua marca numa matriz auxiliar (O(m·n) de espaço) quais linhas e
+colunas zerar. O truque in-place: **use a primeira linha e a primeira coluna
+da própria matriz como os marcadores** — elas viram o "bloco de notas". Assim o
+espaço extra cai para O(1).
+
+```text
+1. Numa passada, para cada 0 em (r,c): marque grid[r][0]=0 e grid[0][c]=0
+   (e lembre à parte se a 1ª linha/coluna originalmente tinha algum 0).
+2. Numa segunda passada, zere grid[r][c] se grid[r][0]==0 ou grid[0][c]==0.
+3. Por fim, zere a 1ª linha/coluna se elas precisavam.
+```
+
+<CodeRunner
+  python={`def set_zeroes(m):
+    linhas, colunas = len(m), len(m[0])
+    primeira_linha_zero = any(m[0][c] == 0 for c in range(colunas))
+    primeira_coluna_zero = any(m[r][0] == 0 for r in range(linhas))
+    # 1) marca nas bordas
+    for r in range(1, linhas):
+        for c in range(1, colunas):
+            if m[r][c] == 0:
+                m[r][0] = 0
+                m[0][c] = 0
+    # 2) zera o miolo conforme os marcadores
+    for r in range(1, linhas):
+        for c in range(1, colunas):
+            if m[r][0] == 0 or m[0][c] == 0:
+                m[r][c] = 0
+    # 3) zera a 1ª linha/coluna se preciso
+    if primeira_linha_zero:
+        for c in range(colunas):
+            m[0][c] = 0
+    if primeira_coluna_zero:
+        for r in range(linhas):
+            m[r][0] = 0
+    return m
+
+print(set_zeroes([[1, 1, 1], [1, 0, 1], [1, 1, 1]]))   # [[1,0,1],[0,0,0],[1,0,1]]`}
+  javascript={`function setZeroes(m) {
+  var linhas = m.length, colunas = m[0].length;
+  var primeiraLinhaZero = false, primeiraColunaZero = false;
+  for (var c = 0; c < colunas; c++) if (m[0][c] === 0) primeiraLinhaZero = true;
+  for (var r = 0; r < linhas; r++) if (m[r][0] === 0) primeiraColunaZero = true;
+  // 1) marca nas bordas
+  for (var r2 = 1; r2 < linhas; r2++)
+    for (var c2 = 1; c2 < colunas; c2++)
+      if (m[r2][c2] === 0) { m[r2][0] = 0; m[0][c2] = 0; }
+  // 2) zera o miolo conforme os marcadores
+  for (var r3 = 1; r3 < linhas; r3++)
+    for (var c3 = 1; c3 < colunas; c3++)
+      if (m[r3][0] === 0 || m[0][c3] === 0) m[r3][c3] = 0;
+  // 3) zera a 1ª linha/coluna se preciso
+  if (primeiraLinhaZero) for (var c4 = 0; c4 < colunas; c4++) m[0][c4] = 0;
+  if (primeiraColunaZero) for (var r4 = 0; r4 < linhas; r4++) m[r4][0] = 0;
+  return m;
+}
+
+console.log(JSON.stringify(setZeroes([[1,1,1],[1,0,1],[1,1,1]]))); // [[1,0,1],[0,0,0],[1,0,1]]`}
+/>
+
+**O(m·n)** de tempo (poucas passadas), **O(1)** de espaço — porque os
+marcadores moram dentro da própria matriz.
+
+## A lição que generaliza
+
+Transformação in-place quase sempre vem de **duas ideias**: (1) decompor a
+transformação difícil em passos simples e reversíveis (transpor + inverter), e
+(2) **reaproveitar o próprio espaço dos dados** como memória auxiliar (a 1ª
+linha/coluna como marcadores). Quando o enunciado pedir "O(1) de espaço",
+pergunte: "que estrutura simples compõe isto?" e "dá para anotar dentro da
+própria entrada?".
+
+<Quiz
+  title="Quiz de fixação"
+  questions={[
+    {
+      question: "Como girar uma matriz 90° no sentido horário, no lugar?",
+      options: [
+        "Inverter as colunas e depois transpor",
+        "Transpor (espelhar na diagonal) e depois inverter cada linha",
+        "Ordenar e copiar",
+        "Inverter a matriz inteira",
+      ],
+      answer: 1,
+      explanation:
+        "Transpor troca linhas por colunas; inverter cada linha completa o giro de 90° horário. Dois passos simples, ambos O(1) de espaço.",
+    },
+    {
+      question:
+        "Na transposição in-place, por que o laço interno começa em j = i + 1?",
+      options: [
+        "Por desempenho apenas",
+        "Para trocar cada par (i,j)/(j,i) uma única vez; percorrer tudo trocaria duas vezes e desfaria a transposição",
+        "Para evitar a diagonal",
+        "É indiferente",
+      ],
+      answer: 1,
+      explanation:
+        "Cada par fora da diagonal aparece duas vezes (como (i,j) e (j,i)). Limitando j>i, troca-se uma vez só; senão a segunda troca volta ao original.",
+    },
+    {
+      question:
+        "No Set Matrix Zeroes, qual é o truque para usar O(1) de espaço extra?",
+      options: [
+        "Criar uma matriz auxiliar de marcadores",
+        "Usar a primeira linha e a primeira coluna da própria matriz como os marcadores de quais linhas/colunas zerar",
+        "Ordenar a matriz",
+        "Zerar tudo de uma vez",
+      ],
+      answer: 1,
+      explanation:
+        "Em vez de uma matriz auxiliar O(m·n), a 1ª linha/coluna viram o 'bloco de notas'. Trata-se à parte apenas se elas próprias precisavam ser zeradas.",
+    },
+    {
+      question:
+        "Por que NÃO dá para zerar a linha e a coluna 'na hora' que se encontra um 0?",
+      options: [
+        "Porque é lento",
+        "Porque os zeros recém-escritos seriam lidos como zeros originais e disparariam novas linhas/colunas zeradas, em cascata",
+        "Porque estoura a memória",
+        "Porque a matriz fica desordenada",
+      ],
+      answer: 1,
+      explanation:
+        "Zerar imediatamente contamina a leitura: um 0 colocado por você seria confundido com um 0 do enunciado. Por isso primeiro se marca, depois se zera numa passada separada.",
+    },
+  ]}
+/>
+
+## Resumo
+
+- **Girar a imagem**: transpor + inverter cada linha → 90° horário, O(n²)/O(1).
+- **Set Matrix Zeroes**: marque nas próprias 1ª linha/coluna, depois zere →
+  O(m·n)/O(1).
+- In-place vem de **decompor** a transformação e **reusar o próprio espaço**
+  dos dados.
+
+Próxima aula: tratar o grid como um grafo e **inundar** regiões — DFS.

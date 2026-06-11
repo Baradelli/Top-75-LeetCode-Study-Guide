@@ -1,0 +1,118 @@
+# Padrão 1: Travessia por camadas (espiral)
+
+> Percorrer uma matriz em espiral parece exigir uma lógica cheia de exceções.
+> O segredo é não pensar célula a célula, mas em **quatro limites** que cercam
+> a parte ainda não visitada e **encolhem** a cada borda percorrida.
+
+<Challenge id="spiral-order" />
+
+> Tentou? Sem uma estrutura, vira um emaranhado de `if`s e direções. A teoria
+> abaixo organiza tudo com quatro variáveis de limite.
+
+## A teoria: quatro limites que encolhem
+
+Imagine quatro paredes cercando a região não visitada: `top`, `bottom`,
+`left`, `right`. A espiral é sempre a **mesma sequência de quatro
+movimentos**, e depois de cada um você empurra a parede correspondente para
+dentro:
+
+```text
+1. topo:     da esquerda p/ direita  na linha `top`     →  top++
+2. direita:  de cima p/ baixo        na coluna `right`  →  right--
+3. base:     da direita p/ esquerda  na linha `bottom`  →  bottom--
+4. esquerda: de baixo p/ cima        na coluna `left`   →  left++
+repita enquanto top <= bottom e left <= right
+```
+
+As duas verificações extras (antes da base e da esquerda) cobrem matrizes não
+quadradas, onde uma "volta" pode acabar no meio. Veja os limites encolhendo e
+a célula atual seguindo a espiral — a região clara é o que ainda falta visitar:
+
+<TraceDemo id="spiral-matrix" />
+
+### Por que é O(m·n) e O(1) de espaço (extra)?
+
+Cada célula é visitada **exatamente uma vez** ao longo da espiral — são `m × n`
+células, logo **O(m·n) de tempo**. Fora a lista de saída (que é a resposta,
+não conta como extra), usamos só quatro inteiros de limite → **O(1) de espaço
+extra**. Não há como ser mais rápido: você precisa olhar cada célula ao menos
+uma vez para listá-la.
+
+## A grande ideia: "por camadas"
+
+A espiral é um caso da estratégia **camada por camada** (ou "casca por
+casca"): resolva o anel externo, encolha para o anel interno, repita. A mesma
+ideia reaparece em **girar a imagem** (próxima aula, onde se gira anel por
+anel) e em vários problemas de matriz. Quando um problema de grid "envolve as
+bordas e vai afunilando", pense em limites que encolhem.
+
+> Uma variação comum em entrevistas é a inversa: **gerar** uma matriz em
+> espiral (preencher `1..n²` em espiral) em vez de ler. É o mesmo controle de
+> limites — só que escrevendo no lugar de coletar. (Aparece na prova final!)
+
+<Quiz
+  title="Quiz de fixação"
+  questions={[
+    {
+      question: "Qual é a ideia central da travessia em espiral?",
+      options: [
+        "Visitar as células em ordem aleatória",
+        "Manter quatro limites (top/bottom/left/right) que cercam a região não visitada e encolhem após cada borda percorrida",
+        "Ordenar a matriz primeiro",
+        "Usar recursão em cada célula",
+      ],
+      answer: 1,
+      explanation:
+        "A espiral é sempre a mesma sequência (topo→direita→base→esquerda); o que muda é o tamanho da região, controlado pelos quatro limites que se fecham para dentro.",
+    },
+    {
+      question:
+        "Por que checar 'if top <= bottom' antes de percorrer a base (e 'if left <= right' antes da esquerda)?",
+      options: [
+        "Por estilo",
+        "Para matrizes não quadradas: depois de encolher top e right, a região pode ter acabado, e sem a checagem você percorreria uma linha/coluna inexistente ou repetida",
+        "Para acelerar",
+        "Para evitar overflow",
+      ],
+      answer: 1,
+      explanation:
+        "Em matrizes m×n com m≠n, uma volta pode terminar no meio. As checagens evitam revisitar ou estourar quando os limites já se cruzaram.",
+    },
+    {
+      question: "Qual a complexidade da travessia em espiral de uma matriz m×n?",
+      options: [
+        "O(n²) sempre",
+        "O(m·n) de tempo (cada célula uma vez) e O(1) de espaço extra",
+        "O(m·n) de tempo e O(m·n) de espaço",
+        "O(m+n)",
+      ],
+      answer: 1,
+      explanation:
+        "Visita-se cada uma das m·n células uma vez; os únicos extras são quatro inteiros de limite. Note que é O(m·n), não O(n²), a menos que a matriz seja quadrada.",
+    },
+    {
+      question:
+        "A ideia de 'limites que encolhem' / 'camada por camada' reaparece em qual outro problema da seção?",
+      options: [
+        "Em nenhum",
+        "Girar a imagem (rotaciona anel por anel) e gerar matriz em espiral",
+        "Na busca binária",
+        "No XOR",
+      ],
+      answer: 1,
+      explanation:
+        "Processar a matriz em cascas concêntricas é um padrão: a rotação in-place gira cada anel, e a geração em espiral preenche camada a camada com a mesma lógica de limites.",
+    },
+  ]}
+/>
+
+## Resumo
+
+- Espiral = quatro limites (top/bottom/left/right) que **encolhem** após cada
+  borda.
+- Sempre a mesma sequência de 4 movimentos; checagens extras cobrem matrizes
+  não quadradas.
+- **O(m·n)** tempo, **O(1)** espaço extra.
+- "Camada por camada" reaparece em girar a imagem e gerar espiral.
+
+Próxima aula: transformar a matriz **no lugar** — girar e zerar sem cópia.

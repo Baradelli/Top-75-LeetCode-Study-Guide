@@ -44,6 +44,21 @@ export interface LinkedVisualConfig {
   scalarVars?: string[];
 }
 
+export interface GridVisualConfig {
+  /** Matriz 2D principal (números ou letras). */
+  gridVar: string;
+  /** Célula atual destacada (variáveis de linha e coluna). */
+  cursor?: { row: string; col: string };
+  /** Matriz 2D booleana: células visitadas (sombreadas). */
+  visitedVar?: string;
+  /** Matriz 2D booleana: caminho atual (backtracking) — destaque forte. */
+  pathVar?: string;
+  /** Camada ativa (espiral): variáveis dos limites. */
+  bounds?: { top: string; bottom: string; left: string; right: string };
+  /** Variáveis escalares em destaque. */
+  scalarVars?: string[];
+}
+
 export interface StringVisualConfig {
   /** Variável que contém a string principal. */
   stringVar: string;
@@ -64,7 +79,8 @@ export type DemoDefinition =
   | { python: string; javascript: string; array: ArrayVisualConfig }
   | { python: string; javascript: string; string: StringVisualConfig }
   | { python: string; javascript: string; bit: BitVisualConfig }
-  | { python: string; javascript: string; linked: LinkedVisualConfig };
+  | { python: string; javascript: string; linked: LinkedVisualConfig }
+  | { python: string; javascript: string; grid: GridVisualConfig };
 
 export const DEMOS: Record<string, DemoDefinition> = {
   // ---------------------------------------------------------------- ARRAY ---
@@ -648,6 +664,262 @@ console.log(valores[slow]);`,
       valuesVar: "valores",
       nextVar: "prox",
       pointerVars: ["slow", "fast"],
+    },
+  },
+
+  // ----------------------------------------------------------------- GRID ---
+  "spiral-matrix": {
+    python: `def espiral(matriz):
+    top = 0
+    bottom = len(matriz) - 1
+    left = 0
+    right = len(matriz[0]) - 1
+    linha = 0
+    coluna = 0
+    resultado = []
+    while top <= bottom and left <= right:
+        coluna = left                       # topo: esquerda -> direita
+        while coluna <= right:
+            linha = top
+            resultado.append(matriz[linha][coluna])
+            coluna = coluna + 1
+        top = top + 1
+        linha = top                         # direita: cima -> baixo
+        while linha <= bottom:
+            coluna = right
+            resultado.append(matriz[linha][coluna])
+            linha = linha + 1
+        right = right - 1
+        if top <= bottom:
+            coluna = right                  # base: direita -> esquerda
+            while coluna >= left:
+                linha = bottom
+                resultado.append(matriz[linha][coluna])
+                coluna = coluna - 1
+            bottom = bottom - 1
+        if left <= right:
+            linha = bottom                  # esquerda: baixo -> cima
+            while linha >= top:
+                coluna = left
+                resultado.append(matriz[linha][coluna])
+                linha = linha - 1
+            left = left + 1
+    return resultado
+
+print(espiral([[1, 2, 3], [8, 9, 4], [7, 6, 5]]))`,
+    javascript: `function espiral(matriz) {
+  var top = 0;
+  var bottom = matriz.length - 1;
+  var left = 0;
+  var right = matriz[0].length - 1;
+  var linha = 0;
+  var coluna = 0;
+  var resultado = [];
+  while (top <= bottom && left <= right) {
+    coluna = left;                       // topo: esquerda -> direita
+    while (coluna <= right) {
+      linha = top;
+      resultado.push(matriz[linha][coluna]);
+      coluna = coluna + 1;
+    }
+    top = top + 1;
+    linha = top;                         // direita: cima -> baixo
+    while (linha <= bottom) {
+      coluna = right;
+      resultado.push(matriz[linha][coluna]);
+      linha = linha + 1;
+    }
+    right = right - 1;
+    if (top <= bottom) {
+      coluna = right;                    // base: direita -> esquerda
+      while (coluna >= left) {
+        linha = bottom;
+        resultado.push(matriz[linha][coluna]);
+        coluna = coluna - 1;
+      }
+      bottom = bottom - 1;
+    }
+    if (left <= right) {
+      linha = bottom;                    // esquerda: baixo -> cima
+      while (linha >= top) {
+        coluna = left;
+        resultado.push(matriz[linha][coluna]);
+        linha = linha - 1;
+      }
+      left = left + 1;
+    }
+  }
+  return resultado;
+}
+
+console.log(espiral([[1, 2, 3], [8, 9, 4], [7, 6, 5]]));`,
+    grid: {
+      gridVar: "matriz",
+      cursor: { row: "linha", col: "coluna" },
+      bounds: { top: "top", bottom: "bottom", left: "left", right: "right" },
+    },
+  },
+
+  "number-of-islands": {
+    python: `def dfs(grid, visitado, r, c):
+    if r < 0 or c < 0 or r >= len(grid) or c >= len(grid[0]):
+        return
+    if visitado[r][c] == 1 or grid[r][c] == 0:
+        return
+    visitado[r][c] = 1                 # marca a terra como visitada
+    dfs(grid, visitado, r + 1, c)      # inunda os 4 vizinhos
+    dfs(grid, visitado, r - 1, c)
+    dfs(grid, visitado, r, c + 1)
+    dfs(grid, visitado, r, c - 1)
+
+def contar_ilhas(grid):
+    linhas = len(grid)
+    colunas = len(grid[0])
+    visitado = [[0] * colunas for _ in range(linhas)]
+    ilhas = 0
+    for i in range(linhas):
+        for j in range(colunas):
+            if grid[i][j] == 1 and visitado[i][j] == 0:
+                ilhas = ilhas + 1      # nova ilha encontrada
+                dfs(grid, visitado, i, j)
+    return ilhas
+
+mapa = [[1, 1, 0, 0], [1, 0, 0, 1], [0, 0, 1, 1]]
+print(contar_ilhas(mapa))`,
+    javascript: `function dfs(grid, visitado, r, c) {
+  if (r < 0 || c < 0 || r >= grid.length || c >= grid[0].length) return;
+  if (visitado[r][c] === 1 || grid[r][c] === 0) return;
+  visitado[r][c] = 1;                  // marca a terra como visitada
+  dfs(grid, visitado, r + 1, c);       // inunda os 4 vizinhos
+  dfs(grid, visitado, r - 1, c);
+  dfs(grid, visitado, r, c + 1);
+  dfs(grid, visitado, r, c - 1);
+}
+
+function contarIlhas(grid) {
+  var linhas = grid.length;
+  var colunas = grid[0].length;
+  var visitado = [];
+  for (var k = 0; k < linhas; k++) {
+    var linha = [];
+    for (var m = 0; m < colunas; m++) linha.push(0);
+    visitado.push(linha);
+  }
+  var ilhas = 0;
+  for (var i = 0; i < linhas; i++) {
+    for (var j = 0; j < colunas; j++) {
+      if (grid[i][j] === 1 && visitado[i][j] === 0) {
+        ilhas = ilhas + 1;             // nova ilha encontrada
+        dfs(grid, visitado, i, j);
+      }
+    }
+  }
+  return ilhas;
+}
+
+var mapa = [[1, 1, 0, 0], [1, 0, 0, 1], [0, 0, 1, 1]];
+console.log(contarIlhas(mapa));`,
+    grid: {
+      gridVar: "grid",
+      cursor: { row: "r", col: "c" },
+      visitedVar: "visitado",
+      scalarVars: ["ilhas"],
+    },
+  },
+
+  "word-search": {
+    python: `def dfs(grid, caminho, palavra, r, c, i):
+    if i == len(palavra):
+        return True                                   # achou a palavra inteira
+    if r < 0 or c < 0 or r >= len(grid) or c >= len(grid[0]):
+        return False
+    if caminho[r][c] == 1 or grid[r][c] != palavra[i]:
+        return False
+    caminho[r][c] = 1                                  # entra no caminho
+    achou = (dfs(grid, caminho, palavra, r + 1, c, i + 1) or
+             dfs(grid, caminho, palavra, r - 1, c, i + 1) or
+             dfs(grid, caminho, palavra, r, c + 1, i + 1) or
+             dfs(grid, caminho, palavra, r, c - 1, i + 1))
+    caminho[r][c] = 0                                  # backtrack: sai do caminho
+    return achou
+
+letras = [["A", "B", "C"], ["S", "F", "C"], ["A", "D", "E"]]
+caminho = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
+print(dfs(letras, caminho, "ABFD", 0, 0, 0))`,
+    javascript: `function dfs(grid, caminho, palavra, r, c, i) {
+  if (i === palavra.length) return true;              // achou a palavra inteira
+  if (r < 0 || c < 0 || r >= grid.length || c >= grid[0].length) return false;
+  if (caminho[r][c] === 1 || grid[r][c] !== palavra[i]) return false;
+  caminho[r][c] = 1;                                  // entra no caminho
+  var achou =
+    dfs(grid, caminho, palavra, r + 1, c, i + 1) ||
+    dfs(grid, caminho, palavra, r - 1, c, i + 1) ||
+    dfs(grid, caminho, palavra, r, c + 1, i + 1) ||
+    dfs(grid, caminho, palavra, r, c - 1, i + 1);
+  caminho[r][c] = 0;                                  // backtrack: sai do caminho
+  return achou;
+}
+
+var letras = [["A", "B", "C"], ["S", "F", "C"], ["A", "D", "E"]];
+var caminho = [[0, 0, 0], [0, 0, 0], [0, 0, 0]];
+console.log(dfs(letras, caminho, "ABFD", 0, 0, 0));`,
+    grid: {
+      gridVar: "grid",
+      cursor: { row: "r", col: "c" },
+      pathVar: "caminho",
+      scalarVars: ["palavra", "i"],
+    },
+  },
+
+  "bfs-grid": {
+    python: `grid = [[0, 0, 0, 0], [0, 1, 1, 0], [0, 0, 0, 0]]  # 1 = parede
+visitado = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
+fila = [[0, 0]]      # começa no canto; a fila guarda quem visitar
+visitado[0][0] = 1
+r = 0
+c = 0
+direcoes = [[1, 0], [-1, 0], [0, 1], [0, -1]]
+while len(fila) > 0:
+    atual = fila.pop(0)            # tira o mais antigo (FIFO)
+    r = atual[0]
+    c = atual[1]
+    for d in direcoes:
+        nr = r + d[0]
+        nc = c + d[1]
+        if 0 <= nr < len(grid) and 0 <= nc < len(grid[0]):
+            if visitado[nr][nc] == 0 and grid[nr][nc] == 0:
+                visitado[nr][nc] = 1   # marca ao ENTRAR na fila
+                fila.append([nr, nc])
+print("visitou todos os alcançáveis")`,
+    javascript: `var grid = [[0, 0, 0, 0], [0, 1, 1, 0], [0, 0, 0, 0]]; // 1 = parede
+var visitado = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]];
+var fila = [[0, 0]];     // começa no canto; a fila guarda quem visitar
+visitado[0][0] = 1;
+var r = 0;
+var c = 0;
+var direcoes = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+var cabeca = 0;
+while (cabeca < fila.length) {
+  var atual = fila[cabeca];        // tira o mais antigo (FIFO)
+  cabeca = cabeca + 1;
+  r = atual[0];
+  c = atual[1];
+  for (var k = 0; k < direcoes.length; k++) {
+    var nr = r + direcoes[k][0];
+    var nc = c + direcoes[k][1];
+    if (nr >= 0 && nr < grid.length && nc >= 0 && nc < grid[0].length) {
+      if (visitado[nr][nc] === 0 && grid[nr][nc] === 0) {
+        visitado[nr][nc] = 1;       // marca ao ENTRAR na fila
+        fila.push([nr, nc]);
+      }
+    }
+  }
+}
+console.log("visitou todos os alcançáveis");`,
+    grid: {
+      gridVar: "grid",
+      cursor: { row: "r", col: "c" },
+      visitedVar: "visitado",
     },
   },
 };

@@ -1,0 +1,128 @@
+# Padrão 4: Backtracking em grid
+
+> Backtracking é o DFS com uma virada: você **marca** uma célula ao entrar num
+> caminho e a **desmarca** ao sair, liberando-a para outras tentativas. É como
+> explorar um labirinto desenrolando um fio e recolhendo-o quando volta.
+
+<Challenge id="word-search" />
+
+> Tentou? O difícil aqui não é achar a primeira letra — é **não reusar** a
+> mesma célula no caminho, e conseguir **tentar outro caminho** quando um falha.
+> A teoria abaixo mostra a peça que faltava: desfazer a marca ao voltar.
+
+## A teoria: marcar, explorar, desmarcar
+
+No flood fill (aula 4), uma célula visitada ficava marcada **para sempre** —
+queríamos cobrir a região uma vez. No backtracking é diferente: queremos achar
+um **caminho** específico, e uma célula que não serviu para *este* caminho pode
+servir para **outro**. Por isso, a marca é **temporária**:
+
+```text
+dfs(r, c, i):                      # tenta casar word[i] em (r,c)
+    se i == len(word)        → achou tudo! return True
+    se fora do grid
+       ou grid[r][c] != word[i]  → return False
+    se (r,c) já está no caminho   → return False
+    marca (r,c) no caminho        # ENTRA
+    tenta os 4 vizinhos para word[i+1] (se algum der True, propaga)
+    desmarca (r,c) do caminho     # SAI (backtrack!)
+    return (se algum vizinho deu certo)
+```
+
+A linha **"desmarca"** é o coração do backtracking. Sem ela, uma tentativa
+falha bloquearia células para sempre e caminhos válidos seriam perdidos. Veja o
+caminho (verde) crescer ao avançar e **encolher quando o DFS volta** — é o
+backtrack acontecendo diante dos seus olhos:
+
+<TraceDemo id="word-search" />
+
+(No visualizador, a palavra é `ABFD`: acompanhe o caminho tentar uma direção,
+falhar, **recuar** e tentar outra, até montar a palavra.)
+
+### Por que a complexidade é exponencial no pior caso?
+
+De cada célula, o DFS pode seguir até ~4 direções, e a busca tenta começar de
+cada uma das `m·n` células. No pior caso, isso dá algo como **O(m·n·4ᴸ)**,
+onde L é o tamanho da palavra (de cada célula partem ~3 novas direções, L
+vezes). É **exponencial em L** — e tudo bem: backtracking explora um espaço de
+busca que pode ser grande, mas a poda (parar assim que `grid[r][c] != word[i]`)
+corta a imensa maioria dos ramos cedo. O espaço é **O(L)** (profundidade da
+recursão / tamanho do caminho).
+
+> **DFS vs. backtracking:** são primos. No flood fill, a marca é permanente
+> (cobrir uma região). No backtracking, a marca é desfeita (explorar caminhos
+> alternativos). Reconhecer qual dos dois o problema pede é meio caminho.
+
+## Onde backtracking aparece
+
+Word Search, gerar permutações/combinações, Sudoku, N-Queens, labirintos com
+"todos os caminhos". O esqueleto é sempre o mesmo: **escolher → explorar →
+desfazer a escolha**. Você vai reencontrá-lo fora dos grids também — é um dos
+padrões mais transferíveis do curso.
+
+<Quiz
+  title="Quiz de fixação"
+  questions={[
+    {
+      question:
+        "Qual a diferença essencial entre o DFS do flood fill (aula 4) e o backtracking?",
+      options: [
+        "Nenhuma, são idênticos",
+        "No flood fill a célula fica marcada para sempre (cobrir uma região); no backtracking a marca é DESFEITA ao voltar, liberando a célula para outros caminhos",
+        "Backtracking não usa recursão",
+        "Flood fill é mais lento",
+      ],
+      answer: 1,
+      explanation:
+        "Cobrir uma região quer marcar uma vez. Achar um caminho quer poder reusar uma célula em tentativas diferentes — daí o desfazer (backtrack).",
+    },
+    {
+      question: "Por que a linha 'desmarca a célula' é indispensável no word search?",
+      options: [
+        "Para economizar memória",
+        "Porque sem ela uma tentativa falha deixaria a célula bloqueada para sempre, impedindo que outros caminhos válidos a usem",
+        "Para acelerar",
+        "Para ordenar as letras",
+      ],
+      answer: 1,
+      explanation:
+        "Uma célula que não serviu para um caminho pode ser essencial em outro. Desmarcar ao retornar restaura o estado para a próxima tentativa explorar livremente.",
+    },
+    {
+      question:
+        "O que permite ao backtracking, apesar da complexidade exponencial no pior caso, ser viável na prática?",
+      options: [
+        "A matriz ser pequena",
+        "A PODA: parar um ramo assim que ele não pode dar certo (ex.: grid[r][c] != word[i]) elimina a maioria das ramificações cedo",
+        "Usar memória extra",
+        "Ordenar a palavra",
+      ],
+      answer: 1,
+      explanation:
+        "Backtracking explora uma árvore de tentativas, mas corta ramos inviáveis imediatamente. Essa poda agressiva torna o caso médio muito melhor que o pior caso teórico.",
+    },
+    {
+      question: "Qual é o esqueleto geral de qualquer backtracking?",
+      options: [
+        "Ordenar, buscar, retornar",
+        "Escolher (marcar) → explorar (recursão) → desfazer a escolha (desmarcar)",
+        "Dividir ao meio repetidamente",
+        "Contar e somar",
+      ],
+      answer: 1,
+      explanation:
+        "Escolher–explorar–desfazer é a assinatura do backtracking, e vale muito além de grids: permutações, Sudoku, N-Queens. Dominar isso aqui transfere para muitos problemas.",
+    },
+  ]}
+/>
+
+## Resumo
+
+- Backtracking = DFS com marca **temporária**: marca ao entrar, **desmarca ao
+  sair**.
+- Word Search: casa `word[i]` na célula, tenta os vizinhos para `word[i+1]`,
+  desfaz ao falhar.
+- Pior caso exponencial em L, mas a **poda** o torna viável; espaço O(L).
+- Esqueleto universal: **escolher → explorar → desfazer**.
+
+Próxima aula: quando a pergunta é "o caminho **mais curto**" — BFS.

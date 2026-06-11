@@ -87,7 +87,7 @@ export const SECTIONS: Section[] = [
     description:
       "Arrays em 2D; o primeiro DFS/backtracking concreto, preparando grafos.",
     patterns: ["Travessia espiral", "In-place", "DFS em grid", "Backtracking"],
-    status: "soon",
+    status: "available",
   },
   {
     slug: "interval",
@@ -352,6 +352,50 @@ export const LESSONS: Record<string, Lesson[]> = {
       title: "Síntese: qual padrão usar?",
       description:
         "A árvore de decisão da seção Lista Ligada e o quiz geral antes da prova final.",
+    },
+  ],
+  matrix: [
+    {
+      slug: "01-introducao",
+      title: "Reconhecendo problemas de matriz",
+      description:
+        "Pensar em 2D: coordenadas (linha, coluna), vizinhos, limites e a complexidade O(m·n).",
+    },
+    {
+      slug: "02-travessia-espiral",
+      title: "Padrão 1: Travessia por camadas (espiral)",
+      description:
+        "Percorrer a matriz em espiral controlando quatro limites que encolhem.",
+    },
+    {
+      slug: "03-transformacao-in-place",
+      title: "Padrão 2: Transformação in-place",
+      description:
+        "Girar a imagem e zerar linhas/colunas sem matriz auxiliar — só com truques de índice.",
+    },
+    {
+      slug: "04-dfs-grid",
+      title: "Padrão 3: DFS em grid (flood fill)",
+      description:
+        "Tratar o grid como um grafo: inundar regiões conectadas com busca em profundidade.",
+    },
+    {
+      slug: "05-backtracking",
+      title: "Padrão 4: Backtracking em grid",
+      description:
+        "Explorar caminhos marcando e desmarcando células — o word search.",
+    },
+    {
+      slug: "06-bfs-grid",
+      title: "Padrão 5: BFS em grid (caminho mais curto)",
+      description:
+        "Quando a pergunta é 'o mais curto', a busca em largura explora por camadas.",
+    },
+    {
+      slug: "07-sintese",
+      title: "Síntese: qual padrão usar?",
+      description:
+        "A árvore de decisão da seção Matriz e o quiz geral antes da prova final.",
     },
   ],
 };
