@@ -1,6 +1,6 @@
 # Plano — Curso Interativo de LeetCode e Algoritmos
 
-> Status: "Comece aqui" + Fundamentos + Array + String + Binary + Linked List + Matrix + Interval + Tree + Heap completas (attempt-first). Heap trouxe o HeapTraceVisualizer (array desenhado como árvore completa, sift-up/down). Faltam: Graph, Dynamic Programming. Próxima seção: Graph. Última atualização: 2026-06-10.
+> Status: "Comece aqui" + Fundamentos + Array + String + Binary + Linked List + Matrix + Interval + Tree + Heap + Graph completas (attempt-first). Graph trouxe o GraphTraceVisualizer (layout circular, setas em dirigidos). Falta só: Dynamic Programming (a última e mais difícil). Última atualização: 2026-06-10.
 
 ## 1. Visão
 

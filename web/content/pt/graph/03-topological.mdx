@@ -1,0 +1,138 @@
+# Padrão 2: Ordenação topológica
+
+> "Para fazer A, preciso fazer B antes." Quando há **dependências** entre
+> tarefas (cursos, compilação, instalação de pacotes), a ordenação topológica
+> encontra uma ordem válida de execução — e, de quebra, detecta
+> **dependências circulares** (impossíveis de resolver).
+
+<Challenge id="course-schedule" />
+
+> Tentou? A pergunta "dá para concluir todos os cursos?" é, no fundo, "o grafo
+> de dependências tem um **ciclo**?". A teoria abaixo mostra como ordenar e
+> detectar ciclo de uma vez só.
+
+## A teoria: o algoritmo de Kahn (BFS de in-degrees)
+
+Modele cada tarefa como um nó e cada dependência "B antes de A" como uma
+aresta dirigida `B → A`. Uma **ordenação topológica** é uma ordem dos nós em
+que toda aresta aponta "para a frente" — ou seja, toda tarefa vem depois de
+suas dependências.
+
+O algoritmo de **Kahn** usa o **grau de entrada** (in-degree) de cada nó:
+quantas arestas chegam nele = quantas dependências ainda faltam.
+
+```text
+1. calcule o in-degree de cada nó
+2. fila ← todos os nós com in-degree 0 (sem dependências: podem começar já)
+3. enquanto a fila não está vazia:
+       no = desenfileira; adicione-o à ordem
+       para cada vizinho de no:   # "concluí no", então removo a aresta no→viz
+           in-degree[viz] -= 1
+           se in-degree[viz] == 0: enfileira viz   # liberou todas as dependências
+```
+
+Cada nó entra na fila exatamente quando sua última dependência é resolvida.
+Veja a ordem sendo construída — repare no `indeg` caindo e nos nós liberando os
+seguintes:
+
+<TraceDemo id="topological-sort" />
+
+### A sacada: ordenação topológica detecta ciclo
+
+Eis a parte genial: se o grafo tem um **ciclo**, os nós do ciclo **nunca**
+chegam a in-degree 0 (cada um depende do outro). Então o algoritmo termina sem
+processá-los. Conclusão:
+
+> Se o número de nós processados for **menor** que o total, há um ciclo — e a
+> ordenação topológica é **impossível**.
+
+É exatamente o *Course Schedule*: "dá para concluir todos os cursos?" ⟺
+"processei todos os nós?" ⟺ "não há ciclo de pré-requisitos?".
+
+### Por que é O(V + E)?
+
+Calcular os in-degrees percorre todas as arestas (O(E)). Cada nó entra e sai da
+fila uma vez (O(V)), e cada aresta é "removida" uma vez ao processar a origem
+(O(E)). Total: **O(V + E)** de tempo, O(V) de espaço.
+
+## Onde aparece
+
+Course Schedule (I e II — a II pede a ordem em si), **Alien Dictionary**
+(deduzir a ordem do alfabeto a partir de palavras ordenadas: cada par de
+palavras vizinhas dá uma aresta de precedência entre letras), build systems,
+resolução de dependências de pacotes. Sempre que houver "**X antes de Y**" e
+você precisar de uma ordem (ou detectar impossibilidade), pense em ordenação
+topológica.
+
+> Há também a versão com **DFS** (pós-ordem + detecção de ciclo com cores), mas
+> Kahn (BFS de in-degrees) é a mais direta para começar e já resolve a detecção
+> de ciclo naturalmente.
+
+<Quiz
+  title="Quiz de fixação"
+  questions={[
+    {
+      question: "O que é uma ordenação topológica?",
+      options: [
+        "Ordenar os nós por valor",
+        "Uma ordem dos nós de um grafo DIRIGIDO em que toda aresta aponta para a frente — toda tarefa vem depois de suas dependências",
+        "A ordem do BFS",
+        "Ordenar as arestas por peso",
+      ],
+      answer: 1,
+      explanation:
+        "É uma ordem linear compatível com as dependências: se há aresta B→A (B antes de A), B aparece antes de A na ordem. Só existe em grafos dirigidos sem ciclo (DAGs).",
+    },
+    {
+      question: "No algoritmo de Kahn, o que significa um nó ter in-degree 0?",
+      options: [
+        "Que ele não tem vizinhos",
+        "Que nenhuma aresta chega nele — ou seja, ele não tem dependências pendentes e pode ser processado agora",
+        "Que ele é o último da ordem",
+        "Que ele forma um ciclo",
+      ],
+      answer: 1,
+      explanation:
+        "In-degree = dependências que faltam. Zero significa que todas já foram resolvidas, então o nó está livre para entrar na ordem (e na fila).",
+    },
+    {
+      question:
+        "Como a ordenação topológica detecta um ciclo (dependência circular)?",
+      options: [
+        "Conta as arestas",
+        "Os nós de um ciclo nunca chegam a in-degree 0; se o nº de nós processados for menor que o total, há ciclo — ordenação impossível",
+        "Procura arestas repetidas",
+        "Não detecta ciclos",
+      ],
+      answer: 1,
+      explanation:
+        "Num ciclo, cada nó depende de outro do ciclo, então nenhum zera o in-degree. Sobrar nós não processados é a assinatura do ciclo — exatamente o que torna o Course Schedule impossível.",
+    },
+    {
+      question:
+        "'Deduzir a ordem das letras de um alfabeto alienígena a partir de uma lista de palavras ordenadas.' Qual padrão?",
+      options: [
+        "Union-Find",
+        "Ordenação topológica: cada par de palavras vizinhas revela que uma letra vem antes de outra (uma aresta); ordenar topologicamente dá o alfabeto",
+        "BFS multi-fonte",
+        "Heap",
+      ],
+      answer: 1,
+      explanation:
+        "Comparando palavras adjacentes, a primeira letra diferente dá uma precedência (aresta entre letras). A ordem do alfabeto é a ordenação topológica desse grafo de letras.",
+    },
+  ]}
+/>
+
+## Resumo
+
+- **Ordenação topológica**: ordem de tarefas respeitando dependências (em
+  grafos dirigidos).
+- **Kahn**: comece pelos nós com **in-degree 0**, processe e reduza o in-degree
+  dos vizinhos.
+- Se **nem todos** os nós forem processados, há **ciclo** (ordenação
+  impossível) — é assim que o Course Schedule funciona.
+- **O(V + E)**. Aparece em cursos, alien dictionary, build systems.
+
+Próxima aula: agrupar e perguntar "estão conectados?" quase de graça —
+**Union-Find**.

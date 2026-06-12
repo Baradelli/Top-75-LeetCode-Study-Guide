@@ -1,0 +1,194 @@
+# Padrão 3: Union-Find (conjuntos disjuntos)
+
+> Como responder rapidamente "esses dois nós estão no mesmo grupo?" enquanto
+> grupos vão se fundindo? O **Union-Find** (ou DSU — disjoint set union) faz
+> exatamente isso: agrupar e consultar conexão em tempo quase constante.
+
+<Challenge id="graph-valid-tree" />
+
+> Tentou? Para checar se é uma árvore, você precisa de duas coisas: **conexo**
+> e **sem ciclo**. O Union-Find detecta o ciclo elegantemente — quando uma
+> aresta liga dois nós que **já** estavam no mesmo grupo.
+
+## A teoria: cada grupo tem um "representante"
+
+A ideia do Union-Find: cada nó aponta para um "pai", e seguindo os pais você
+chega ao **representante** (raiz) do grupo. Dois nós estão no mesmo grupo se
+têm o **mesmo representante**. Duas operações:
+
+- **find(x):** sobe pelos pais até a raiz — o representante do grupo de `x`.
+- **union(a, b):** liga a raiz de um grupo à raiz do outro, fundindo-os.
+
+```text
+parent = [0, 1, 2, 3, 4]   # no início, cada nó é seu próprio grupo
+
+union(0,1): parent[0] = 1      grupos: {0,1} {2} {3} {4}
+union(2,3): parent[2] = 3      grupos: {0,1} {2,3} {4}
+find(0) == find(1)? sim → conectados
+find(0) == find(2)? não → grupos diferentes
+```
+
+Duas otimizações deixam cada operação **quase O(1)** (amortizado, O(α(n)) —
+praticamente constante):
+
+- **Compressão de caminho:** no `find`, aponte os nós direto para a raiz.
+- **União por tamanho/altura:** ligue sempre a árvore menor sob a maior.
+
+## Detectar ciclo com Union-Find
+
+Eis a sacada para grafos não-dirigidos: ao processar uma aresta `(a, b)`, se
+`a` e `b` **já têm o mesmo representante**, então já havia um caminho entre
+eles — esta aresta fecha um **ciclo**. Se têm representantes diferentes, una-os.
+
+```python
+class UnionFind:
+    def __init__(self, n):
+        self.parent = list(range(n))
+    def find(self, x):
+        while self.parent[x] != x:
+            self.parent[x] = self.parent[self.parent[x]]   # compressão
+            x = self.parent[x]
+        return x
+    def union(self, a, b):
+        ra, rb = self.find(a), self.find(b)
+        if ra == rb:
+            return False        # já conectados ⇒ ciclo!
+        self.parent[ra] = rb
+        return True             # fundiu dois grupos
+```
+
+<CodeRunner
+  python={`class UnionFind:
+    def __init__(self, n):
+        self.parent = list(range(n))
+    def find(self, x):
+        while self.parent[x] != x:
+            self.parent[x] = self.parent[self.parent[x]]
+            x = self.parent[x]
+        return x
+    def union(self, a, b):
+        ra, rb = self.find(a), self.find(b)
+        if ra == rb:
+            return False
+        self.parent[ra] = rb
+        return True
+
+uf = UnionFind(5)
+print(uf.union(0, 1))   # True  (fundiu)
+print(uf.union(2, 3))   # True
+print(uf.union(0, 1))   # False (0 e 1 já estão juntos ⇒ seria um ciclo)
+print(uf.find(0) == uf.find(1))   # True  (mesmo grupo)
+print(uf.find(0) == uf.find(2))   # False (grupos diferentes)`}
+  javascript={`function UnionFind(n) {
+  this.parent = [];
+  for (var i = 0; i < n; i++) this.parent.push(i);
+}
+UnionFind.prototype.find = function (x) {
+  while (this.parent[x] !== x) {
+    this.parent[x] = this.parent[this.parent[x]];
+    x = this.parent[x];
+  }
+  return x;
+};
+UnionFind.prototype.union = function (a, b) {
+  var ra = this.find(a), rb = this.find(b);
+  if (ra === rb) return false;   // já conectados ⇒ ciclo
+  this.parent[ra] = rb;
+  return true;
+};
+
+var uf = new UnionFind(5);
+console.log(uf.union(0, 1)); // true
+console.log(uf.union(2, 3)); // true
+console.log(uf.union(0, 1)); // false (já juntos ⇒ ciclo)
+console.log(uf.find(0) === uf.find(1)); // true
+console.log(uf.find(0) === uf.find(2)); // false`}
+/>
+
+### Graph Valid Tree, em uma frase
+
+Uma árvore com `n` nós tem **exatamente `n-1` arestas** e é **conexa**. Com
+Union-Find: se não houver `n-1` arestas, já não é árvore; senão, una cada
+aresta — se alguma fechar um ciclo (`union` retorna `False`), não é árvore.
+Com `n-1` arestas e nenhum ciclo, o grafo é forçosamente conexo. **Quase
+O(n + e).**
+
+## Union-Find ou DFS/BFS?
+
+Os dois acham componentes conexos. Quando preferir Union-Find?
+
+| Situação | Melhor |
+| --- | --- |
+| Componentes de um grafo estático | DFS/BFS ou Union-Find (tanto faz) |
+| Arestas chegando **aos poucos** ("conectou agora?") | **Union-Find** (atualiza em ~O(1)) |
+| Detectar ciclo em grafo **não-dirigido** | **Union-Find** (aresta dentro do mesmo grupo) |
+| Precisa do **caminho** ou da ordem de visita | DFS/BFS |
+
+<Quiz
+  title="Quiz de fixação"
+  questions={[
+    {
+      question: "Como o Union-Find decide se dois nós estão no mesmo grupo?",
+      options: [
+        "Compara seus valores",
+        "Compara seus REPRESENTANTES (raízes): find(a) == find(b) significa mesmo grupo",
+        "Conta as arestas entre eles",
+        "Verifica se são vizinhos diretos",
+      ],
+      answer: 1,
+      explanation:
+        "Cada grupo tem uma raiz/representante. Subindo pelos pais (find), dois nós no mesmo grupo chegam à mesma raiz.",
+    },
+    {
+      question:
+        "Como o Union-Find detecta um ciclo num grafo não-dirigido?",
+      options: [
+        "Contando vértices",
+        "Ao processar uma aresta (a,b), se a e b JÁ têm o mesmo representante, já havia caminho entre eles — esta aresta fecha um ciclo",
+        "Procurando arestas duplicadas",
+        "Com BFS",
+      ],
+      answer: 1,
+      explanation:
+        "Se union(a,b) encontra a e b já no mesmo grupo, a nova aresta cria um segundo caminho entre eles — ou seja, um ciclo.",
+    },
+    {
+      question:
+        "Por que uma árvore válida com n nós precisa de exatamente n-1 arestas?",
+      options: [
+        "É uma convenção",
+        "Menos que n-1 não conecta tudo (desconexo); mais que n-1 força um ciclo. Exatamente n-1 + sem ciclo ⇒ conexa e acíclica = árvore",
+        "Porque árvores são binárias",
+        "Para caber na memória",
+      ],
+      answer: 1,
+      explanation:
+        "n-1 é o número mínimo de arestas para conectar n nós. Com n-1 arestas e nenhum ciclo, o grafo é necessariamente conexo — a definição de árvore.",
+    },
+    {
+      question:
+        "Quando o Union-Find é claramente preferível a DFS/BFS?",
+      options: [
+        "Quando precisa do caminho mais curto",
+        "Quando as arestas chegam aos poucos e você precisa responder 'estão conectados agora?' repetidamente — o Union-Find atualiza em ~O(1)",
+        "Quando o grafo é uma árvore",
+        "Nunca",
+      ],
+      answer: 1,
+      explanation:
+        "DFS/BFS recomeça a busca a cada consulta. O Union-Find mantém os grupos incrementalmente: unir e consultar conexão custam quase O(1), ideal para conexões dinâmicas.",
+    },
+  ]}
+/>
+
+## Resumo
+
+- **Union-Find**: cada grupo tem um representante; `find` acha a raiz, `union`
+  funde grupos. Quase **O(1)** por operação (com compressão de caminho).
+- Detecta **ciclo** (não-dirigido): aresta entre nós já do mesmo grupo.
+- **Graph Valid Tree**: `n-1` arestas + sem ciclo ⇒ árvore.
+- Prefira Union-Find para **conexões dinâmicas** e detecção de ciclo
+  não-dirigido.
+
+Próxima aula: lembrar que **grid é grafo** — e propagar de várias fontes ao
+mesmo tempo.

@@ -10,6 +10,7 @@ import GridTraceVisualizer from "./visualizers/GridTraceVisualizer";
 import TreeTraceVisualizer from "./visualizers/TreeTraceVisualizer";
 import IntervalTraceVisualizer from "./visualizers/IntervalTraceVisualizer";
 import HeapTraceVisualizer from "./visualizers/HeapTraceVisualizer";
+import GraphTraceVisualizer from "./visualizers/GraphTraceVisualizer";
 import { DEMOS } from "@/lib/demos";
 
 /**
@@ -70,6 +71,13 @@ export default function TraceDemo({ id }: { id: string }) {
         return <HeapTraceVisualizer {...props} config={config} />;
       }
       return HeapBound;
+    }
+    if ("graph" in demo) {
+      const config = demo.graph;
+      function GraphBound(props: VisualizerProps) {
+        return <GraphTraceVisualizer {...props} config={config} />;
+      }
+      return GraphBound;
     }
     const config = demo.string;
     function StringBound(props: VisualizerProps) {

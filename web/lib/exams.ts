@@ -799,6 +799,87 @@ def kth_smallest(matrix, k):
       hint: "É um merge de k-way disfarçado: comece com o canto superior esquerdo num MIN-heap; retire k vezes, e a cada retirada empurre os vizinhos à direita e abaixo (marcando visitados para não repetir). O k-ésimo retirado é a resposta. O(k log k).",
     },
   ],
+
+  graph: [
+    {
+      slug: "find-if-path-exists",
+      title: "Find if Path Exists in Graph",
+      difficulty: "facil",
+      leetcodeUrl: "https://leetcode.com/problems/find-if-path-exists-in-graph/",
+      statement: `Há \`n\` nós (\`0\` a \`n-1\`) e arestas não-dirigidas em \`edges\`. Retorne \`true\` se existe um caminho entre \`source\` e \`destination\`.
+
+Exemplo: \`n=3\`, \`edges=[[0,1],[1,2],[2,0]]\`, \`source=0\`, \`destination=2\` → \`true\`.`,
+      functionName: { python: "valid_path", javascript: "validPath" },
+      starter: {
+        python: `def valid_path(n, edges, source, destination):
+    # existe caminho de source a destination?
+    pass`,
+        javascript: `function validPath(n, edges, source, destination) {
+  // existe caminho de source a destination?
+}`,
+      },
+      tests: [
+        { args: [3, [[0, 1], [1, 2], [2, 0]], 0, 2], expected: true },
+        { args: [6, [[0, 1], [0, 2], [3, 5], [5, 4], [4, 3]], 0, 5], expected: false },
+        { args: [1, [], 0, 0], expected: true },
+        { args: [2, [[0, 1]], 0, 1], expected: true, hidden: true },
+        { args: [4, [[0, 1], [2, 3]], 1, 2], expected: false, hidden: true },
+      ],
+      hint: "Conectividade entre dois nós: construa a lista de adjacência e faça DFS ou BFS a partir de source, parando se chegar em destination. (Union-Find também resolve: source e destination estão no mesmo grupo?)",
+    },
+    {
+      slug: "number-of-provinces",
+      title: "Number of Provinces",
+      difficulty: "medio",
+      leetcodeUrl: "https://leetcode.com/problems/number-of-provinces/",
+      statement: `Dada uma matriz \`isConnected\` \`n × n\` onde \`isConnected[i][j] = 1\` indica que as cidades \`i\` e \`j\` são diretamente ligadas, retorne o número de **províncias** (grupos de cidades conectadas, direta ou indiretamente).
+
+Exemplo: \`[[1,1,0],[1,1,0],[0,0,1]]\` → \`2\`.`,
+      functionName: { python: "find_circle_num", javascript: "findCircleNum" },
+      starter: {
+        python: `def find_circle_num(is_connected):
+    # quantos grupos de cidades conectadas?
+    pass`,
+        javascript: `function findCircleNum(isConnected) {
+  // quantos grupos de cidades conectadas?
+}`,
+      },
+      tests: [
+        { args: [[[1, 1, 0], [1, 1, 0], [0, 0, 1]]], expected: 2 },
+        { args: [[[1, 0, 0], [0, 1, 0], [0, 0, 1]]], expected: 3 },
+        { args: [[[1, 1, 1], [1, 1, 1], [1, 1, 1]]], expected: 1 },
+        { args: [[[1]]], expected: 1, hidden: true },
+        { args: [[[1, 0, 0, 1], [0, 1, 1, 0], [0, 1, 1, 0], [1, 0, 0, 1]]], expected: 2, hidden: true },
+      ],
+      hint: "É contar componentes conexos, mas o grafo vem como MATRIZ de adjacência em vez de lista de arestas. Percorra os pares (i, j) com isConnected[i][j]==1 e una-os (Union-Find), ou faça DFS marcando cidades visitadas — cada nova busca é uma província.",
+    },
+    {
+      slug: "word-ladder",
+      title: "Word Ladder",
+      difficulty: "dificil",
+      leetcodeUrl: "https://leetcode.com/problems/word-ladder/",
+      statement: `Dadas \`beginWord\`, \`endWord\` e uma lista \`wordList\`, transforme \`beginWord\` em \`endWord\` mudando **uma letra por vez**, com cada palavra intermediária presente em \`wordList\`. Retorne o **número de palavras** na sequência mais curta (incluindo as duas pontas), ou \`0\` se impossível.
+
+Exemplo: \`"hit"\` → \`"cog"\`, lista \`["hot","dot","dog","lot","log","cog"]\` → \`5\` (hit→hot→dot→dog→cog).`,
+      functionName: { python: "ladder_length", javascript: "ladderLength" },
+      starter: {
+        python: `def ladder_length(begin_word, end_word, word_list):
+    # comprimento da menor sequência de transformação
+    pass`,
+        javascript: `function ladderLength(beginWord, endWord, wordList) {
+  // comprimento da menor sequência de transformação
+}`,
+      },
+      tests: [
+        { args: ["hit", "cog", ["hot", "dot", "dog", "lot", "log", "cog"]], expected: 5 },
+        { args: ["hit", "cog", ["hot", "dot", "dog", "lot", "log"]], expected: 0 },
+        { args: ["a", "c", ["a", "b", "c"]], expected: 2 },
+        { args: ["hot", "dog", ["hot", "dog"]], expected: 0, hidden: true },
+        { args: ["hot", "dog", ["hot", "dog", "dot"]], expected: 3, hidden: true },
+      ],
+      hint: "Caminho MAIS CURTO ⇒ BFS — mas o grafo é IMPLÍCITO: dois palavras são vizinhas se diferem em exatamente uma letra. A partir de beginWord, gere todas as variações de uma letra; as que estão na wordList e não foram vistas entram na fila (nível = comprimento). O primeiro a alcançar endWord dá a resposta.",
+    },
+  ],
 };
 
 export function getExam(section: string): ExamProblem[] | undefined {

@@ -119,7 +119,7 @@ export const SECTIONS: Section[] = [
     description:
       "Generaliza o DFS/BFS já praticado em matriz e árvore para a estrutura mais geral.",
     patterns: ["DFS", "BFS", "Topological sort", "Union-find"],
-    status: "soon",
+    status: "available",
   },
   {
     slug: "dynamic-programming",
@@ -510,6 +510,44 @@ export const LESSONS: Record<string, Lesson[]> = {
       title: "Síntese: qual padrão usar?",
       description:
         "A árvore de decisão da seção Heap e o quiz geral antes da prova final.",
+    },
+  ],
+  graph: [
+    {
+      slug: "01-introducao",
+      title: "Reconhecendo problemas de grafo",
+      description:
+        "Nós e arestas, dirigido/não-dirigido, representações (lista de adjacência) e O(V+E).",
+    },
+    {
+      slug: "02-dfs-bfs",
+      title: "Padrão 1: DFS e BFS com visitados",
+      description:
+        "Percorrer um grafo sem repetir nós; contar componentes e clonar um grafo.",
+    },
+    {
+      slug: "03-topological",
+      title: "Padrão 2: Ordenação topológica",
+      description:
+        "Ordenar tarefas com dependências e detectar ciclos em grafos dirigidos.",
+    },
+    {
+      slug: "04-union-find",
+      title: "Padrão 3: Union-Find (conjuntos disjuntos)",
+      description:
+        "Agrupar e perguntar 'estão conectados?' de forma quase O(1) — componentes e ciclos.",
+    },
+    {
+      slug: "05-multi-source",
+      title: "Padrão 4: Grid é grafo e BFS multi-fonte",
+      description:
+        "Tratar grids como grafos e propagar ondas a partir de várias fontes ao mesmo tempo.",
+    },
+    {
+      slug: "06-sintese",
+      title: "Síntese: qual padrão usar?",
+      description:
+        "A árvore de decisão da seção Grafos e o quiz geral antes da prova final.",
     },
   ],
 };

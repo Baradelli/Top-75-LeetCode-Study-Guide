@@ -81,6 +81,21 @@ export interface HeapVisualConfig {
   scalarVars?: string[];
 }
 
+export interface GraphVisualConfig {
+  /** Lista de adjacência: adj[i] é o array de vizinhos do nó i. */
+  adjVar: string;
+  /** Rótulos opcionais dos nós (array); por padrão usa o índice. */
+  labelsVar?: string;
+  /** Índice do nó atual (cursor). */
+  cursorVar?: string;
+  /** Array 0/1 por nó: visitados. */
+  visitedVar?: string;
+  /** true = grafo dirigido (desenha setas). */
+  directed?: boolean;
+  /** Variáveis escalares em destaque. */
+  scalarVars?: string[];
+}
+
 export interface GridVisualConfig {
   /** Matriz 2D principal (números ou letras). */
   gridVar: string;
@@ -120,7 +135,8 @@ export type DemoDefinition =
   | { python: string; javascript: string; grid: GridVisualConfig }
   | { python: string; javascript: string; tree: TreeVisualConfig }
   | { python: string; javascript: string; interval: IntervalVisualConfig }
-  | { python: string; javascript: string; heap: HeapVisualConfig };
+  | { python: string; javascript: string; heap: HeapVisualConfig }
+  | { python: string; javascript: string; graph: GraphVisualConfig };
 
 export const DEMOS: Record<string, DemoDefinition> = {
   // ---------------------------------------------------------------- ARRAY ---
@@ -1274,6 +1290,139 @@ console.log(saida);`,
     heap: {
       heapVar: "heap",
       cursorVar: "i",
+    },
+  },
+
+  // ---------------------------------------------------------------- GRAPH ---
+  "graph-dfs": {
+    python: `adj = [[1, 2], [0, 3], [0, 3], [1, 2, 4], [3, 5], [4]]
+visitado = [0, 0, 0, 0, 0, 0]
+ordem = []
+
+def dfs(adj, visitado, ordem, no):
+    visitado[no] = 1
+    ordem.append(no)
+    for viz in adj[no]:           # explora cada vizinho ainda não visitado
+        if visitado[viz] == 0:
+            dfs(adj, visitado, ordem, viz)
+
+dfs(adj, visitado, ordem, 0)
+print(ordem)`,
+    javascript: `var adj = [[1, 2], [0, 3], [0, 3], [1, 2, 4], [3, 5], [4]];
+var visitado = [0, 0, 0, 0, 0, 0];
+var ordem = [];
+
+function dfs(adj, visitado, ordem, no) {
+  visitado[no] = 1;
+  ordem.push(no);
+  for (var k = 0; k < adj[no].length; k++) {  // explora cada vizinho não visitado
+    var viz = adj[no][k];
+    if (visitado[viz] === 0) {
+      dfs(adj, visitado, ordem, viz);
+    }
+  }
+}
+
+dfs(adj, visitado, ordem, 0);
+console.log(ordem);`,
+    graph: {
+      adjVar: "adj",
+      cursorVar: "no",
+      visitedVar: "visitado",
+      scalarVars: ["ordem"],
+    },
+  },
+
+  "graph-bfs": {
+    python: `adj = [[1, 2], [0, 3], [0, 3], [1, 2, 4], [3, 5], [4]]
+visitado = [0, 0, 0, 0, 0, 0]
+fila = [0]
+visitado[0] = 1
+no = 0
+ordem = []
+cabeca = 0
+while cabeca < len(fila):
+    no = fila[cabeca]
+    cabeca = cabeca + 1
+    ordem.append(no)
+    for viz in adj[no]:
+        if visitado[viz] == 0:
+            visitado[viz] = 1     # marca ao ENTRAR na fila
+            fila.append(viz)
+print(ordem)`,
+    javascript: `var adj = [[1, 2], [0, 3], [0, 3], [1, 2, 4], [3, 5], [4]];
+var visitado = [0, 0, 0, 0, 0, 0];
+var fila = [0];
+visitado[0] = 1;
+var no = 0;
+var ordem = [];
+var cabeca = 0;
+while (cabeca < fila.length) {
+  no = fila[cabeca];
+  cabeca = cabeca + 1;
+  ordem.push(no);
+  for (var k = 0; k < adj[no].length; k++) {
+    var viz = adj[no][k];
+    if (visitado[viz] === 0) {
+      visitado[viz] = 1;        // marca ao ENTRAR na fila
+      fila.push(viz);
+    }
+  }
+}
+console.log(ordem);`,
+    graph: {
+      adjVar: "adj",
+      cursorVar: "no",
+      visitedVar: "visitado",
+      scalarVars: ["ordem"],
+    },
+  },
+
+  "topological-sort": {
+    python: `adj = [[1, 2], [3], [3], [4], []]   # dirigido: 0->1, 0->2, 1->3, 2->3, 3->4
+indeg = [0, 1, 1, 2, 1]               # quantas arestas chegam em cada nó
+visitado = [0, 0, 0, 0, 0]
+fila = [0]                            # começa pelos nós sem dependências (in-degree 0)
+no = 0
+ordem = []
+cabeca = 0
+while cabeca < len(fila):
+    no = fila[cabeca]
+    cabeca = cabeca + 1
+    visitado[no] = 1
+    ordem.append(no)                  # adiciona à ordem topológica
+    for viz in adj[no]:
+        indeg[viz] = indeg[viz] - 1   # "removeu" a aresta no->viz
+        if indeg[viz] == 0:           # viz não tem mais dependências
+            fila.append(viz)
+print(ordem)`,
+    javascript: `var adj = [[1, 2], [3], [3], [4], []]; // dirigido: 0->1,0->2,1->3,2->3,3->4
+var indeg = [0, 1, 1, 2, 1];           // quantas arestas chegam em cada nó
+var visitado = [0, 0, 0, 0, 0];
+var fila = [0];                        // começa pelos nós sem dependências
+var no = 0;
+var ordem = [];
+var cabeca = 0;
+while (cabeca < fila.length) {
+  no = fila[cabeca];
+  cabeca = cabeca + 1;
+  visitado[no] = 1;
+  ordem.push(no);                      // adiciona à ordem topológica
+  for (var k = 0; k < adj[no].length; k++) {
+    var viz = adj[no][k];
+    indeg[viz] = indeg[viz] - 1;       // "removeu" a aresta no->viz
+    if (indeg[viz] === 0) {            // viz não tem mais dependências
+      fila.push(viz);
+    }
+  }
+}
+console.log(ordem);`,
+    graph: {
+      adjVar: "adj",
+      cursorVar: "no",
+      visitedVar: "visitado",
+      directed: true,
+      scalarVars: ["indeg", "ordem"],
     },
   },
 };

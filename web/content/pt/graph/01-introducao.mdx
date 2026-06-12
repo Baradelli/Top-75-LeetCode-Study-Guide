@@ -1,0 +1,79 @@
+# Reconhecendo problemas de grafo
+
+> Um grafo é a estrutura mais geral do curso: **nós** (vértices) ligados por
+> **arestas**. Árvores e grids são casos particulares de grafo — então o
+> DFS/BFS que você já praticou neles é exatamente o que vamos generalizar aqui.
+
+> Como sempre, cada aula de padrão abre com um **🎯 Tente primeiro**.
+
+## O vocabulário
+
+- **Vértice (nó):** um ponto do grafo. **Aresta:** uma ligação entre dois nós.
+- **Dirigido** (arestas têm sentido: `a → b`) vs **não-dirigido** (`a — b`,
+  vale nos dois sentidos).
+- **Ponderado** (arestas têm peso/custo) vs não-ponderado.
+- **Ciclo:** um caminho que volta ao ponto de partida.
+- **Conexo:** existe caminho entre quaisquer dois nós (senão, há vários
+  **componentes**).
+
+Onde grafos aparecem: mapas e rotas, dependências entre tarefas, redes
+sociais, a web (páginas e links), pré-requisitos de cursos... e **grids e
+árvores** (que são grafos com formato regular).
+
+## Como representar um grafo
+
+A forma mais comum no LeetCode é a **lista de adjacência**: um array (ou
+dicionário) onde `adj[i]` é a lista dos vizinhos de `i`.
+
+```text
+0 — 1        adj = [[1, 2],     # vizinhos de 0
+|   |              [0, 3],     # vizinhos de 1
+2 — 3              [0, 3],     # vizinhos de 2
+                   [1, 2]]     # vizinhos de 3
+```
+
+Muitas vezes o problema te dá uma **lista de arestas** (`[[0,1],[0,2],...]`) e o
+**primeiro passo é construir a lista de adjacência** a partir dela. Existe
+também a **matriz de adjacência** (`M[i][j]=1` se há aresta), boa para grafos
+densos ou quando o problema já entrega assim.
+
+## Big-O em grafos: O(V + E)
+
+Aqui está o aprofundamento de Big-O da seção. Percorrer um grafo (DFS ou BFS)
+visita **cada vértice uma vez** e **percorre cada aresta uma vez** (ao olhar os
+vizinhos). Por isso a complexidade é **O(V + E)** — número de vértices mais
+número de arestas:
+
+- Não é O(V²) em geral! Só vira isso num grafo **denso** (E ≈ V²) ou usando
+  matriz de adjacência (onde olhar os vizinhos de um nó custa O(V)).
+- Com **lista** de adjacência, você toca cada aresta exatamente duas vezes (uma
+  de cada ponta, em grafo não-dirigido) — ainda O(E) no total.
+
+Sempre nomeie as duas grandezas: **V vértices, E arestas**. Dizer "O(V+E)" é a
+forma honesta — assim como na seção Matriz dizíamos O(m·n) em vez de O(n²).
+
+## O ingrediente que nunca falta: o conjunto de visitados
+
+Diferente de uma árvore (que não tem ciclos), um grafo **pode ter ciclos** — e
+seguir as arestas sem cuidado leva a **loop infinito**. Por isso, toda
+travessia de grafo carrega um conjunto de **visitados**: antes de processar um
+nó, marque-o; nunca revisite um nó já marcado. Esse é o detalhe que separa
+grafo de árvore.
+
+## Os problemas da seção
+
+- Number of Connected Components, Clone Graph → *DFS/BFS + visitados*
+- Course Schedule, Alien Dictionary → *ordenação topológica*
+- Graph Valid Tree → *union-find / ciclo*
+- Rotting Oranges, Pacific Atlantic → *grid como grafo, BFS multi-fonte*
+
+## Resumo
+
+- Grafo = nós + arestas; dirigido/não-dirigido, ponderado/não, com ou sem
+  ciclos.
+- Representação usual: **lista de adjacência** (construa-a a partir das
+  arestas).
+- **O(V + E)** para percorrer — nomeie vértices e arestas.
+- Sempre use um conjunto de **visitados** (grafos têm ciclos!).
+
+Próxima aula: as duas travessias fundamentais — **DFS e BFS** em grafos.

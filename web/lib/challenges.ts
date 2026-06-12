@@ -28,6 +28,264 @@ export interface Challenge {
 }
 
 export const CHALLENGES: Record<string, Challenge> = {
+  "connected-components": {
+    title: "Number of Connected Components",
+    statement: `Há \`n\` nós (numerados de \`0\` a \`n-1\`) e uma lista de \`edges\` (arestas não-dirigidas). Retorne o **número de componentes conexos** (grupos de nós ligados entre si).
+
+Exemplo: \`n = 5\`, \`edges = [[0,1],[1,2],[3,4]]\` → \`2\` (o grupo {0,1,2} e o grupo {3,4}).`,
+    functionName: { python: "count_components", javascript: "countComponents" },
+    starter: {
+      python: `def count_components(n, edges):
+    # quantos grupos de nós conectados existem?
+    pass`,
+      javascript: `function countComponents(n, edges) {
+  // quantos grupos de nós conectados existem?
+}`,
+    },
+    tests: [
+      { args: [5, [[0, 1], [1, 2], [3, 4]]], expected: 2 },
+      { args: [5, [[0, 1], [1, 2], [2, 3], [3, 4]]], expected: 1 },
+      { args: [4, []], expected: 4 },
+      { args: [1, []], expected: 1 },
+    ],
+    hint: "Duas abordagens: (1) construa a lista de adjacência e faça DFS/BFS a partir de cada nó não visitado — cada início de busca é um componente novo. (2) Union-Find: comece com n grupos e una os nós de cada aresta; cada união bem-sucedida reduz a contagem em 1.",
+    solution: {
+      python: `def count_components(n, edges):
+    parent = list(range(n))
+    def find(x):
+        while parent[x] != x:
+            parent[x] = parent[parent[x]]   # compressão de caminho
+            x = parent[x]
+        return x
+    comp = n
+    for a, b in edges:
+        ra, rb = find(a), find(b)
+        if ra != rb:
+            parent[ra] = rb     # une dois grupos
+            comp -= 1           # um grupo a menos
+    return comp`,
+      javascript: `function countComponents(n, edges) {
+  var parent = [];
+  for (var i = 0; i < n; i++) parent.push(i);
+  function find(x) {
+    while (parent[x] !== x) { parent[x] = parent[parent[x]]; x = parent[x]; }
+    return x;
+  }
+  var comp = n;
+  for (var e = 0; e < edges.length; e++) {
+    var ra = find(edges[e][0]), rb = find(edges[e][1]);
+    if (ra !== rb) { parent[ra] = rb; comp -= 1; }
+  }
+  return comp;
+}`,
+    },
+    solutionIdea:
+      "Union-Find: começa com n grupos; cada aresta que une dois grupos diferentes reduz a contagem. Quase O(n + e).",
+  },
+
+  "course-schedule": {
+    title: "Course Schedule",
+    statement: `Há \`numCourses\` cursos (\`0\` a \`numCourses-1\`) e \`prerequisites\`, onde \`[a, b]\` significa "para fazer \`a\`, é preciso fazer \`b\` antes". Retorne \`true\` se é possível concluir **todos** os cursos.
+
+Exemplo: \`2\`, \`[[1,0]]\` → \`true\`. \`2\`, \`[[1,0],[0,1]]\` → \`false\` (dependência circular).`,
+    functionName: { python: "can_finish", javascript: "canFinish" },
+    starter: {
+      python: `def can_finish(num_courses, prerequisites):
+    # dá para concluir todos os cursos? (sem ciclo de dependências)
+    pass`,
+      javascript: `function canFinish(numCourses, prerequisites) {
+  // dá para concluir todos os cursos? (sem ciclo de dependências)
+}`,
+    },
+    tests: [
+      { args: [2, [[1, 0]]], expected: true },
+      { args: [2, [[1, 0], [0, 1]]], expected: false },
+      { args: [4, [[1, 0], [2, 0], [3, 1], [3, 2]]], expected: true },
+      { args: [3, [[0, 1], [1, 2], [2, 0]]], expected: false },
+      { args: [1, []], expected: true },
+    ],
+    hint: "Concluir todos os cursos é possível se, e só se, o grafo de dependências NÃO tem ciclo. Use ordenação topológica (Kahn): comece pelos cursos com in-degree 0, processe-os removendo suas arestas; se conseguir processar TODOS, não há ciclo.",
+    solution: {
+      python: `from collections import deque
+
+def can_finish(num_courses, prerequisites):
+    adj = [[] for _ in range(num_courses)]
+    indeg = [0] * num_courses
+    for a, b in prerequisites:
+        adj[b].append(a)        # b precisa vir antes de a
+        indeg[a] += 1
+    fila = deque([i for i in range(num_courses) if indeg[i] == 0])
+    processados = 0
+    while fila:
+        x = fila.popleft()
+        processados += 1
+        for viz in adj[x]:
+            indeg[viz] -= 1
+            if indeg[viz] == 0:
+                fila.append(viz)
+    return processados == num_courses   # processou todos ⇒ sem ciclo`,
+      javascript: `function canFinish(numCourses, prerequisites) {
+  var adj = [], indeg = [];
+  for (var i = 0; i < numCourses; i++) { adj.push([]); indeg.push(0); }
+  for (var e = 0; e < prerequisites.length; e++) {
+    var a = prerequisites[e][0], b = prerequisites[e][1];
+    adj[b].push(a);             // b precisa vir antes de a
+    indeg[a] += 1;
+  }
+  var fila = [], cabeca = 0;
+  for (var j = 0; j < numCourses; j++) if (indeg[j] === 0) fila.push(j);
+  var processados = 0;
+  while (cabeca < fila.length) {
+    var x = fila[cabeca++];
+    processados += 1;
+    for (var k = 0; k < adj[x].length; k++) {
+      var viz = adj[x][k];
+      indeg[viz] -= 1;
+      if (indeg[viz] === 0) fila.push(viz);
+    }
+  }
+  return processados === numCourses;  // processou todos ⇒ sem ciclo
+}`,
+    },
+    solutionIdea:
+      "Ordenação topológica (Kahn): processa cursos sem dependências e remove suas arestas. Se sobra algum não processado, há ciclo. O(V + E).",
+  },
+
+  "graph-valid-tree": {
+    title: "Graph Valid Tree",
+    statement: `Dados \`n\` nós e uma lista de \`edges\` não-dirigidas, retorne \`true\` se o grafo forma uma **árvore válida** (totalmente conectado e **sem ciclos**).
+
+Exemplo: \`n = 5\`, \`edges = [[0,1],[0,2],[0,3],[1,4]]\` → \`true\`. Com \`[[0,1],[1,2],[2,3],[1,3],[1,4]]\` → \`false\` (tem ciclo).`,
+    functionName: { python: "valid_tree", javascript: "validTree" },
+    starter: {
+      python: `def valid_tree(n, edges):
+    # é uma árvore? (conectado e sem ciclos)
+    pass`,
+      javascript: `function validTree(n, edges) {
+  // é uma árvore? (conectado e sem ciclos)
+}`,
+    },
+    tests: [
+      { args: [5, [[0, 1], [0, 2], [0, 3], [1, 4]]], expected: true },
+      { args: [5, [[0, 1], [1, 2], [2, 3], [1, 3], [1, 4]]], expected: false },
+      { args: [4, [[0, 1], [2, 3]]], expected: false },
+      { args: [1, []], expected: true },
+      { args: [2, [[0, 1]]], expected: true },
+    ],
+    hint: "Uma árvore com n nós tem EXATAMENTE n-1 arestas e é conectada. Atalho com Union-Find: se houver mais ou menos que n-1 arestas, já não é. Senão, una os nós de cada aresta — se alguma aresta ligar dois nós JÁ no mesmo grupo, há ciclo (não é árvore).",
+    solution: {
+      python: `def valid_tree(n, edges):
+    if len(edges) != n - 1:
+        return False            # árvore tem exatamente n-1 arestas
+    parent = list(range(n))
+    def find(x):
+        while parent[x] != x:
+            parent[x] = parent[parent[x]]
+            x = parent[x]
+        return x
+    for a, b in edges:
+        ra, rb = find(a), find(b)
+        if ra == rb:
+            return False         # já conectados ⇒ ciclo
+        parent[ra] = rb
+    return True                  # n-1 arestas + sem ciclo ⇒ conectado`,
+      javascript: `function validTree(n, edges) {
+  if (edges.length !== n - 1) return false;   // árvore tem n-1 arestas
+  var parent = [];
+  for (var i = 0; i < n; i++) parent.push(i);
+  function find(x) {
+    while (parent[x] !== x) { parent[x] = parent[parent[x]]; x = parent[x]; }
+    return x;
+  }
+  for (var e = 0; e < edges.length; e++) {
+    var ra = find(edges[e][0]), rb = find(edges[e][1]);
+    if (ra === rb) return false;               // já conectados ⇒ ciclo
+    parent[ra] = rb;
+  }
+  return true;                                 // n-1 arestas + sem ciclo
+}`,
+    },
+    solutionIdea:
+      "Árvore = n-1 arestas + sem ciclo (o que garante conectado). Union-Find detecta o ciclo: unir dois nós já no mesmo grupo é uma aresta extra.",
+  },
+
+  "rotting-oranges": {
+    title: "Rotting Oranges",
+    statement: `Num grid, \`0\` = vazio, \`1\` = laranja fresca, \`2\` = laranja podre. A cada minuto, toda laranja podre apodrece as frescas **adjacentes** (horizontal/vertical). Retorne o número de minutos até **nenhuma** laranja fresca restar, ou \`-1\` se for impossível.
+
+Exemplo: \`[[2,1,1],[1,1,0],[0,1,1]]\` → \`4\`.`,
+    functionName: { python: "oranges_rotting", javascript: "orangesRotting" },
+    starter: {
+      python: `def oranges_rotting(grid):
+    # minutos até todas apodrecerem, ou -1
+    pass`,
+      javascript: `function orangesRotting(grid) {
+  // minutos até todas apodrecerem, ou -1
+}`,
+    },
+    tests: [
+      { args: [[[2, 1, 1], [1, 1, 0], [0, 1, 1]]], expected: 4 },
+      { args: [[[2, 1, 1], [0, 1, 1], [1, 0, 1]]], expected: -1 },
+      { args: [[[0, 2]]], expected: 0 },
+      { args: [[[1]]], expected: -1 },
+      { args: [[[2, 2], [1, 1]]], expected: 1 },
+    ],
+    hint: "É um BFS MULTI-FONTE: coloque TODAS as laranjas podres na fila no início (tempo 0) e propague as ondas simultaneamente. O número de 'camadas' do BFS é o tempo. No fim, se ainda houver laranja fresca (inalcançável), retorne -1.",
+    solution: {
+      python: `from collections import deque
+
+def oranges_rotting(grid):
+    R, C = len(grid), len(grid[0])
+    fila = deque()
+    frescas = 0
+    for r in range(R):
+        for c in range(C):
+            if grid[r][c] == 2:
+                fila.append((r, c, 0))   # todas as podres começam juntas
+            elif grid[r][c] == 1:
+                frescas += 1
+    minutos = 0
+    while fila:
+        r, c, t = fila.popleft()
+        minutos = max(minutos, t)
+        for dr, dc in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
+            nr, nc = r + dr, c + dc
+            if 0 <= nr < R and 0 <= nc < C and grid[nr][nc] == 1:
+                grid[nr][nc] = 2
+                frescas -= 1
+                fila.append((nr, nc, t + 1))
+    return minutos if frescas == 0 else -1`,
+      javascript: `function orangesRotting(grid) {
+  var R = grid.length, C = grid[0].length;
+  var fila = [], cabeca = 0, frescas = 0;
+  for (var r = 0; r < R; r++) {
+    for (var c = 0; c < C; c++) {
+      if (grid[r][c] === 2) fila.push([r, c, 0]); // todas as podres começam juntas
+      else if (grid[r][c] === 1) frescas += 1;
+    }
+  }
+  var minutos = 0;
+  var dirs = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+  while (cabeca < fila.length) {
+    var item = fila[cabeca++];
+    var cr = item[0], cc = item[1], t = item[2];
+    minutos = Math.max(minutos, t);
+    for (var k = 0; k < 4; k++) {
+      var nr = cr + dirs[k][0], nc = cc + dirs[k][1];
+      if (nr >= 0 && nr < R && nc >= 0 && nc < C && grid[nr][nc] === 1) {
+        grid[nr][nc] = 2;
+        frescas -= 1;
+        fila.push([nr, nc, t + 1]);
+      }
+    }
+  }
+  return frescas === 0 ? minutos : -1;
+}`,
+    },
+    solutionIdea:
+      "BFS multi-fonte: todas as podres entram na fila no tempo 0 e propagam em camadas; o nº de camadas é o tempo. Se sobra fresca, -1. O(m·n).",
+  },
+
   "kth-largest": {
     title: "Kth Largest Element in an Array",
     statement: `Retorne o **k-ésimo MAIOR** elemento de \`nums\` (o k-ésimo na ordem decrescente, contando repetições).

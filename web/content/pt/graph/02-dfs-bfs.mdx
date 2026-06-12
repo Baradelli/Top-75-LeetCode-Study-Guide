@@ -1,0 +1,177 @@
+# Padrão 1: DFS e BFS com visitados
+
+> As duas travessias que você já viu em Matriz e Árvore agora aparecem na sua
+> forma mais geral. A única novidade em relação à árvore: como grafos têm
+> ciclos, o **conjunto de visitados** deixa de ser opcional — é o que evita
+> rodar para sempre.
+
+<Challenge id="connected-components" />
+
+> Tentou? A ideia central: cada vez que você encontra um nó ainda não
+> visitado, ele inicia um **novo grupo** — e uma busca (DFS/BFS) a partir dele
+> marca todo o grupo. A teoria abaixo formaliza isso.
+
+## A teoria: percorrer marcando visitados
+
+**DFS (profundidade):** vá o mais fundo possível por um caminho, recuando
+quando travar. Recursivo e curto:
+
+```text
+dfs(no):
+    marque no como visitado
+    para cada vizinho de no:
+        se não visitado: dfs(vizinho)
+```
+
+**BFS (largura):** explore em camadas, com uma fila:
+
+```text
+fila = [origem]; marque origem
+enquanto a fila não está vazia:
+    no = desenfileira
+    para cada vizinho de no:
+        se não visitado: marque e enfileire
+```
+
+Os dois visitam **todos os nós alcançáveis** a partir da origem, em O(V + E).
+A diferença é a **ordem** (fundo vs camadas) — e a escolha segue o mesmo
+critério da Matriz: **BFS** para caminho mais curto; **DFS** para "alcançar /
+cobrir / existe". Compare as ordens no mesmo grafo:
+
+<TraceDemo id="graph-dfs" />
+
+<TraceDemo id="graph-bfs" />
+
+### Contar componentes conexos
+
+Um grafo pode ter vários "pedaços" desconexos. Para contá-los: percorra todos
+os nós; cada nó ainda **não visitado** inicia um **novo componente** (+1), e
+uma busca a partir dele marca todo o pedaço. É o mesmo raciocínio do "contar
+ilhas" (Matriz!), agora num grafo geral. **O(V + E)** de tempo.
+
+## Exemplo: Clone Graph (DFS com um mapa)
+
+*"Copie um grafo inteiro (nós e arestas), criando objetos novos."* O desafio:
+ao seguir as arestas, você reencontra nós já copiados (por causa dos ciclos) —
+e não pode copiá-los de novo. A solução: um **mapa `original → cópia`**, e
+registrar a cópia **antes** de recursar nos vizinhos (senão, um ciclo causa
+recursão infinita):
+
+<CodeRunner
+  python={`def clonar(no, visto):
+    if no["val"] in visto:
+        return visto[no["val"]]        # já clonado: devolve a cópia
+    copia = {"val": no["val"], "vizinhos": []}
+    visto[no["val"]] = copia           # registra ANTES de recursar (corta ciclos)
+    for viz in no["vizinhos"]:
+        copia["vizinhos"].append(clonar(viz, visto))
+    return copia
+
+# grafo com ciclo: 1 — 2 — 3 — 1
+n1 = {"val": 1, "vizinhos": []}
+n2 = {"val": 2, "vizinhos": []}
+n3 = {"val": 3, "vizinhos": []}
+n1["vizinhos"] = [n2, n3]
+n2["vizinhos"] = [n1, n3]
+n3["vizinhos"] = [n1, n2]
+
+copia = clonar(n1, {})
+print("val da cópia:", copia["val"])
+print("vizinhos da cópia:", [v["val"] for v in copia["vizinhos"]])
+n1["val"] = 99                          # muda o ORIGINAL
+print("cópia intacta?", copia["val"])   # 1 (a cópia é independente)`}
+  javascript={`function clonar(no, visto) {
+  if (visto[no.val] !== undefined) return visto[no.val]; // já clonado
+  var copia = { val: no.val, vizinhos: [] };
+  visto[no.val] = copia;                 // registra ANTES de recursar
+  for (var i = 0; i < no.vizinhos.length; i++) {
+    copia.vizinhos.push(clonar(no.vizinhos[i], visto));
+  }
+  return copia;
+}
+var n1 = { val: 1, vizinhos: [] };
+var n2 = { val: 2, vizinhos: [] };
+var n3 = { val: 3, vizinhos: [] };
+n1.vizinhos = [n2, n3];
+n2.vizinhos = [n1, n3];
+n3.vizinhos = [n1, n2];
+
+var copia = clonar(n1, {});
+console.log("val da cópia:", copia.val);
+console.log("vizinhos da cópia:", copia.vizinhos.map(function (v) { return v.val; }));
+n1.val = 99;                             // muda o ORIGINAL
+console.log("cópia intacta?", copia.val); // 1 (independente)`}
+/>
+
+O mapa serve de duas coisas ao mesmo tempo: **memória do que já foi clonado**
+(evita duplicar) e **detector de visitados** (evita o ciclo infinito). Mudar o
+original depois prova que a cópia é mesmo independente.
+
+<Quiz
+  title="Quiz de fixação"
+  questions={[
+    {
+      question:
+        "Por que o conjunto de visitados é OBRIGATÓRIO em grafos, mas não era em árvores?",
+      options: [
+        "Por desempenho apenas",
+        "Porque grafos podem ter ciclos: sem marcar visitados, a travessia seguiria as arestas em círculo para sempre",
+        "Porque grafos são maiores",
+        "Não é obrigatório",
+      ],
+      answer: 1,
+      explanation:
+        "Árvores não têm ciclos, então a recursão sempre termina. Grafos têm ciclos — sem visitados, o DFS/BFS entraria em loop infinito.",
+    },
+    {
+      question:
+        "Para contar componentes conexos, qual é a estratégia?",
+      options: [
+        "Contar todas as arestas",
+        "Percorrer todos os nós; cada nó NÃO visitado inicia um novo componente (+1) e uma busca a partir dele marca todo o pedaço",
+        "Ordenar os nós",
+        "Usar um heap",
+      ],
+      answer: 1,
+      explanation:
+        "É o mesmo raciocínio de 'contar ilhas' na Matriz: cada início de busca cobre um componente inteiro, então o número de buscas iniciadas é o número de componentes.",
+    },
+    {
+      question:
+        "No Clone Graph, por que registrar a cópia no mapa ANTES de recursar nos vizinhos?",
+      options: [
+        "Por estilo",
+        "Porque o grafo pode ter ciclos: se um vizinho aponta de volta para um nó em clonagem, o mapa já tem a cópia e a recursão para — evitando loop infinito",
+        "Para economizar memória",
+        "Não importa a ordem",
+      ],
+      answer: 1,
+      explanation:
+        "Registrar antes garante que, ao reencontrar o nó por um ciclo, você devolve a cópia já criada em vez de clonar de novo (o que recursaria para sempre).",
+    },
+    {
+      question:
+        "DFS e BFS num grafo visitam os mesmos nós. Como escolher entre eles?",
+      options: [
+        "DFS é sempre melhor",
+        "BFS para caminho MAIS CURTO / menor número de passos; DFS para 'alcançar / cobrir / existe', onde a ordem não importa",
+        "BFS é sempre mais rápido",
+        "Tanto faz, são idênticos",
+      ],
+      answer: 1,
+      explanation:
+        "Mesma regra da Matriz: a fila do BFS explora por distância crescente (ótimo para mais curto); o DFS vai fundo (mais simples quando só importa alcançar/cobrir).",
+    },
+  ]}
+/>
+
+## Resumo
+
+- DFS (fundo, recursão) e BFS (camadas, fila) percorrem o alcançável em
+  **O(V+E)**, sempre com **visitados**.
+- **Componentes conexos**: cada nó não visitado inicia uma busca = +1
+  componente.
+- **Clone Graph**: mapa `original → cópia` registra antes de recursar (corta
+  ciclos e evita duplicar).
+
+Próxima aula: ordenar tarefas com dependências — **ordenação topológica**.

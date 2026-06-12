@@ -1,0 +1,153 @@
+# Síntese: qual padrão usar?
+
+> Quatro padrões de grafo cobertos. Esta seção é o ápice do raciocínio
+> DFS/BFS que vem desde Matriz e Árvore — aqui ele aparece na estrutura mais
+> geral. Hora de treinar o reflexo de escolher a ferramenta.
+
+## A árvore de decisão da seção
+
+```text
+1. Preciso PERCORRER / alcançar / contar grupos conectados?
+   ├── alcançar / cobrir / "existe caminho?"  → DFS ou BFS (com visitados)
+   ├── caminho MAIS CURTO / menos passos       → BFS
+   └── várias fontes ("tempo até alcançar tudo") → BFS MULTI-FONTE
+
+2. Há DEPENDÊNCIAS / ordem ("X antes de Y") num grafo dirigido?
+   → ORDENAÇÃO TOPOLÓGICA (Kahn) — também detecta ciclo
+
+3. Preciso agrupar / "estão conectados?" / detectar ciclo (não-dirigido),
+   especialmente com arestas chegando aos poucos?
+   → UNION-FIND
+
+4. É um GRID? → trate como grafo (vizinhos = arestas) e use os mesmos DFS/BFS
+```
+
+E os reflexos da seção: **sempre use visitados** (grafos têm ciclos);
+**construa a lista de adjacência** a partir das arestas; e nomeie o Big-O como
+**O(V + E)**.
+
+## O mapa completo da seção
+
+| Padrão | Pergunta-chave | Tempo |
+| --- | --- | --- |
+| DFS / BFS | "alcançar / contar componentes / clonar" | O(V + E) |
+| BFS (mais curto) | "menor número de passos" | O(V + E) |
+| Ordenação topológica | "ordem com dependências / tem ciclo?" | O(V + E) |
+| Union-Find | "conectados? / ciclo / conexões dinâmicas" | ~O(V + E·α) |
+| BFS multi-fonte | "tempo até alcançar tudo (grid)" | O(V + E) |
+
+A ideia que une tudo: **um grafo é nós + arestas, e quase tudo é uma travessia
+com visitados**. DFS (fundo), BFS (camadas), topológica (por dependências),
+Union-Find (por grupos) — quatro formas de organizar essa travessia. Árvore,
+grid e lista ligada foram ensaios para isto.
+
+## Quiz da seção
+
+Enunciados que você **não viu** nas aulas. Identifique o padrão e o porquê. 6+
+acertos: pronto para a prova.
+
+<Quiz
+  title="Quiz da seção: Grafos"
+  questions={[
+    {
+      question:
+        "'Existe um caminho entre os nós A e B num grafo não-dirigido?' Qual padrão?",
+      options: [
+        "Ordenação topológica",
+        "DFS ou BFS a partir de A, com visitados, parando se alcançar B (ou Union-Find: A e B no mesmo grupo?)",
+        "BFS multi-fonte",
+        "Heap",
+      ],
+      answer: 1,
+      explanation:
+        "Conectividade entre dois nós é uma travessia simples com visitados. Union-Find também responde (mesmo representante) — bom se houver muitas consultas.",
+    },
+    {
+      question:
+        "'Qual a menor quantidade de transformações de uma palavra em outra, mudando uma letra por vez (cada passo válido no dicionário)?' Qual padrão?",
+      options: [
+        "Union-Find",
+        "BFS — caminho mais curto num grafo IMPLÍCITO onde palavras vizinhas diferem em uma letra",
+        "Ordenação topológica",
+        "DFS",
+      ],
+      answer: 1,
+      explanation:
+        "'Menos passos' = caminho mais curto = BFS. O grafo nem precisa ser construído de antemão: os vizinhos de uma palavra são geradas trocando cada letra. (É a prova difícil!)",
+    },
+    {
+      question:
+        "'Há n tarefas com dependências; existe uma ordem válida de execução?' Qual padrão?",
+      options: [
+        "BFS multi-fonte",
+        "Ordenação topológica (Kahn): processa tarefas sem dependências pendentes; se sobrar alguma, há ciclo (ordem impossível)",
+        "Union-Find",
+        "DFS de cada tarefa",
+      ],
+      answer: 1,
+      explanation:
+        "Dependências dirigidas + 'existe ordem?' = ordenação topológica. Sobrar nós não processados indica ciclo, que torna a ordem impossível.",
+    },
+    {
+      question:
+        "'Cidades vão sendo conectadas por estradas, uma a uma; após cada estrada, quantos grupos de cidades conectadas existem?' Qual padrão?",
+      options: [
+        "Rodar DFS após cada estrada",
+        "Union-Find: comece com n grupos e una a cada estrada; a contagem cai 1 a cada união bem-sucedida — atualização incremental em ~O(1)",
+        "Ordenação topológica",
+        "BFS",
+      ],
+      answer: 1,
+      explanation:
+        "Conexões dinâmicas (arestas chegando aos poucos) com consulta de grupos é o caso ideal do Union-Find: refazer DFS a cada estrada seria muito mais caro.",
+    },
+    {
+      question:
+        "'Distância de cada célula livre até a parede/porta mais próxima num grid.' Qual padrão?",
+      options: [
+        "DFS de cada célula",
+        "BFS multi-fonte: largue TODAS as portas na fila no tempo 0; as ondas se expandem juntas e cada célula recebe a distância da porta mais próxima",
+        "Union-Find",
+        "Ordenação topológica",
+      ],
+      answer: 1,
+      explanation:
+        "'Mais próximo' a partir de vários pontos = BFS multi-fonte. Uma única BFS com todas as fontes resolve tudo em O(m·n), em vez de uma busca por porta.",
+    },
+    {
+      question:
+        "'Maior sequência de números consecutivos num array (ex.: [100,4,200,1,3,2] → 4, pois 1,2,3,4).' Como o pensamento de grupos ajuda?",
+      options: [
+        "Ordenar é a única forma",
+        "Pense em conectar consecutivos (n e n+1) em grupos — com um hash set, para cada início de sequência (n sem n-1) conte para frente; é a ideia de componentes/Union-Find aplicada a números",
+        "BFS multi-fonte",
+        "Ordenação topológica",
+      ],
+      answer: 1,
+      explanation:
+        "Consecutivos formam 'grupos' (componentes). Com um set, achar os inícios (sem antecessor) e expandir dá O(n) — a lente de conectividade resolve sem ordenar.",
+    },
+    {
+      question:
+        "Qual a ideia-mãe que une toda a seção — e a conecta com Matriz e Árvore?",
+      options: [
+        "Ordenar os nós",
+        "Quase tudo em grafos é uma TRAVESSIA com visitados (DFS/BFS); árvore, grid e lista foram casos particulares dessa mesma ideia",
+        "Usar sempre um heap",
+        "Converter o grafo em árvore",
+      ],
+      answer: 1,
+      explanation:
+        "Nós + arestas + travessia com visitados é o coração. DFS, BFS, topológica e Union-Find são formas de organizar essa travessia. Você vem treinando isso desde a Matriz.",
+    },
+  ]}
+/>
+
+## Pronto para a prova?
+
+A prova final da seção Grafos tem **três problemas inéditos** — fácil, médio e
+difícil — com casos ocultos. O difícil (Word Ladder) é uma BFS num grafo
+**implícito** de palavras: a confirmação de que você enxerga grafos mesmo onde
+eles não estão desenhados. As quatro aulas cobrem tudo que você precisa.
+
+**Boa prova!** Volte para a página da seção e clique em "Prova final".

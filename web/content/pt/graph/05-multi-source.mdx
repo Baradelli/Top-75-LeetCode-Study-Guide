@@ -1,0 +1,123 @@
+# Padrão 4: Grid é grafo e BFS multi-fonte
+
+> Você já tratou grids como grafos na seção Matriz. Aqui fechamos essa ideia e
+> adicionamos uma ferramenta poderosa: a **BFS multi-fonte**, que parte de
+> **vários pontos ao mesmo tempo** — perfeita para "quanto tempo até tudo ser
+> alcançado?".
+
+<Challenge id="rotting-oranges" />
+
+> Tentou? Se você rodou uma BFS de cada laranja podre separadamente, funciona
+> mas é confuso e lento. A teoria abaixo mostra como largar **todas** as fontes
+> na fila de uma vez.
+
+## A teoria: grid como grafo (revisão) + várias fontes
+
+Num grid, cada célula é um nó e as células vizinhas (cima/baixo/esquerda/
+direita) são conectadas por arestas. Por isso DFS/BFS em grid são os mesmos
+algoritmos de grafo — com a "lista de adjacência" implícita nos 4 vizinhos.
+
+A novidade é a **BFS multi-fonte**. Na BFS comum, a fila começa com **uma**
+origem. Na multi-fonte, você coloca **todas as origens na fila no tempo 0** e
+deixa as ondas se expandirem **simultaneamente**. Cada célula é alcançada pela
+fonte mais próxima, na camada (= tempo/distância) correta:
+
+```text
+fila ← TODAS as fontes (tempo 0); marque-as
+enquanto a fila não está vazia:
+    (célula, tempo) = desenfileira
+    para cada vizinho válido e ainda não alcançado:
+        marque, enfileire com tempo + 1
+o maior tempo alcançado é a resposta
+```
+
+No *Rotting Oranges*, as fontes são **todas** as laranjas podres iniciais; a
+cada minuto (camada da BFS), elas apodrecem as vizinhas frescas. O número de
+camadas é o tempo total. E se, no fim, ainda restar laranja fresca (uma região
+que nenhuma onda alcançou), a resposta é **-1**.
+
+### Por que multi-fonte é melhor que rodar BFS de cada fonte?
+
+Rodar uma BFS separada de cada uma das `k` fontes custaria O(k · (V+E)). A
+multi-fonte resolve tudo numa **única** BFS, O(V+E), porque as ondas avançam
+juntas e cada célula é processada uma vez — alcançada automaticamente pela
+fonte mais próxima. Para o grid, **O(m·n)**.
+
+## Outro exemplo: Pacific Atlantic Water Flow
+
+*"De quais células a água flui tanto para o oceano Pacífico (bordas
+superior/esquerda) quanto para o Atlântico (bordas inferior/direita)?"* A
+sacada é a mesma inversão da seção Matriz: em vez de testar cada célula, faça
+buscas **a partir das bordas** (as fontes!) subindo para células de altura
+maior ou igual. As células alcançáveis pelos dois oceanos são a interseção.
+É busca multi-fonte de novo — partindo de todo um conjunto de bordas.
+
+> A lição transferível: quando o problema tem **muitos pontos de partida**
+> (todas as podres, todas as bordas, todas as portas de saída), não rode uma
+> busca para cada — largue **todos** na fila e deixe as ondas se encontrarem.
+
+<Quiz
+  title="Quiz de fixação"
+  questions={[
+    {
+      question: "Por que um grid pode ser tratado como um grafo?",
+      options: [
+        "Porque é quadrado",
+        "Porque cada célula é um nó e as células vizinhas (4 direções) são conectadas por arestas — DFS/BFS de grafo se aplicam direto",
+        "Porque tem números",
+        "Porque é ordenado",
+      ],
+      answer: 1,
+      explanation:
+        "Vizinhança = arestas. A 'lista de adjacência' do grid é implícita: os vizinhos de (r,c) são (r±1,c) e (r,c±1) dentro dos limites.",
+    },
+    {
+      question: "O que caracteriza uma BFS MULTI-FONTE?",
+      options: [
+        "Rodar uma BFS para cada fonte, somando os tempos",
+        "Colocar TODAS as fontes na fila no tempo 0 e deixar as ondas se expandirem juntas; cada célula é alcançada pela fonte mais próxima",
+        "Usar DFS em vez de BFS",
+        "Começar do centro do grid",
+      ],
+      answer: 1,
+      explanation:
+        "Inicializar a fila com todas as fontes faz as frentes avançarem simultaneamente. A camada em que uma célula é alcançada é sua distância à fonte mais próxima.",
+    },
+    {
+      question:
+        "No Rotting Oranges, como saber que a resposta é -1?",
+      options: [
+        "Se o grid for vazio",
+        "Se, ao fim da BFS, ainda restar alguma laranja FRESCA — ela está numa região que nenhuma onda de podridão alcançou",
+        "Se houver mais de uma podre",
+        "Nunca é -1",
+      ],
+      answer: 1,
+      explanation:
+        "A BFS alcança tudo que é acessível. Sobrar uma fresca significa que ela é inalcançável a partir das podres — impossível apodrecer todas, logo -1.",
+    },
+    {
+      question:
+        "Por que a BFS multi-fonte é melhor que rodar uma BFS separada de cada fonte?",
+      options: [
+        "Não é melhor",
+        "Porque resolve tudo numa única BFS O(V+E), em vez de O(k·(V+E)) para k fontes — as ondas avançam juntas e cada célula é processada uma vez",
+        "Porque usa menos memória sempre",
+        "Porque evita o conjunto de visitados",
+      ],
+      answer: 1,
+      explanation:
+        "Largar todas as fontes juntas processa cada célula uma só vez (pela fonte mais próxima). Buscas separadas reprocessariam células e multiplicariam o custo por k.",
+    },
+  ]}
+/>
+
+## Resumo
+
+- **Grid é grafo**: células = nós, vizinhos = arestas; DFS/BFS valem direto.
+- **BFS multi-fonte**: largue **todas** as fontes na fila no tempo 0; as ondas
+  se expandem juntas, cada célula alcançada pela fonte mais próxima.
+- Rotting Oranges (tempo até tudo apodrecer; -1 se sobra fresca), Pacific
+  Atlantic (buscas a partir das bordas) — ambos multi-fonte. **O(m·n)**.
+
+Última parada: a **síntese** da seção Grafos e o quiz antes da prova.
