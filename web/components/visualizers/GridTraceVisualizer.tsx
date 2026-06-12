@@ -86,7 +86,7 @@ export default function GridTraceVisualizer({
         </div>
       )}
 
-      <div className="inline-flex flex-col gap-1">
+      <div className="inline-flex max-w-full flex-col gap-1 overflow-x-auto">
         {grid.map((row, r) => (
           <div key={r} className="flex gap-1">
             {row.map((cell, c) => {

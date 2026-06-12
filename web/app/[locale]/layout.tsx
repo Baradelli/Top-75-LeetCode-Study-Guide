@@ -22,18 +22,21 @@ export default async function LocaleLayout({
   return (
     <div className="flex min-h-screen flex-col bg-white text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
       <header className="border-b border-zinc-200 dark:border-zinc-800">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
-          <Link href={`/${locale}`} className="font-semibold tracking-tight">
+        <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-4 sm:px-6">
+          <Link
+            href={`/${locale}`}
+            className="truncate font-semibold tracking-tight"
+          >
             {strings.courseTitle}
           </Link>
-          <nav className="flex items-center gap-3 text-sm">
+          <nav className="flex shrink-0 items-center gap-2 text-sm sm:gap-3">
             <Link
               href={`/${locale}/perfil`}
               className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
             >
               {strings.profile}
             </Link>
-            <span className="flex gap-2">
+            <span className="flex gap-1 sm:gap-2">
               {LOCALES.map((code) => (
                 <Link
                   key={code}
@@ -51,7 +54,7 @@ export default async function LocaleLayout({
           </nav>
         </div>
       </header>
-      <main className="mx-auto w-full max-w-5xl flex-1 px-6 py-10">
+      <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8 sm:px-6 sm:py-10">
         {children}
       </main>
       <footer className="border-t border-zinc-200 py-6 text-center text-xs text-zinc-500 dark:border-zinc-800">
