@@ -4,6 +4,7 @@ import { getLessons, SECTIONS } from "@/lib/sections";
 import { sectionExamSlugs, sectionLessonSlugs } from "@/lib/course";
 import { isLocale, t } from "@/lib/i18n";
 import SectionProgress from "@/components/SectionProgress";
+import CourseProgressBanner from "@/components/CourseProgressBanner";
 
 export default async function HomePage({
   params,
@@ -22,6 +23,8 @@ export default async function HomePage({
       <p className="mt-2 max-w-2xl text-zinc-600 dark:text-zinc-400">
         {strings.courseSubtitle}
       </p>
+
+      <CourseProgressBanner locale={locale} />
 
       <h2 className="mt-10 mb-4 text-sm font-semibold uppercase tracking-wide text-zinc-500">
         {strings.sections}

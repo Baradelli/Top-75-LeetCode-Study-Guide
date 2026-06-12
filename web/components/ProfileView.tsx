@@ -1,68 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import { SECTIONS, getLessons } from "@/lib/sections";
-import { sectionExamSlugs, sectionLessonSlugs } from "@/lib/course";
-import {
-  computeSectionProgress,
-  isLessonDone,
-  progressStore,
-  useProgress,
-} from "@/lib/progress";
+import { progressStore, useProgress } from "@/lib/progress";
+import { examLabel, useCourseProgress } from "@/lib/useCourseProgress";
 import { t, type Locale } from "@/lib/i18n";
-
-/** Seções que já têm conteúdo (aulas escritas). */
-function sectionsWithContent() {
-  return SECTIONS.filter((section) => getLessons(section.slug).length > 0);
-}
-
-/**
- * Acha a próxima aula a estudar: a primeira aula não concluída, percorrendo
- * as seções com conteúdo na ordem do curso. Se tudo estiver feito, devolve
- * null (mostramos "tudo concluído").
- */
-function findContinueTarget(
-  progress: ReturnType<typeof useProgress>,
-): { section: string; lesson: string } | null {
-  for (const section of sectionsWithContent()) {
-    for (const lesson of getLessons(section.slug)) {
-      if (!isLessonDone(progress, section.slug, lesson.slug)) {
-        return { section: section.slug, lesson: lesson.slug };
-      }
-    }
-  }
-  return null;
-}
 
 export default function ProfileView({ locale }: { locale: Locale }) {
   const progress = useProgress();
   const strings = t(locale);
-  const sections = sectionsWithContent();
-
-  // Agrega itens (aulas + provas) de todas as seções com conteúdo.
-  const perSection = sections.map((section) => ({
-    section,
-    stats: computeSectionProgress(
-      progress,
-      section.slug,
-      sectionLessonSlugs(section.slug),
-      sectionExamSlugs(section.slug),
-    ),
-  }));
-
-  const totalItems = perSection.reduce(
-    (sum, { stats }) => sum + stats.totalLessons + stats.examTotal,
-    0,
-  );
-  const doneItems = perSection.reduce(
-    (sum, { stats }) => sum + stats.completedLessons + stats.examPassed,
-    0,
-  );
-
-  const overallPercent =
-    totalItems === 0 ? 0 : Math.round((doneItems / totalItems) * 100);
-  const continueTarget = findContinueTarget(progress);
-  const hasAnyProgress = doneItems > 0;
+  const {
+    perSection,
+    overallPercent,
+    sectionsComplete,
+    totalSections,
+    continueTarget,
+    hasAnyProgress,
+  } = useCourseProgress();
 
   function handleExport() {
     const blob = new Blob([JSON.stringify(progress, null, 2)], {
@@ -89,9 +42,15 @@ export default function ProfileView({ locale }: { locale: Locale }) {
       {/* Resumo geral */}
       <div className="mt-6 rounded-xl border border-zinc-200 p-5 dark:border-zinc-800">
         <div className="flex items-end justify-between">
-          <span className="text-sm font-medium text-zinc-500">
-            {strings.overallProgress}
-          </span>
+          <div>
+            <span className="text-sm font-medium text-zinc-500">
+              {strings.overallProgress}
+            </span>
+            <p className="text-xs text-zinc-500">
+              {sectionsComplete}/{totalSections}{" "}
+              {strings.sectionsCompleteSuffix}
+            </p>
+          </div>
           <span className="font-mono text-2xl font-bold text-emerald-600 dark:text-emerald-400">
             {overallPercent}%
           </span>
@@ -170,12 +129,8 @@ export default function ProfileView({ locale }: { locale: Locale }) {
                 <>
                   {stats.completedLessons}/{stats.totalLessons}{" "}
                   {strings.lessonsWord}
-                  {stats.hasExam
-                    ? ` · ${
-                        stats.examPassed === stats.examTotal
-                          ? strings.examPassed
-                          : strings.examPending
-                      }`
+                  {examLabel(stats, strings.examWord, strings.examPassed)
+                    ? ` · ${examLabel(stats, strings.examWord, strings.examPassed)}`
                     : ""}
                 </>
               )}

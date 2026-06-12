@@ -1,6 +1,7 @@
 "use client";
 
 import { computeSectionProgress, useProgress } from "@/lib/progress";
+import { examLabel } from "@/lib/useCourseProgress";
 import { t, type Locale } from "@/lib/i18n";
 
 /**
@@ -31,11 +32,7 @@ export default function SectionProgress({
   if (stats.totalLessons === 0 && stats.examTotal === 0) return null;
 
   const lessonsLabel = `${stats.completedLessons}/${stats.totalLessons} ${strings.lessonsWord}`;
-  const examLabel = !stats.hasExam
-    ? null
-    : stats.examPassed === stats.examTotal
-      ? strings.examPassed
-      : strings.examPending;
+  const provaLabel = examLabel(stats, strings.examWord, strings.examPassed);
 
   return (
     <div className="mt-3">
@@ -48,7 +45,7 @@ export default function SectionProgress({
           ) : (
             <>
               {lessonsLabel}
-              {examLabel ? ` · ${examLabel}` : ""}
+              {provaLabel ? ` · ${provaLabel}` : ""}
             </>
           )}
         </span>
