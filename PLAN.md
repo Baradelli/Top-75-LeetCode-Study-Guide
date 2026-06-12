@@ -1,6 +1,6 @@
 # Plano — Curso Interativo de LeetCode e Algoritmos
 
-> Status: CURSO COMPLETO em PT-BR. Todas as seções no formato attempt-first: Comece aqui + Fundamentos (Big-O) + Array + String + Binary + Linked List + Matrix + Interval + Tree + Heap + Graph + Dynamic Programming. Cada seção de padrão tem aulas (teoria → exemplos), desafios "tente primeiro", visualizações trace & replay, quizzes e prova final (fácil/médio/difícil inéditos no LocalJudge). Visualizadores: array, string, bits, lista ligada, grid, árvore (SVG), intervalos, heap, grafo (SVG). Próximos passos sugeridos: visualização de progresso/perfil aprimorada, tradução EN, responsividade mobile, deploy. Última atualização: 2026-06-10.
+> Status: CURSO COMPLETO e BILÍNGUE (PT/EN), pronto para deploy. Todas as seções no formato attempt-first: Comece aqui + Fundamentos (Big-O) + Array + String + Binary + Linked List + Matrix + Interval + Tree + Heap + Graph + Dynamic Programming. Cada seção tem aulas (teoria → exemplos), desafios "tente primeiro", visualizações trace & replay, quizzes e prova final (fácil/médio/difícil inéditos no LocalJudge). Visualizadores: array, string, bits, lista ligada, grid, árvore (SVG), intervalos, heap, grafo (SVG). Progresso visível (banner na home, perfil com exportar/importar JSON). Roadmap pós-conclusão concluído: (1) progresso/perfil aprimorado ✓, (2) tradução EN das 71 aulas + metadados ✓, (3) responsividade mobile ✓, (4) deploy preparado (estático, Vercel — ver web/DEPLOY.md) ✓. Última atualização: 2026-06-10.
 
 ## 1. Visão
 
