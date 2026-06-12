@@ -80,12 +80,14 @@ export default function Challenge({ id }: { id: string }) {
               challenge.functionName.python,
               challenge.tests,
               challenge.linked,
+              challenge.tree,
             )
           : judgeJavaScript(
               code.javascript,
               challenge.functionName.javascript,
               challenge.tests,
               challenge.linked,
+              challenge.tree,
             );
       setResult(judged);
     } catch (exc) {

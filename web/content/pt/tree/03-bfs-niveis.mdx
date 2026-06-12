@@ -1,0 +1,122 @@
+# Padrão 2: BFS por níveis
+
+> A recursão (DFS) vai fundo num ramo antes de voltar. Mas algumas perguntas
+> são sobre **níveis** — "os valores de cada nível", "o nó mais à direita de
+> cada linha", "a profundidade mínima". Para essas, a busca em largura (BFS),
+> com uma **fila**, processa a árvore camada por camada.
+
+<Challenge id="level-order" />
+
+> Tentou? Com DFS dá para fazer (guardando a profundidade de cada valor), mas
+> separar os níveis fica desajeitado. A teoria abaixo mostra o jeito limpo:
+> processar a fila "um nível de cada vez".
+
+## A teoria: a fila e o truque do tamanho do nível
+
+A BFS usa uma **fila** (FIFO): você enfileira a raiz e, repetidamente, tira o
+nó da frente e enfileira seus filhos. Isso visita os nós em ordem de nível
+(raiz, depois nível 1, depois nível 2...). Veja a fila avançando nível a nível
+(o âmbar é o nó sendo processado, o azul os já visitados):
+
+<TraceDemo id="tree-bfs" />
+
+Mas como **separar** os níveis em listas distintas? O truque é simples e
+elegante: no início de cada rodada, a fila contém **exatamente um nível
+inteiro**. Então capture o **tamanho atual da fila** e processe só esse tanto
+de nós — eles são o nível atual; os filhos que você enfileira formarão o
+próximo:
+
+```text
+fila = [raiz]
+enquanto a fila não está vazia:
+    tamanho = len(fila)          # ← congela o nível atual
+    nivel = []
+    repita `tamanho` vezes:
+        no = desenfileira
+        nivel.append(no.val)
+        enfileira no.left e no.right (se existirem)
+    resultado.append(nivel)
+```
+
+### Por que é O(n) tempo e O(n) espaço?
+
+Cada nó entra e sai da fila **exatamente uma vez** → **O(n) de tempo**. O
+espaço é o tamanho máximo da fila, que é a **largura** da árvore — no pior caso
+(o último nível de uma árvore cheia) é ~n/2 nós → **O(n) de espaço**. Note o
+contraste com o DFS: lá o espaço era O(h) (altura); aqui é O(largura).
+
+## DFS ou BFS numa árvore?
+
+| A pergunta é sobre... | Use | Por quê |
+| --- | --- | --- |
+| propriedade que se **combina** dos filhos (altura, soma, validar) | **DFS** recursivo | a recursão combina naturalmente |
+| **níveis** (por nível, nível mais profundo, vista lateral) | **BFS** | a fila processa camada a camada |
+| **menor profundidade** / "menos passos" até algo | **BFS** | acha o nível raso primeiro |
+
+> Curiosidade que conecta com Matriz: este é o **mesmo BFS** que você usou no
+> grid para o caminho mais curto. Árvore e grid são grafos; BFS por camadas é
+> o mesmo algoritmo. Você está praticando grafos sem perceber.
+
+<Quiz
+  title="Quiz de fixação"
+  questions={[
+    {
+      question: "Qual estrutura de dados a BFS usa, e em que ordem ela visita os nós?",
+      options: [
+        "Uma pilha; visita indo fundo primeiro",
+        "Uma fila (FIFO); visita em ordem de nível (raiz, nível 1, nível 2...)",
+        "Um dicionário; ordem aleatória",
+        "Recursão; pós-ordem",
+      ],
+      answer: 1,
+      explanation:
+        "A fila FIFO garante que um nó só é processado depois de todos os anteriores (mais rasos) — daí a ordem por níveis.",
+    },
+    {
+      question: "Como separar os níveis em listas distintas durante a BFS?",
+      options: [
+        "Marcar cada nó com sua profundidade num dicionário",
+        "No início de cada rodada, capturar o TAMANHO atual da fila e processar só esse tanto de nós — eles são o nível atual",
+        "Usar duas filas alternadas obrigatoriamente",
+        "Não é possível com BFS",
+      ],
+      answer: 1,
+      explanation:
+        "No começo de cada rodada a fila contém exatamente um nível. Fixar o tamanho antes de processar isola esse nível; os filhos enfileirados formam o próximo.",
+    },
+    {
+      question: "Qual a complexidade de espaço da BFS numa árvore, e por quê?",
+      options: [
+        "O(h), a altura",
+        "O(n) no pior caso — o tamanho da fila chega à LARGURA da árvore, que pode ser ~n/2 no último nível de uma árvore cheia",
+        "O(1)",
+        "O(log n) sempre",
+      ],
+      answer: 1,
+      explanation:
+        "BFS guarda um nível inteiro na fila; a largura máxima domina o espaço. Contraste com DFS, cujo espaço é O(h), a altura.",
+    },
+    {
+      question:
+        "'Retorne a vista do lado direito da árvore (o nó mais à direita de cada nível).' Qual padrão?",
+      options: [
+        "DFS pós-ordem",
+        "BFS por níveis: para cada nível, o último nó processado é o visível pela direita",
+        "Travessia in-order",
+        "Trie",
+      ],
+      answer: 1,
+      explanation:
+        "É uma pergunta por nível: processando cada nível com o truque do tamanho, o último nó de cada um é a resposta. (Aparece na prova final!)",
+    },
+  ]}
+/>
+
+## Resumo
+
+- **BFS** usa uma **fila** e visita a árvore **nível por nível**.
+- Separe níveis capturando o **tamanho da fila** no início de cada rodada.
+- **O(n)** tempo; **O(n)** espaço (largura) — contraste com O(h) do DFS.
+- Use BFS para perguntas **por nível** ou de **menor profundidade**.
+
+Próxima aula: a árvore com uma regra de ouro que dá busca rápida — a **BST**.

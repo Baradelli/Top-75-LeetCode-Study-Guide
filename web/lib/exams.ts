@@ -26,6 +26,8 @@ export interface ExamProblem {
   hint: string;
   /** Para problemas de lista ligada: args que são listas + se o retorno é lista. */
   linked?: { listArgs: number[]; listReturn: boolean };
+  /** Para problemas de árvore: args que são árvores (ordem de nível) + se o retorno é árvore. */
+  tree?: { treeArgs: number[]; treeReturn: boolean };
 }
 
 function repeated(length: number, fill: (index: number) => number): number[] {
@@ -529,6 +531,91 @@ Exemplo: a região central de \`"O"\` cercada vira \`"X"\`; os \`"O"\` que tocam
         },
       ],
       hint: "Inverta o problema: em vez de achar os 'O' cercados, ache os que NÃO são. Faça DFS a partir de cada 'O' da BORDA, marcando todos os conectados como seguros. No fim, todo 'O' não-marcado vira 'X' (estava cercado) e os marcados voltam a ser 'O'.",
+    },
+  ],
+
+  tree: [
+    {
+      slug: "symmetric-tree",
+      title: "Symmetric Tree",
+      difficulty: "facil",
+      leetcodeUrl: "https://leetcode.com/problems/symmetric-tree/",
+      statement: `Verifique se uma árvore binária é **espelhada em torno do centro** (a subárvore esquerda é o espelho da direita).
+
+Exemplo: \`[1,2,2,3,4,4,3]\` → \`true\`. \`[1,2,2,null,3,null,3]\` → \`false\`.`,
+      functionName: { python: "is_symmetric", javascript: "isSymmetric" },
+      starter: {
+        python: `def is_symmetric(root):
+    # escreva sua solução aqui
+    pass`,
+        javascript: `function isSymmetric(root) {
+  // escreva sua solução aqui
+}`,
+      },
+      tests: [
+        { args: [[1, 2, 2, 3, 4, 4, 3]], expected: true },
+        { args: [[1, 2, 2, null, 3, null, 3]], expected: false },
+        { args: [[]], expected: true },
+        { args: [[1]], expected: true, hidden: true },
+        { args: [[1, 2, 2, 2, null, 2]], expected: false, hidden: true },
+      ],
+      hint: "Compare DUAS subárvores ao mesmo tempo, espelhadas: uma função mirror(a, b) que checa a.val == b.val e, recursivamente, mirror(a.left, b.right) e mirror(a.right, b.left). Comece com mirror(root, root).",
+      tree: { treeArgs: [0], treeReturn: false },
+    },
+    {
+      slug: "right-side-view",
+      title: "Binary Tree Right Side View",
+      difficulty: "medio",
+      leetcodeUrl: "https://leetcode.com/problems/binary-tree-right-side-view/",
+      statement: `Imagine-se olhando a árvore **pelo lado direito**. Retorne os valores dos nós que você consegue ver, de cima para baixo (o nó mais à direita de cada nível).
+
+Exemplo: \`[1,2,3,null,5,null,4]\` → \`[1,3,4]\`.`,
+      functionName: { python: "right_side_view", javascript: "rightSideView" },
+      starter: {
+        python: `def right_side_view(root):
+    # escreva sua solução aqui
+    pass`,
+        javascript: `function rightSideView(root) {
+  // escreva sua solução aqui
+}`,
+      },
+      tests: [
+        { args: [[1, 2, 3, null, 5, null, 4]], expected: [1, 3, 4] },
+        { args: [[1, null, 3]], expected: [1, 3] },
+        { args: [[]], expected: [] },
+        { args: [[1, 2, 3, 4]], expected: [1, 3, 4], hidden: true },
+        { args: [[1, 2]], expected: [1, 2], hidden: true },
+      ],
+      hint: "É um BFS por níveis (como o level order): para cada nível, o ÚLTIMO nó processado é o que se vê pela direita. Guarde-o. (Alternativa: DFS visitando a direita primeiro e pegando o primeiro nó de cada profundidade nova.)",
+      tree: { treeArgs: [0], treeReturn: false },
+    },
+    {
+      slug: "max-path-sum",
+      title: "Binary Tree Maximum Path Sum",
+      difficulty: "dificil",
+      leetcodeUrl: "https://leetcode.com/problems/binary-tree-maximum-path-sum/",
+      statement: `Um **caminho** é qualquer sequência de nós conectados por arestas (não precisa passar pela raiz nem chegar a uma folha; vira no máximo um nó). Retorne a **maior soma** de valores ao longo de algum caminho. Os valores podem ser negativos.
+
+Exemplo: \`[-10,9,20,null,null,15,7]\` → \`42\` (o caminho 15 → 20 → 7). \`[1,2,3]\` → \`6\`.`,
+      functionName: { python: "max_path_sum", javascript: "maxPathSum" },
+      starter: {
+        python: `def max_path_sum(root):
+    # escreva sua solução aqui
+    pass`,
+        javascript: `function maxPathSum(root) {
+  // escreva sua solução aqui
+}`,
+      },
+      tests: [
+        { args: [[-10, 9, 20, null, null, 15, 7]], expected: 42 },
+        { args: [[1, 2, 3]], expected: 6 },
+        { args: [[-3]], expected: -3 },
+        { args: [[2, -1]], expected: 2, hidden: true },
+        { args: [[-2, -1]], expected: -1, hidden: true },
+        { args: [[5, 4, 8, 11, null, 13, 4, 7, 2, null, null, null, 1]], expected: 48, hidden: true },
+      ],
+      hint: "DFS que retorna o 'ganho' máximo descendo por UM lado (val + max(ganho esq, ganho dir, 0)). Mas o melhor caminho pode VIRAR num nó usando os dois lados: a cada nó, atualize a resposta global com val + ganho_esq + ganho_dir. Use max(ganho, 0) para descartar lados negativos.",
+      tree: { treeArgs: [0], treeReturn: false },
     },
   ],
 };

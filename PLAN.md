@@ -1,6 +1,6 @@
 # Plano — Curso Interativo de LeetCode e Algoritmos
 
-> Status: "Comece aqui" + Fundamentos + Array + String + Binary + Linked List + Matrix completas (attempt-first). Matrix trouxe o GridTraceVisualizer (cursor/visitado/caminho/limites + legenda), O(m·n) justificado, e demos de DFS/backtracking/BFS. Próxima seção de conteúdo: Tree. Última atualização: 2026-06-10.
+> Status: "Comece aqui" + Fundamentos + Array + String + Binary + Linked List + Matrix + Tree completas (attempt-first). Tree trouxe o TreeTraceVisualizer (SVG, layout in-order×profundidade) e suporte a TreeNode no LocalJudge (array nível-a-nível ↔ árvore). Próxima seção de conteúdo: Heap. Última atualização: 2026-06-10.
 
 ## 1. Visão
 

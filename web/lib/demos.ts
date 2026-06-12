@@ -44,6 +44,23 @@ export interface LinkedVisualConfig {
   scalarVars?: string[];
 }
 
+export interface TreeVisualConfig {
+  /** Array com os valores dos nós (índice = id do nó). */
+  valuesVar: string;
+  /** Array de índices do filho esquerdo (-1 = nenhum). */
+  leftVar: string;
+  /** Array de índices do filho direito (-1 = nenhum). */
+  rightVar: string;
+  /** Índice do nó raiz (default 0). */
+  rootIndex?: number;
+  /** Variável que é o índice do nó atual (cursor). */
+  cursorVar?: string;
+  /** Array 0/1 por nó: visitados (sombreados). */
+  visitedVar?: string;
+  /** Variáveis escalares em destaque. */
+  scalarVars?: string[];
+}
+
 export interface GridVisualConfig {
   /** Matriz 2D principal (números ou letras). */
   gridVar: string;
@@ -80,7 +97,8 @@ export type DemoDefinition =
   | { python: string; javascript: string; string: StringVisualConfig }
   | { python: string; javascript: string; bit: BitVisualConfig }
   | { python: string; javascript: string; linked: LinkedVisualConfig }
-  | { python: string; javascript: string; grid: GridVisualConfig };
+  | { python: string; javascript: string; grid: GridVisualConfig }
+  | { python: string; javascript: string; tree: TreeVisualConfig };
 
 export const DEMOS: Record<string, DemoDefinition> = {
   // ---------------------------------------------------------------- ARRAY ---
@@ -920,6 +938,143 @@ console.log("visitou todos os alcançáveis");`,
       gridVar: "grid",
       cursor: { row: "r", col: "c" },
       visitedVar: "visitado",
+    },
+  },
+
+  // ----------------------------------------------------------------- TREE ---
+  // Árvore representada por três arrays: valores[i], esquerda[i], direita[i]
+  // (índice do filho, -1 = None). No editor das aulas usamos TreeNode real.
+  "tree-traversal": {
+    python: `def dfs(valores, esquerda, direita, visitado, no, resultado):
+    if no == -1:
+        return
+    visitado[no] = 1
+    resultado.append(valores[no])              # visita (pré-ordem)
+    dfs(valores, esquerda, direita, visitado, esquerda[no], resultado)
+    dfs(valores, esquerda, direita, visitado, direita[no], resultado)
+
+valores = [1, 2, 3, 4, 5, 6]
+esquerda = [1, 3, -1, -1, -1, -1]
+direita = [2, 4, 5, -1, -1, -1]
+visitado = [0, 0, 0, 0, 0, 0]
+resultado = []
+dfs(valores, esquerda, direita, visitado, 0, resultado)
+print(resultado)`,
+    javascript: `function dfs(valores, esquerda, direita, visitado, no, resultado) {
+  if (no === -1) return;
+  visitado[no] = 1;
+  resultado.push(valores[no]);                 // visita (pré-ordem)
+  dfs(valores, esquerda, direita, visitado, esquerda[no], resultado);
+  dfs(valores, esquerda, direita, visitado, direita[no], resultado);
+}
+
+var valores = [1, 2, 3, 4, 5, 6];
+var esquerda = [1, 3, -1, -1, -1, -1];
+var direita = [2, 4, 5, -1, -1, -1];
+var visitado = [0, 0, 0, 0, 0, 0];
+var resultado = [];
+dfs(valores, esquerda, direita, visitado, 0, resultado);
+console.log(resultado);`,
+    tree: {
+      valuesVar: "valores",
+      leftVar: "esquerda",
+      rightVar: "direita",
+      cursorVar: "no",
+      visitedVar: "visitado",
+      scalarVars: ["resultado"],
+    },
+  },
+
+  "tree-bfs": {
+    python: `valores = [1, 2, 3, 4, 5, 6]
+esquerda = [1, 3, -1, -1, -1, -1]
+direita = [2, 4, 5, -1, -1, -1]
+visitado = [0, 0, 0, 0, 0, 0]
+fila = [0]            # começa pela raiz; processa nível por nível
+cabeca = 0
+no = 0
+resultado = []
+while cabeca < len(fila):
+    no = fila[cabeca]
+    cabeca = cabeca + 1
+    visitado[no] = 1
+    resultado.append(valores[no])
+    if esquerda[no] != -1:
+        fila.append(esquerda[no])
+    if direita[no] != -1:
+        fila.append(direita[no])
+print(resultado)`,
+    javascript: `var valores = [1, 2, 3, 4, 5, 6];
+var esquerda = [1, 3, -1, -1, -1, -1];
+var direita = [2, 4, 5, -1, -1, -1];
+var visitado = [0, 0, 0, 0, 0, 0];
+var fila = [0];        // começa pela raiz; processa nível por nível
+var cabeca = 0;
+var no = 0;
+var resultado = [];
+while (cabeca < fila.length) {
+  no = fila[cabeca];
+  cabeca = cabeca + 1;
+  visitado[no] = 1;
+  resultado.push(valores[no]);
+  if (esquerda[no] !== -1) fila.push(esquerda[no]);
+  if (direita[no] !== -1) fila.push(direita[no]);
+}
+console.log(resultado);`,
+    tree: {
+      valuesVar: "valores",
+      leftVar: "esquerda",
+      rightVar: "direita",
+      cursorVar: "no",
+      visitedVar: "visitado",
+      scalarVars: ["resultado"],
+    },
+  },
+
+  "bst-search": {
+    python: `valores = [8, 3, 10, 1, 6, 14]
+esquerda = [1, 3, -1, -1, -1, -1]
+direita = [2, 4, 5, -1, -1, -1]
+visitado = [0, 0, 0, 0, 0, 0]
+alvo = 6
+no = 0
+encontrado = -1
+while no != -1:
+    visitado[no] = 1
+    if valores[no] == alvo:
+        encontrado = no
+        no = -1                       # achou: para
+    elif alvo < valores[no]:
+        no = esquerda[no]             # alvo é menor: vai para a esquerda
+    else:
+        no = direita[no]              # alvo é maior: vai para a direita
+print(encontrado)`,
+    javascript: `var valores = [8, 3, 10, 1, 6, 14];
+var esquerda = [1, 3, -1, -1, -1, -1];
+var direita = [2, 4, 5, -1, -1, -1];
+var visitado = [0, 0, 0, 0, 0, 0];
+var alvo = 6;
+var no = 0;
+var encontrado = -1;
+while (no !== -1) {
+  visitado[no] = 1;
+  if (valores[no] === alvo) {
+    encontrado = no;
+    no = -1;                          // achou: para
+  } else if (alvo < valores[no]) {
+    no = esquerda[no];                // alvo é menor: vai para a esquerda
+  } else {
+    no = direita[no];                 // alvo é maior: vai para a direita
+  }
+}
+console.log(encontrado);`,
+    tree: {
+      valuesVar: "valores",
+      leftVar: "esquerda",
+      rightVar: "direita",
+      cursorVar: "no",
+      visitedVar: "visitado",
+      scalarVars: ["alvo"],
     },
   },
 };

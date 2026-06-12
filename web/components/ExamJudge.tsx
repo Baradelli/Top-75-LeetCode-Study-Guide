@@ -95,12 +95,14 @@ export default function ExamJudge({
               problem.functionName.python,
               problem.tests,
               problem.linked,
+              problem.tree,
             )
           : judgeJavaScript(
               code.javascript,
               problem.functionName.javascript,
               problem.tests,
               problem.linked,
+              problem.tree,
             );
       setResult(judged);
       const allPassed =

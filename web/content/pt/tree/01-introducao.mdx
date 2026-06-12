@@ -1,0 +1,154 @@
+# Reconhecendo problemas de árvore
+
+> Uma árvore binária é como uma lista ligada que se **ramifica**: cada nó
+> aponta para até dois filhos (esquerdo e direito). Essa ramificação é o
+> portal para a **recursão** — a ferramenta que resolve a maioria dos
+> problemas desta seção quase sozinha.
+
+> Como sempre, cada aula de padrão abre com um **🎯 Tente primeiro**.
+
+## O nó: TreeNode
+
+```python
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left      # filho esquerdo (ou None)
+        self.right = right    # filho direito (ou None)
+```
+
+Você guarda só a **raiz** (`root`). A partir dela, desce pelos `left`/`right`
+até bater em `None` (uma folha não tem filhos). Vocabulário rápido: **raiz**
+(topo), **folha** (sem filhos), **altura** (h, o caminho mais longo da raiz a
+uma folha), **subárvore** (qualquer nó com seus descendentes).
+
+> No editor das aulas você usa `TreeNode` real. Nas **visualizações**,
+> representamos a árvore por três arrays (`valores`, `esquerda`, `direita`,
+> com índices de filhos) para conseguir desenhá-la a cada passo — é a mesma
+> árvore, `esquerda[i]` é o `nó.left`.
+
+## Por que recursão é a ferramenta natural
+
+A definição de árvore é **recursiva**: uma árvore é um nó cujos filhos são...
+árvores menores. Então quase todo problema se resolve com a mesma receita:
+
+> **Resolva o problema para os filhos (recursão), depois combine os resultados
+> no nó atual. O caso-base é a árvore vazia (`None`).**
+
+Em vez de pensar na árvore inteira de uma vez, você confia que a recursão
+resolve as subárvores e só decide **como juntar**. Essa mudança de perspectiva
+é o coração da seção.
+
+## As três travessias (DFS)
+
+Visitar todos os nós "indo fundo" (DFS) tem três ordens, que diferem em
+**quando** você processa o nó em relação aos filhos:
+
+| Travessia | Ordem | Exemplo de uso |
+| --- | --- | --- |
+| **pré-ordem** | nó → esquerda → direita | copiar/serializar a árvore |
+| **em-ordem** | esquerda → nó → direita | numa BST, sai em ordem **crescente**! |
+| **pós-ordem** | esquerda → direita → nó | quando o nó depende dos filhos (ex.: altura) |
+
+Veja as três numa árvore montada à mão:
+
+<CodeRunner
+  python={`class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+# monta:   1
+#         / \\
+#        2   3
+#       / \\
+#      4   5
+raiz = TreeNode(1, TreeNode(2, TreeNode(4), TreeNode(5)), TreeNode(3))
+
+def pre_ordem(no, saida):
+    if not no: return
+    saida.append(no.val)        # nó primeiro
+    pre_ordem(no.left, saida)
+    pre_ordem(no.right, saida)
+
+def em_ordem(no, saida):
+    if not no: return
+    em_ordem(no.left, saida)
+    saida.append(no.val)        # nó no meio
+    em_ordem(no.right, saida)
+
+def pos_ordem(no, saida):
+    if not no: return
+    pos_ordem(no.left, saida)
+    pos_ordem(no.right, saida)
+    saida.append(no.val)        # nó por último
+
+a = []; pre_ordem(raiz, a); print("pré:", a)
+b = []; em_ordem(raiz, b); print("em: ", b)
+c = []; pos_ordem(raiz, c); print("pós:", c)`}
+  javascript={`function TreeNode(val, left, right) {
+  this.val = val;
+  this.left = left || null;
+  this.right = right || null;
+}
+// monta:   1 / (2 (4,5), 3)
+var raiz = new TreeNode(1, new TreeNode(2, new TreeNode(4), new TreeNode(5)), new TreeNode(3));
+
+function preOrdem(no, saida) {
+  if (!no) return;
+  saida.push(no.val);          // nó primeiro
+  preOrdem(no.left, saida);
+  preOrdem(no.right, saida);
+}
+function emOrdem(no, saida) {
+  if (!no) return;
+  emOrdem(no.left, saida);
+  saida.push(no.val);          // nó no meio
+  emOrdem(no.right, saida);
+}
+function posOrdem(no, saida) {
+  if (!no) return;
+  posOrdem(no.left, saida);
+  posOrdem(no.right, saida);
+  saida.push(no.val);          // nó por último
+}
+var a = []; preOrdem(raiz, a); console.log("pré:", a);
+var b = []; emOrdem(raiz, b); console.log("em: ", b);
+var c = []; posOrdem(raiz, c); console.log("pós:", c);`}
+/>
+
+## Big-O em árvores: O(n) e O(h)
+
+Duas medidas que vão aparecer o tempo todo — e que você deve sempre justificar:
+
+- **Tempo O(n):** percorrer a árvore visita **cada nó uma vez** (n = número de
+  nós). A maioria dos algoritmos de árvore é O(n).
+- **Espaço O(h):** a recursão empilha uma chamada por nível em que está
+  mergulhada; no fundo, a pilha tem o tamanho da **altura** h. Aqui mora a
+  sutileza:
+  - Árvore **balanceada**: h ≈ **log n** → espaço O(log n). 🎉
+  - Árvore **degenerada** (vira uma "lista", cada nó com um filho só): h = n →
+    espaço O(n). 😬
+
+Por isso "O(h)" é a forma honesta de dizer o espaço da recursão: ele é
+ótimo quando a árvore é balanceada e ruim quando é degenerada. Guarde essa
+distinção — ela reaparece na BST (busca O(h)) e justifica por que árvores
+balanceadas importam tanto.
+
+## Os problemas da seção
+
+- Maximum Depth, Invert Tree, Same Tree → *DFS recursivo*
+- Level Order Traversal → *BFS por níveis*
+- Validate BST, Kth Smallest, Lowest Common Ancestor → *propriedades de BST*
+- Construct from Traversals, Serialize/Deserialize → *construção*
+- Implement Trie → *árvore de prefixos*
+
+## Resumo
+
+- Árvore = nós com `left`/`right`; guarda-se a **raiz**; folha não tem filhos.
+- **Recursão é natural**: resolva os filhos, combine no nó, caso-base = `None`.
+- Travessias DFS: pré, em (crescente em BST!) e pós-ordem.
+- **O(n)** de tempo; **O(h)** de espaço (log n se balanceada, n se degenerada).
+
+Próxima aula: o **template recursivo** que destrava a maioria das árvores.

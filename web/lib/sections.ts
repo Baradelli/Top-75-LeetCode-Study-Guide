@@ -103,7 +103,7 @@ export const SECTIONS: Section[] = [
     description:
       "Mergulho profundo em recursão; o portão de entrada para heap e grafo.",
     patterns: ["DFS recursivo", "BFS por níveis", "BST", "Trie"],
-    status: "soon",
+    status: "available",
   },
   {
     slug: "heap",
@@ -396,6 +396,50 @@ export const LESSONS: Record<string, Lesson[]> = {
       title: "Síntese: qual padrão usar?",
       description:
         "A árvore de decisão da seção Matriz e o quiz geral antes da prova final.",
+    },
+  ],
+  tree: [
+    {
+      slug: "01-introducao",
+      title: "Reconhecendo problemas de árvore",
+      description:
+        "O nó TreeNode, recursão como ferramenta natural, travessias e a complexidade O(n)/O(h).",
+    },
+    {
+      slug: "02-dfs-recursivo",
+      title: "Padrão 1: DFS recursivo",
+      description:
+        "O template recursivo que resolve a maioria das árvores: resolva os filhos, combine.",
+    },
+    {
+      slug: "03-bfs-niveis",
+      title: "Padrão 2: BFS por níveis",
+      description:
+        "Quando a pergunta é por nível, a busca em largura com fila processa camada a camada.",
+    },
+    {
+      slug: "04-bst",
+      title: "Padrão 3: Árvore de busca binária (BST)",
+      description:
+        "A propriedade esquerda < nó < direita, que dá busca O(h) e ordem com a travessia in-order.",
+    },
+    {
+      slug: "05-construcao",
+      title: "Padrão 4: Construção e serialização",
+      description:
+        "Reconstruir uma árvore a partir de travessias e serializá-la sem ambiguidade.",
+    },
+    {
+      slug: "06-trie",
+      title: "Padrão 5: Trie (árvore de prefixos)",
+      description:
+        "A árvore de caracteres que torna busca por prefixo e por palavra muito eficiente.",
+    },
+    {
+      slug: "07-sintese",
+      title: "Síntese: qual padrão usar?",
+      description:
+        "A árvore de decisão da seção Árvores e o quiz geral antes da prova final.",
     },
   ],
 };

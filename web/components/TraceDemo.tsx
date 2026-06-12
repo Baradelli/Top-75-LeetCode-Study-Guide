@@ -7,6 +7,7 @@ import StringTraceVisualizer from "./visualizers/StringTraceVisualizer";
 import BitTraceVisualizer from "./visualizers/BitTraceVisualizer";
 import LinkedListVisualizer from "./visualizers/LinkedListVisualizer";
 import GridTraceVisualizer from "./visualizers/GridTraceVisualizer";
+import TreeTraceVisualizer from "./visualizers/TreeTraceVisualizer";
 import { DEMOS } from "@/lib/demos";
 
 /**
@@ -46,6 +47,13 @@ export default function TraceDemo({ id }: { id: string }) {
         return <GridTraceVisualizer {...props} config={config} />;
       }
       return GridBound;
+    }
+    if ("tree" in demo) {
+      const config = demo.tree;
+      function TreeBound(props: VisualizerProps) {
+        return <TreeTraceVisualizer {...props} config={config} />;
+      }
+      return TreeBound;
     }
     const config = demo.string;
     function StringBound(props: VisualizerProps) {

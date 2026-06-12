@@ -1,0 +1,199 @@
+# Padrão 3: Árvore de busca binária (BST)
+
+> Uma BST é uma árvore binária com uma **regra de ouro**: para todo nó, tudo à
+> esquerda é **menor** e tudo à direita é **maior**. Essa única regra dá busca,
+> inserção e remoção em **O(h)** — e revela uma propriedade mágica na travessia
+> em-ordem.
+
+<Challenge id="validate-bst" />
+
+> Tentou? O erro nº 1 é comparar cada nó só com seus **filhos diretos** — e
+> passar em árvores que não são BSTs válidas. A teoria abaixo mostra por que é
+> preciso pensar em **intervalos**.
+
+## A teoria: a regra vale para a subárvore inteira
+
+A regra da BST não é local ("maior que o pai") — é **global**: *toda* a
+subárvore esquerda de um nó é menor que ele, e *toda* a direita é maior. Por
+isso validar comparando só pai e filho falha:
+
+```text
+        5
+       / \
+      1   4        ← 4 < 5? sim. Mas 4 está à DIREITA do 5...
+         / \          ...e 3 < 5 também! NÃO é BST válida.
+        3   6
+```
+
+A forma correta: cada nó tem um **intervalo permitido** `(mínimo, máximo)` que
+**se estreita** conforme você desce. Ao ir para a **esquerda**, o valor do nó
+vira o novo **máximo**; ao ir para a **direita**, vira o novo **mínimo**:
+
+```text
+valido(no, minimo, maximo):
+    se no é None                    → True
+    se não (minimo < no.val < maximo) → False
+    return valido(no.left, minimo, no.val)  e  valido(no.right, no.val, maximo)
+```
+
+## A propriedade mágica: in-order = ordem crescente
+
+Lembra das travessias (aula 1)? Numa BST, a travessia **em-ordem** (esquerda →
+nó → direita) visita os valores em ordem **crescente**. Faz sentido: você
+sempre visita tudo que é menor (esquerda) antes do nó, e tudo que é maior
+(direita) depois. Isso resolve uma família de problemas — *Kth Smallest
+Element*, por exemplo, é só "pare na k-ésima visita da travessia em-ordem".
+
+## Busca numa BST: O(h)
+
+Procurar um valor numa BST é como a busca binária (seção Binary!): compare com
+o nó; se o alvo é menor, vá à esquerda; se maior, à direita. Cada passo
+**descarta metade** da árvore (uma subárvore inteira). Veja a busca descer —
+note como ela ignora ramos inteiros:
+
+<TraceDemo id="bst-search" />
+
+Custa **O(h)**: log n numa árvore balanceada, n numa degenerada. É a mesma
+lógica de "cortar pela metade" da busca binária, agora na estrutura da árvore.
+
+<CodeRunner
+  python={`class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val; self.left = left; self.right = right
+
+# Kth smallest: a k-ésima visita da travessia em-ordem
+def kth_smallest(root, k):
+    pilha = []
+    no = root
+    while pilha or no:
+        while no:
+            pilha.append(no)      # desce até o menor
+            no = no.left
+        no = pilha.pop()
+        k -= 1
+        if k == 0:
+            return no.val         # k-ésimo em ordem crescente
+        no = no.right
+
+# LCA numa BST: o ponto onde os caminhos para p e q se separam
+def lca(root, p, q):
+    no = root
+    while no:
+        if p < no.val and q < no.val:
+            no = no.left          # ambos menores: ancestral está à esquerda
+        elif p > no.val and q > no.val:
+            no = no.right         # ambos maiores: à direita
+        else:
+            return no.val         # se separam aqui: este é o LCA
+
+#       5
+#      / \\
+#     3   8
+#    / \\
+#   2   4
+raiz = TreeNode(5, TreeNode(3, TreeNode(2), TreeNode(4)), TreeNode(8))
+print("3º menor:", kth_smallest(raiz, 3))   # 4
+print("LCA(2,4):", lca(raiz, 2, 4))          # 3`}
+  javascript={`function TreeNode(val, left, right) {
+  this.val = val; this.left = left || null; this.right = right || null;
+}
+function kthSmallest(root, k) {
+  var pilha = [];
+  var no = root;
+  while (pilha.length > 0 || no) {
+    while (no) { pilha.push(no); no = no.left; }   // desce até o menor
+    no = pilha.pop();
+    k -= 1;
+    if (k === 0) return no.val;                     // k-ésimo crescente
+    no = no.right;
+  }
+}
+function lca(root, p, q) {
+  var no = root;
+  while (no) {
+    if (p < no.val && q < no.val) no = no.left;     // ambos menores
+    else if (p > no.val && q > no.val) no = no.right; // ambos maiores
+    else return no.val;                             // se separam: LCA
+  }
+}
+var raiz = new TreeNode(5, new TreeNode(3, new TreeNode(2), new TreeNode(4)), new TreeNode(8));
+console.log("3º menor:", kthSmallest(raiz, 3)); // 4
+console.log("LCA(2,4):", lca(raiz, 2, 4));       // 3`}
+/>
+
+Repare no **LCA** (menor ancestral comum) numa BST: ele é o nó onde os valores
+`p` e `q` "se separam" (um vai para a esquerda, o outro para a direita, ou um
+deles é o próprio nó). A regra da BST diz exatamente para que lado cada um
+está — então achamos o LCA em O(h) só descendo.
+
+## A lição
+
+A regra da BST (esquerda < nó < direita, **para toda a subárvore**) é o que
+transforma uma árvore comum numa estrutura de busca. Sempre que vir "BST" no
+enunciado, pense: **(1)** posso usar a regra para descer só por um lado (busca
+O(h))? **(2)** a travessia **em-ordem** (crescente) ajuda?
+
+<Quiz
+  title="Quiz de fixação"
+  questions={[
+    {
+      question: "Qual é a regra que define uma BST?",
+      options: [
+        "Cada nó é maior que seu pai",
+        "Para todo nó, TODA a subárvore esquerda é menor que ele e TODA a direita é maior",
+        "A árvore é balanceada",
+        "Cada nó tem no máximo dois filhos",
+      ],
+      answer: 1,
+      explanation:
+        "A regra é global, não só sobre os filhos diretos. É isso que permite descartar subárvores inteiras na busca.",
+    },
+    {
+      question:
+        "Por que validar uma BST comparando cada nó só com seus filhos diretos está errado?",
+      options: [
+        "É lento",
+        "Porque a regra vale para a subárvore inteira: um neto à direita pode ser menor que o avô e passar despercebido. É preciso carregar um intervalo (min, max) que se estreita ao descer",
+        "Porque não usa recursão",
+        "Não está errado",
+      ],
+      answer: 1,
+      explanation:
+        "Comparar só pai/filho aceita árvores inválidas (um valor pode violar um ancestral distante). O intervalo (min,max) propaga essa restrição global.",
+    },
+    {
+      question: "Que ordem a travessia em-ordem produz numa BST, e por quê?",
+      options: [
+        "Aleatória",
+        "Crescente — porque visita tudo que é menor (esquerda) antes do nó, e tudo que é maior (direita) depois",
+        "Decrescente",
+        "Por nível",
+      ],
+      answer: 1,
+      explanation:
+        "esquerda → nó → direita, com a regra da BST, percorre os valores do menor ao maior. Por isso 'k-ésimo menor' = k-ésima visita em-ordem.",
+    },
+    {
+      question: "Por que a busca numa BST é O(h)?",
+      options: [
+        "Porque visita todos os nós",
+        "Porque a cada passo a comparação descarta uma subárvore inteira (metade), descendo só um nível — o número de passos é a altura h",
+        "Porque usa uma fila",
+        "Porque ordena a árvore",
+      ],
+      answer: 1,
+      explanation:
+        "É a busca binária aplicada à árvore: comparar e ir para um lado elimina o outro. h passos — log n se balanceada, n se degenerada.",
+    },
+  ]}
+/>
+
+## Resumo
+
+- BST: **esquerda < nó < direita**, para toda a subárvore (regra global).
+- Validar exige um **intervalo (min, max)** que se estreita ao descer — não só
+  comparar pai/filho.
+- Travessia **em-ordem = crescente** (resolve Kth Smallest).
+- Busca/LCA em **O(h)**, descendo só por um lado — a busca binária das árvores.
+
+Próxima aula: **reconstruir** e **serializar** árvores.

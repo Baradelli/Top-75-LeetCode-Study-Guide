@@ -23,9 +23,300 @@ export interface Challenge {
   solutionIdea: string;
   /** Para problemas de lista ligada: args que são listas + se o retorno é lista. */
   linked?: { listArgs: number[]; listReturn: boolean };
+  /** Para problemas de árvore: args que são árvores (ordem de nível) + se o retorno é árvore. */
+  tree?: { treeArgs: number[]; treeReturn: boolean };
 }
 
 export const CHALLENGES: Record<string, Challenge> = {
+  "max-depth": {
+    title: "Maximum Depth of Binary Tree",
+    statement: `Retorne a **profundidade máxima** de uma árvore binária (número de nós no caminho mais longo da raiz até uma folha). A árvore é dada como \`root\` (cada nó tem \`.val\`, \`.left\`, \`.right\`).
+
+Exemplo: \`[3,9,20,null,null,15,7]\` → \`3\`. (Para testar, passamos a árvore em ordem de nível.)`,
+    functionName: { python: "max_depth", javascript: "maxDepth" },
+    starter: {
+      python: `def max_depth(root):
+    # root é um TreeNode (root.val, root.left, root.right) ou None
+    pass`,
+      javascript: `function maxDepth(root) {
+  // root é um TreeNode (root.val, root.left, root.right) ou null
+}`,
+    },
+    tests: [
+      { args: [[3, 9, 20, null, null, 15, 7]], expected: 3 },
+      { args: [[]], expected: 0 },
+      { args: [[1, 2, null, 3, null, 4]], expected: 4 },
+      { args: [[1]], expected: 1 },
+    ],
+    hint: "Pense recursivamente: a profundidade de uma árvore é 1 (a raiz) + a maior profundidade entre as subárvores esquerda e direita. O caso-base é a árvore vazia (None → 0). Deixe a recursão resolver os filhos.",
+    solution: {
+      python: `def max_depth(root):
+    if not root:
+        return 0
+    return 1 + max(max_depth(root.left), max_depth(root.right))`,
+      javascript: `function maxDepth(root) {
+  if (!root) return 0;
+  return 1 + Math.max(maxDepth(root.left), maxDepth(root.right));
+}`,
+    },
+    solutionIdea:
+      "Recursão pura: profundidade = 1 + max(esquerda, direita); vazio = 0. Visita cada nó uma vez: O(n).",
+    tree: { treeArgs: [0], treeReturn: false },
+  },
+
+  "level-order": {
+    title: "Binary Tree Level Order Traversal",
+    statement: `Retorne os valores da árvore **nível por nível**, de cima para baixo, da esquerda para a direita — uma lista por nível.
+
+Exemplo: \`[3,9,20,null,null,15,7]\` → \`[[3],[9,20],[15,7]]\`.`,
+    functionName: { python: "level_order", javascript: "levelOrder" },
+    starter: {
+      python: `def level_order(root):
+    # retorne uma lista de listas, um nível por vez
+    pass`,
+      javascript: `function levelOrder(root) {
+  // retorne uma lista de listas, um nível por vez
+}`,
+    },
+    tests: [
+      { args: [[3, 9, 20, null, null, 15, 7]], expected: [[3], [9, 20], [15, 7]] },
+      { args: [[]], expected: [] },
+      { args: [[1]], expected: [[1]] },
+      { args: [[1, 2, 3, 4, null, null, 5]], expected: [[1], [2, 3], [4, 5]] },
+    ],
+    hint: "Nível por nível = BFS com uma fila. O truque para separar os níveis: a cada iteração do laço externo, processe EXATAMENTE os nós que estão na fila agora (o tamanho atual dela) — esses formam um nível — enfileirando os filhos para o próximo.",
+    solution: {
+      python: `from collections import deque
+
+def level_order(root):
+    if not root:
+        return []
+    res = []
+    fila = deque([root])
+    while fila:
+        nivel = []
+        for _ in range(len(fila)):     # processa só o nível atual
+            no = fila.popleft()
+            nivel.append(no.val)
+            if no.left:
+                fila.append(no.left)
+            if no.right:
+                fila.append(no.right)
+        res.append(nivel)
+    return res`,
+      javascript: `function levelOrder(root) {
+  if (!root) return [];
+  var res = [];
+  var fila = [root];
+  while (fila.length > 0) {
+    var nivel = [];
+    var tamanho = fila.length;          // congela o tamanho do nível atual
+    for (var i = 0; i < tamanho; i++) {
+      var no = fila.shift();
+      nivel.push(no.val);
+      if (no.left) fila.push(no.left);
+      if (no.right) fila.push(no.right);
+    }
+    res.push(nivel);
+  }
+  return res;
+}`,
+    },
+    solutionIdea:
+      "BFS com fila, processando 'o tamanho atual da fila' nós por vez para separar os níveis. O(n).",
+    tree: { treeArgs: [0], treeReturn: false },
+  },
+
+  "validate-bst": {
+    title: "Validate Binary Search Tree",
+    statement: `Verifique se uma árvore binária é uma **BST válida**: para todo nó, todos os valores da subárvore esquerda são **menores** que ele, e todos os da direita são **maiores** — recursivamente.
+
+Exemplo: \`[2,1,3]\` → \`true\`. \`[5,1,4,null,null,3,6]\` → \`false\` (o 3 e o 6 estão à direita do 5, mas o 3 < 5).`,
+    functionName: { python: "is_valid_bst", javascript: "isValidBST" },
+    starter: {
+      python: `def is_valid_bst(root):
+    # toda a subárvore esquerda < nó < toda a subárvore direita?
+    pass`,
+      javascript: `function isValidBST(root) {
+  // toda a subárvore esquerda < nó < toda a subárvore direita?
+}`,
+    },
+    tests: [
+      { args: [[2, 1, 3]], expected: true },
+      { args: [[5, 1, 4, null, null, 3, 6]], expected: false },
+      { args: [[]], expected: true },
+      { args: [[5, 4, 6, null, null, 3, 7]], expected: false },
+      { args: [[10, 5, 15, null, null, 6, 20]], expected: false },
+    ],
+    hint: "O erro comum é só comparar nó com seus filhos diretos — não basta! Cada nó tem um INTERVALO válido (mínimo, máximo) que vai se estreitando conforme você desce: ao ir à esquerda, o máximo vira o valor do nó; à direita, o mínimo vira o valor do nó.",
+    solution: {
+      python: `def is_valid_bst(root):
+    def valido(no, minimo, maximo):
+        if not no:
+            return True
+        if not (minimo < no.val < maximo):
+            return False
+        return valido(no.left, minimo, no.val) and valido(no.right, no.val, maximo)
+    return valido(root, float("-inf"), float("inf"))`,
+      javascript: `function isValidBST(root) {
+  function valido(no, minimo, maximo) {
+    if (!no) return true;
+    if (!(minimo < no.val && no.val < maximo)) return false;
+    return valido(no.left, minimo, no.val) && valido(no.right, no.val, maximo);
+  }
+  return valido(root, -Infinity, Infinity);
+}`,
+    },
+    solutionIdea:
+      "Carregue um intervalo (min, max) que estreita ao descer: à esquerda max=valor, à direita min=valor. O(n).",
+    tree: { treeArgs: [0], treeReturn: false },
+  },
+
+  "build-tree": {
+    title: "Construct Binary Tree from Preorder and Inorder",
+    statement: `Reconstrua a árvore binária a partir das suas travessias **pré-ordem** e **em-ordem** (sem valores repetidos). Retorne a raiz.
+
+Exemplo: \`preorder = [3,9,20,15,7]\`, \`inorder = [9,3,15,20,7]\` → \`[3,9,20,null,null,15,7]\`.`,
+    functionName: { python: "build_tree", javascript: "buildTree" },
+    starter: {
+      python: `def build_tree(preorder, inorder):
+    # reconstrua a árvore; retorne a raiz (TreeNode)
+    pass`,
+      javascript: `function buildTree(preorder, inorder) {
+  // reconstrua a árvore; retorne a raiz (TreeNode)
+}`,
+    },
+    tests: [
+      { args: [[3, 9, 20, 15, 7], [9, 3, 15, 20, 7]], expected: [3, 9, 20, null, null, 15, 7] },
+      { args: [[-1], [-1]], expected: [-1] },
+      { args: [[1, 2], [2, 1]], expected: [1, 2] },
+    ],
+    hint: "O PRIMEIRO da pré-ordem é sempre a raiz. Ache-o na em-ordem: tudo à esquerda dele é a subárvore esquerda, tudo à direita é a subárvore direita. Consuma a pré-ordem em sequência (um ponteiro global) e recue recursivamente para construir cada subárvore.",
+    solution: {
+      python: `def build_tree(preorder, inorder):
+    pos = {v: i for i, v in enumerate(inorder)}
+    self_idx = [0]
+    def construir(lo, hi):
+        if lo > hi:
+            return None
+        valor = preorder[self_idx[0]]
+        self_idx[0] += 1
+        no = TreeNode(valor)
+        meio = pos[valor]
+        no.left = construir(lo, meio - 1)
+        no.right = construir(meio + 1, hi)
+        return no
+    return construir(0, len(inorder) - 1)`,
+      javascript: `function buildTree(preorder, inorder) {
+  var pos = {};
+  for (var i = 0; i < inorder.length; i++) pos[inorder[i]] = i;
+  var idx = { v: 0 };
+  function construir(lo, hi) {
+    if (lo > hi) return null;
+    var valor = preorder[idx.v++];
+    var no = new TreeNode(valor);
+    var meio = pos[valor];
+    no.left = construir(lo, meio - 1);
+    no.right = construir(meio + 1, hi);
+    return no;
+  }
+  return construir(0, inorder.length - 1);
+}`,
+    },
+    solutionIdea:
+      "1º da pré-ordem = raiz; a posição dele na em-ordem divide esquerda/direita. Recursão consumindo a pré-ordem. O(n).",
+    tree: { treeArgs: [], treeReturn: true },
+  },
+
+  "trie-operations": {
+    title: "Implement Trie (Prefix Tree)",
+    statement: `Implemente uma **Trie** (árvore de prefixos) com \`insert\`, \`search\` (palavra exata) e \`startsWith\` (prefixo). Para testar, você recebe duas listas: \`operacoes\` (ex.: \`"Trie"\`, \`"insert"\`, \`"search"\`, \`"startsWith"\`) e \`args\` (o argumento de cada operação). Retorne a lista de resultados (\`None\` para construir/inserir, \`true\`/\`false\` para as buscas).
+
+Exemplo: ops \`["Trie","insert","search","search","startsWith"]\`, args \`[[],["apple"],["apple"],["app"],["app"]]\` → \`[null,null,true,false,true]\`.`,
+    functionName: { python: "trie_operations", javascript: "trieOperations" },
+    starter: {
+      python: `def trie_operations(operacoes, args):
+    # construa uma Trie e processe cada operação, retornando os resultados
+    pass`,
+      javascript: `function trieOperations(operacoes, args) {
+  // construa uma Trie e processe cada operação, retornando os resultados
+}`,
+    },
+    tests: [
+      {
+        args: [["Trie", "insert", "search", "search", "startsWith"], [[], ["apple"], ["apple"], ["app"], ["app"]]],
+        expected: [null, null, true, false, true],
+      },
+      {
+        args: [["Trie", "insert", "startsWith", "insert", "search"], [[], ["abc"], ["ab"], ["ab"], ["ab"]]],
+        expected: [null, null, true, null, true],
+      },
+    ],
+    hint: "Cada nó da Trie tem um mapa de filhos (um por caractere) e uma flag 'fim de palavra'. insert: caminhe/crie nós letra a letra e marque o fim. search: caminhe; existe E é fim de palavra? startsWith: só precisa conseguir caminhar até o fim do prefixo.",
+    solution: {
+      python: `def trie_operations(operacoes, args):
+    raiz = {"filhos": {}, "fim": False}
+    res = []
+    for op, a in zip(operacoes, args):
+        if op == "Trie":
+            res.append(None)
+        elif op == "insert":
+            no = raiz
+            for ch in a[0]:
+                if ch not in no["filhos"]:
+                    no["filhos"][ch] = {"filhos": {}, "fim": False}
+                no = no["filhos"][ch]
+            no["fim"] = True
+            res.append(None)
+        else:  # search ou startsWith
+            no = raiz
+            achou = True
+            for ch in a[0]:
+                if ch not in no["filhos"]:
+                    achou = False
+                    break
+                no = no["filhos"][ch]
+            if op == "search":
+                res.append(achou and no["fim"])
+            else:
+                res.append(achou)
+    return res`,
+      javascript: `function trieOperations(operacoes, args) {
+  function novoNo() { return { filhos: {}, fim: false }; }
+  var raiz = novoNo();
+  var res = [];
+  for (var k = 0; k < operacoes.length; k++) {
+    var op = operacoes[k];
+    var a = args[k];
+    if (op === "Trie") {
+      res.push(null);
+    } else if (op === "insert") {
+      var no = raiz;
+      for (var i = 0; i < a[0].length; i++) {
+        var ch = a[0][i];
+        if (!no.filhos[ch]) no.filhos[ch] = novoNo();
+        no = no.filhos[ch];
+      }
+      no.fim = true;
+      res.push(null);
+    } else {
+      var no2 = raiz;
+      var achou = true;
+      for (var j = 0; j < a[0].length; j++) {
+        var ch2 = a[0][j];
+        if (!no2.filhos[ch2]) { achou = false; break; }
+        no2 = no2.filhos[ch2];
+      }
+      res.push(op === "search" ? achou && no2.fim : achou);
+    }
+  }
+  return res;
+}`,
+    },
+    solutionIdea:
+      "Cada nó tem filhos por caractere + flag de fim. insert cria o caminho; search exige chegar ao fim marcado; startsWith só exige chegar. O(comprimento) por operação.",
+  },
+
   "spiral-order": {
     title: "Spiral Matrix",
     statement: `Dada uma matriz \`m × n\`, retorne **todos** os seus elementos em ordem **espiral** (sentido horário, começando no canto superior esquerdo).

@@ -1,0 +1,166 @@
+# Síntese: qual padrão usar?
+
+> Cinco padrões de árvore cobertos. Hora de treinar o reflexo: ler um problema
+> de árvore e saber qual ferramenta sacar — com justificativa.
+
+## A árvore de decisão da seção
+
+```text
+1. A resposta se COMBINA a partir das subárvores (altura, soma, validar, inverter)?
+   → DFS RECURSIVO (caso-base None → resolve esq → resolve dir → combinar)
+
+2. A pergunta é por NÍVEL (valores de cada nível, vista lateral, profundidade mínima)?
+   → BFS por níveis (fila + truque do tamanho do nível)
+
+3. É uma BST (esquerda < nó < direita)?
+   ├── buscar / LCA / inserir   → desce só por um lado: O(h)
+   └── "k-ésimo menor" / ordenado → travessia EM-ORDEM (crescente)
+
+4. Preciso RECONSTRUIR ou SERIALIZAR a árvore?
+   → pré-ordem dá a raiz; marcadores de vazio tornam a string reconstruível
+
+5. O problema é sobre PREFIXOS ou um dicionário de palavras?
+   → TRIE (caminho por caractere; O(L) por operação)
+```
+
+E o reflexo que vale a seção inteira: **pense recursivamente**. Defina o
+caso-base, confie que a recursão resolve os filhos, e foque na combinação. A
+maioria das árvores cede a esse hábito.
+
+## O mapa completo da seção
+
+| Padrão | Pergunta-chave | Tempo | Espaço |
+| --- | --- | --- | --- |
+| DFS recursivo | "combinar resultado dos filhos" | O(n) | O(h) |
+| BFS por níveis | "por nível / menor profundidade" | O(n) | O(largura) |
+| BST (busca/LCA) | "esquerda &lt; nó &lt; direita" | O(h) | O(h) |
+| BST em-ordem | "k-ésimo / ordenado" | O(n) | O(h) |
+| Construção/serialização | "reconstruir sem ambiguidade" | O(n) | O(h) |
+| Trie | "prefixos / dicionário" | O(L) por op. | O(total de chars) |
+
+Repare no **O(h)** recorrente: a altura governa o espaço da recursão e o tempo
+da busca em BST. Balanceada → log n; degenerada → n. Esse é o aprofundamento de
+Big-O desta seção — sempre que disser O(h), saiba o que h significa.
+
+## Quiz da seção
+
+Enunciados que você **não viu** nas aulas. Identifique o padrão e o porquê. 7+
+acertos: pronto para a prova.
+
+<Quiz
+  title="Quiz da seção: Árvores"
+  questions={[
+    {
+      question:
+        "'Some todos os valores da árvore.' Qual padrão e qual a combinação?",
+      options: [
+        "BFS por níveis",
+        "DFS recursivo: caso-base None → 0; combinar = no.val + soma(esq) + soma(dir)",
+        "Trie",
+        "Travessia em-ordem",
+      ],
+      answer: 1,
+      explanation:
+        "É o template recursivo: a soma de uma árvore é o valor do nó mais a soma das duas subárvores. Caso-base vazio = 0.",
+    },
+    {
+      question:
+        "'Qual a profundidade MÍNIMA (até a folha mais rasa)?' Por que BFS é uma ótima escolha?",
+      options: [
+        "Porque DFS não funciona em árvores",
+        "Porque a BFS explora por níveis crescentes: a primeira folha encontrada está no nível mais raso — pode parar ali",
+        "Porque ordena a árvore",
+        "Porque usa recursão",
+      ],
+      answer: 1,
+      explanation:
+        "'Mais raso' = menor nível = BFS encontra primeiro. Ela pode retornar assim que vê a primeira folha, sem explorar o resto.",
+    },
+    {
+      question:
+        "'Numa BST, encontre o sucessor em-ordem de um valor.' Que propriedade ajuda?",
+      options: [
+        "A altura",
+        "A travessia em-ordem da BST é crescente — o sucessor é o próximo nessa ordem; dá para achá-lo descendo pela estrutura em O(h)",
+        "A largura",
+        "A flag de fim",
+      ],
+      answer: 1,
+      explanation:
+        "Em-ordem = crescente. O sucessor é o próximo valor maior; a regra da BST permite localizá-lo descendo (sem percorrer tudo), em O(h).",
+    },
+    {
+      question:
+        "'Verifique se uma árvore é espelhada em torno do centro (simétrica).' Qual padrão?",
+      options: [
+        "BFS",
+        "DFS recursivo comparando DOIS nós espelhados ao mesmo tempo: mirror(a,b) checa a.val==b.val, mirror(a.left,b.right) e mirror(a.right,b.left)",
+        "Trie",
+        "BST em-ordem",
+      ],
+      answer: 1,
+      explanation:
+        "É o template recursivo aplicado a um par de nós espelhados. Comparar (a.left,b.right) e (a.right,b.left) é o que captura a simetria. (Aparece na prova!)",
+    },
+    {
+      question:
+        "'Autocompletar: dadas muitas palavras, responder rápido se um prefixo existe.' Qual estrutura?",
+      options: [
+        "BST",
+        "Trie — cada operação é O(L) no tamanho do prefixo, independente de quantas palavras há",
+        "Fila (BFS)",
+        "Lista ordenada",
+      ],
+      answer: 1,
+      explanation:
+        "Busca por prefixo em um dicionário é o caso de uso clássico da Trie: caminhar letra a letra, O(L), sem depender do número de palavras.",
+    },
+    {
+      question:
+        "'Maior soma de caminho na árvore (pode virar num nó, valores negativos).' Por que é DFS com cuidado?",
+      options: [
+        "Porque é BFS",
+        "Cada nó retorna o ganho descendo por UM lado; mas o melhor caminho pode usar os DOIS lados num nó — atualize uma resposta global com val + ganho_esq + ganho_dir, usando max(ganho, 0)",
+        "Porque usa Trie",
+        "Porque a árvore é uma BST",
+      ],
+      answer: 1,
+      explanation:
+        "O retorno (um lado, para o pai poder estender) difere da resposta (pode virar usando dois lados). Descartar lados negativos com max(·,0) é a sutileza. (É a prova difícil!)",
+    },
+    {
+      question:
+        "Por que tantos algoritmos de árvore têm espaço O(h) em vez de O(n)?",
+      options: [
+        "Porque visitam poucos nós",
+        "Porque o gasto extra é a pilha de recursão, que vai só até a profundidade (altura h) — não guarda todos os nós ao mesmo tempo",
+        "Porque usam fila",
+        "Porque a árvore é sempre balanceada",
+      ],
+      answer: 1,
+      explanation:
+        "A recursão empilha uma chamada por nível em que está mergulhada — no máximo h. h é log n se balanceada, n se degenerada. Por isso 'O(h)'.",
+    },
+    {
+      question: "Qual a ideia-mãe que une quase toda a seção de Árvores?",
+      options: [
+        "Ordenar os nós",
+        "Pensar RECURSIVAMENTE: definir o caso-base, confiar que a recursão resolve as subárvores, e combinar no nó atual",
+        "Usar sempre uma fila",
+        "Converter a árvore em array",
+      ],
+      answer: 1,
+      explanation:
+        "A estrutura recursiva da árvore convida à solução recursiva. Dominar 'caso-base + combinar os filhos' resolve a maioria, e prepara o pensamento para grafos e DP.",
+    },
+  ]}
+/>
+
+## Pronto para a prova?
+
+A prova final da seção Árvores tem **três problemas inéditos** — fácil, médio e
+difícil — com casos ocultos. O difícil (maior soma de caminho) é DFS recursivo
+com a sutileza de separar "o que retorno para o pai" de "a melhor resposta que
+posso formar aqui". As cinco aulas cobrem tudo que você precisa.
+
+**Boa prova!** Volte para a página da seção e clique em "Prova final".

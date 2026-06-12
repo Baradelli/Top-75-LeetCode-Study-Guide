@@ -1,0 +1,211 @@
+# Padrão 5: Trie (árvore de prefixos)
+
+> A Trie é uma árvore especializada em **texto**: cada aresta é um caractere, e
+> cada caminho da raiz para baixo soletra um prefixo. Ela torna "esta palavra
+> existe?" e "alguma palavra começa com este prefixo?" muito eficientes — e é
+> a base de autocompletar.
+
+<Challenge id="trie-operations" />
+
+> Tentou? Guardar as palavras numa lista e procurar uma a uma é O(n·m) por
+> busca. A teoria abaixo mostra como a estrutura de árvore por caractere torna
+> cada busca proporcional só ao **tamanho da palavra**.
+
+## A teoria: caminhos que soletram palavras
+
+Numa Trie, cada nó representa um prefixo, e seus filhos são os próximos
+caracteres possíveis. Palavras que **compartilham um prefixo compartilham o
+mesmo caminho** — daí a eficiência e a economia de espaço.
+
+```text
+inserindo "casa", "caso", "cair":
+
+        (raiz)
+          │ c
+          c
+          │ a
+          a
+         / \
+      s/   \i
+      s     i
+     / \     \
+    a   o     r
+   (casa)(caso)(cair)
+```
+
+Cada nó precisa de duas coisas:
+
+- um **mapa de filhos** (`{caractere: próximo nó}`);
+- uma flag **fim de palavra**, marcando que algum caminho **termina** ali (para
+  distinguir uma palavra completa de um simples prefixo).
+
+As três operações seguem o mesmo caminhar letra a letra:
+
+```text
+insert(palavra):  caminhe, criando nós que faltam; marque o último como fim.
+search(palavra):  caminhe; existe o caminho inteiro E o último é fim?
+startsWith(pref): caminhe; existe o caminho inteiro? (não precisa ser fim)
+```
+
+A diferença entre `search` e `startsWith` é só a flag de fim — essa flag é o
+que separa "a palavra `cas` existe?" de "existe palavra que **começa** com
+`cas`?".
+
+<CodeRunner
+  python={`class Trie:
+    def __init__(self):
+        self.filhos = {}
+        self.fim = False
+
+    def insert(self, palavra):
+        no = self
+        for ch in palavra:
+            if ch not in no.filhos:
+                no.filhos[ch] = Trie()    # cria o nó que falta
+            no = no.filhos[ch]
+        no.fim = True                     # marca fim de palavra
+
+    def _caminhar(self, texto):
+        no = self
+        for ch in texto:
+            if ch not in no.filhos:
+                return None               # caminho não existe
+            no = no.filhos[ch]
+        return no
+
+    def search(self, palavra):
+        no = self._caminhar(palavra)
+        return no is not None and no.fim  # caminho existe E é fim
+
+    def startsWith(self, prefixo):
+        return self._caminhar(prefixo) is not None  # só precisa existir
+
+t = Trie()
+t.insert("casa")
+t.insert("caso")
+print(t.search("casa"))       # True
+print(t.search("cas"))        # False (existe como prefixo, mas não é palavra)
+print(t.startsWith("cas"))    # True
+print(t.startsWith("cad"))    # False`}
+  javascript={`function Trie() {
+  this.filhos = {};
+  this.fim = false;
+}
+Trie.prototype.insert = function (palavra) {
+  var no = this;
+  for (var i = 0; i < palavra.length; i++) {
+    var ch = palavra[i];
+    if (!no.filhos[ch]) no.filhos[ch] = new Trie();  // cria o que falta
+    no = no.filhos[ch];
+  }
+  no.fim = true;                                     // marca fim de palavra
+};
+Trie.prototype.caminhar = function (texto) {
+  var no = this;
+  for (var i = 0; i < texto.length; i++) {
+    var ch = texto[i];
+    if (!no.filhos[ch]) return null;                 // caminho não existe
+    no = no.filhos[ch];
+  }
+  return no;
+};
+Trie.prototype.search = function (palavra) {
+  var no = this.caminhar(palavra);
+  return no !== null && no.fim;                      // existe E é fim
+};
+Trie.prototype.startsWith = function (prefixo) {
+  return this.caminhar(prefixo) !== null;            // só precisa existir
+};
+
+var t = new Trie();
+t.insert("casa");
+t.insert("caso");
+console.log(t.search("casa"));    // true
+console.log(t.search("cas"));     // false
+console.log(t.startsWith("cas")); // true
+console.log(t.startsWith("cad")); // false`}
+/>
+
+### Por que a Trie é eficiente?
+
+Cada operação (insert/search/startsWith) caminha **um nó por caractere** da
+palavra/prefixo → **O(L)**, onde L é o comprimento — **independente de quantas
+palavras** já estão guardadas! Comparar com uma lista de palavras seria O(n·L)
+por busca. O custo da Trie é o espaço: nós para cada caractere distinto dos
+prefixos (mitigado pelo compartilhamento de prefixos comuns).
+
+## Onde a Trie brilha
+
+Autocompletar, corretor ortográfico, busca por prefixo, e problemas que casam
+**muitas palavras de uma vez** contra um texto/grid (como o *Word Search II*,
+que combina Trie + DFS no grid da seção Matriz — Trie para checar muitos
+prefixos ao mesmo tempo). Sempre que o problema for sobre **prefixos** ou
+**um dicionário de palavras**, pense em Trie.
+
+<Quiz
+  title="Quiz de fixação"
+  questions={[
+    {
+      question: "O que cada nó de uma Trie representa, e o que ele guarda?",
+      options: [
+        "Uma palavra completa; guarda a palavra",
+        "Um prefixo; guarda um mapa de filhos (por caractere) e uma flag 'fim de palavra'",
+        "Um número; guarda o valor",
+        "Uma letra do alfabeto; guarda a contagem",
+      ],
+      answer: 1,
+      explanation:
+        "Cada nó é um prefixo. Os filhos indexam os próximos caracteres; a flag de fim marca onde alguma palavra termina, distinguindo palavra de prefixo.",
+    },
+    {
+      question: "Qual a ÚNICA diferença entre search(palavra) e startsWith(prefixo)?",
+      options: [
+        "search é recursivo, startsWith não",
+        "Ambos caminham pelo texto; search também exige que o último nó tenha a flag 'fim de palavra' ligada, startsWith não",
+        "startsWith é mais lento",
+        "search ignora maiúsculas",
+      ],
+      answer: 1,
+      explanation:
+        "Os dois checam se o caminho existe. search precisa que seja uma palavra COMPLETA (flag de fim); startsWith aceita qualquer caminho existente.",
+    },
+    {
+      question: "Por que cada operação da Trie é O(L) (L = tamanho da palavra)?",
+      options: [
+        "Porque a Trie é ordenada",
+        "Porque você caminha um nó por caractere da palavra — o custo independe de quantas palavras já foram inseridas",
+        "Porque usa busca binária",
+        "Porque compara com todas as palavras",
+      ],
+      answer: 1,
+      explanation:
+        "Inserir/buscar segue o caminho letra a letra: L passos. Diferente de uma lista de palavras (O(n·L) por busca), a Trie não depende do número de palavras guardadas.",
+    },
+    {
+      question:
+        "Por que palavras que compartilham um prefixo economizam espaço numa Trie?",
+      options: [
+        "Não economizam",
+        "Porque elas compartilham o mesmo caminho de nós até onde os prefixos divergem; só a parte diferente cria nós novos",
+        "Porque a Trie comprime os dados",
+        "Porque remove duplicatas",
+      ],
+      answer: 1,
+      explanation:
+        "'casa' e 'caso' compartilham os nós c-a-s; só o último caractere difere. O compartilhamento de prefixos é o que torna a Trie compacta para dicionários reais.",
+    },
+  ]}
+/>
+
+## Resumo
+
+- **Trie**: árvore onde cada aresta é um caractere; um caminho soletra um
+  prefixo.
+- Cada nó: **mapa de filhos** + flag **fim de palavra** (separa palavra de
+  prefixo).
+- insert/search/startsWith caminham letra a letra: **O(L)**, independente do
+  número de palavras.
+- Brilha em autocompletar, busca por prefixo e casar muitas palavras (Word
+  Search II).
+
+Última parada: a **síntese** da seção Árvores e o quiz antes da prova.

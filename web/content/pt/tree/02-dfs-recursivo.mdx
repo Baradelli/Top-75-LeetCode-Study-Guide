@@ -1,0 +1,195 @@
+# Padrão 1: DFS recursivo
+
+> Este é o padrão que resolve **a maioria** dos problemas de árvore. A ideia é
+> contraintuitiva no começo: você não percorre a árvore "na mão" — você
+> **confia na recursão** para resolver as subárvores e só decide como combinar.
+
+<Challenge id="max-depth" />
+
+> Tentou? Se você tentou percorrer nível a nível contando, funciona — mas há
+> uma forma muito mais simples e direta de pensar. A teoria abaixo mostra o
+> "salto de fé" recursivo.
+
+## A teoria: o salto de fé recursivo
+
+Diante de uma árvore, em vez de imaginar todos os nós, faça três perguntas:
+
+1. **Caso-base:** qual a resposta para a árvore vazia (`None`)? (quase sempre o
+   trivial: 0, `True`, `None`...)
+2. **Salto de fé:** *assuma* que a recursão já te deu a resposta correta para a
+   subárvore esquerda e para a direita.
+3. **Combinar:** como montar a resposta do nó atual a partir dessas duas
+   respostas?
+
+Esse é o **template universal de DFS em árvore**:
+
+```text
+def resolve(no):
+    se no é None:            → retorna o caso-base
+    esq = resolve(no.left)   # salto de fé
+    dir = resolve(no.right)  # salto de fé
+    return combinar(no, esq, dir)
+```
+
+Para o *Maximum Depth*: caso-base `None → 0`; combinação
+`1 + max(esquerda, direita)`. Você nunca pensa na árvore inteira — só no nó
+atual confiando nos filhos. Veja o DFS descer até o fundo e voltar combinando
+(o azul mostra os nós já visitados, o âmbar é onde a recursão está agora):
+
+<TraceDemo id="tree-traversal" />
+
+### Por que é O(n) tempo e O(h) espaço?
+
+A função é chamada **uma vez por nó** (cada nó é o "no" de exatamente uma
+chamada) e faz trabalho O(1) para combinar → **O(n) de tempo**. O espaço é a
+profundidade da pilha de recursão, que vai até a **altura** h: **O(h)** —
+log n se balanceada, n no pior caso (lembra da aula anterior).
+
+## O mesmo template, outros problemas
+
+Trocando só a combinação e o caso-base, o template resolve uma família inteira:
+
+| Problema | Caso-base | Combinar |
+| --- | --- | --- |
+| Profundidade máxima | `None → 0` | `1 + max(esq, dir)` |
+| Inverter a árvore | `None → None` | troca: `no.left=dir; no.right=esq` |
+| São iguais? (duas árvores) | ambas `None → True` | `a.val==b.val` E esq E dir |
+| Soma de todos os valores | `None → 0` | `no.val + esq + dir` |
+
+Veja *inverter* e *são iguais* — repare que **só muda a linha do combinar**:
+
+<CodeRunner
+  python={`class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val; self.left = left; self.right = right
+
+def inverter(no):
+    if not no:
+        return None
+    esq = inverter(no.left)
+    dir = inverter(no.right)
+    no.left, no.right = dir, esq      # combina: troca os lados
+    return no
+
+def sao_iguais(a, b):
+    if not a and not b:
+        return True
+    if not a or not b or a.val != b.val:
+        return False
+    return sao_iguais(a.left, b.left) and sao_iguais(a.right, b.right)
+
+def em_ordem(no, saida):
+    if not no: return
+    em_ordem(no.left, saida); saida.append(no.val); em_ordem(no.right, saida)
+
+t = TreeNode(1, TreeNode(2), TreeNode(3))
+inverter(t)
+s = []; em_ordem(t, s); print("invertida (em-ordem):", s)   # [3,1,2]
+
+x = TreeNode(1, TreeNode(2), None)
+y = TreeNode(1, TreeNode(2), None)
+z = TreeNode(1, None, TreeNode(2))
+print("x == y?", sao_iguais(x, y))    # True
+print("x == z?", sao_iguais(x, z))    # False`}
+  javascript={`function TreeNode(val, left, right) {
+  this.val = val; this.left = left || null; this.right = right || null;
+}
+function inverter(no) {
+  if (!no) return null;
+  var esq = inverter(no.left);
+  var dir = inverter(no.right);
+  no.left = dir; no.right = esq;        // combina: troca os lados
+  return no;
+}
+function saoIguais(a, b) {
+  if (!a && !b) return true;
+  if (!a || !b || a.val !== b.val) return false;
+  return saoIguais(a.left, b.left) && saoIguais(a.right, b.right);
+}
+function emOrdem(no, saida) {
+  if (!no) return;
+  emOrdem(no.left, saida); saida.push(no.val); emOrdem(no.right, saida);
+}
+var t = new TreeNode(1, new TreeNode(2), new TreeNode(3));
+inverter(t);
+var s = []; emOrdem(t, s); console.log("invertida (em-ordem):", s); // [3,1,2]
+
+var x = new TreeNode(1, new TreeNode(2), null);
+var y = new TreeNode(1, new TreeNode(2), null);
+var z = new TreeNode(1, null, new TreeNode(2));
+console.log("x == y?", saoIguais(x, y)); // true
+console.log("x == z?", saoIguais(x, z)); // false`}
+/>
+
+## A virada de chave
+
+O que separa quem sofre com árvores de quem resolve: parar de tentar "seguir
+os ponteiros na cabeça" e passar a **confiar na recursão**. Defina o caso-base,
+assuma que os filhos estão resolvidos, e foque só na combinação. Esse hábito
+mental vale para árvores, e depois para grafos e DP.
+
+<Quiz
+  title="Quiz de fixação"
+  questions={[
+    {
+      question: "Qual é o 'template universal' de DFS recursivo em árvore?",
+      options: [
+        "Ordenar os nós e percorrer",
+        "Tratar o caso-base (None), resolver recursivamente esquerda e direita (salto de fé), e combinar no nó atual",
+        "Usar uma fila e processar por níveis",
+        "Visitar só as folhas",
+      ],
+      answer: 1,
+      explanation:
+        "Caso-base → resolve(esq) → resolve(dir) → combinar. Quase todo problema de árvore é uma instância disso, mudando só o caso-base e a combinação.",
+    },
+    {
+      question:
+        "Para a profundidade máxima, qual a combinação correta a partir das respostas dos filhos?",
+      options: [
+        "esq + dir",
+        "1 + max(esq, dir)",
+        "max(esq, dir)",
+        "1 + esq + dir",
+      ],
+      answer: 1,
+      explanation:
+        "A profundidade é o caminho mais longo: pega-se a maior profundidade entre os dois filhos e soma 1 (o nó atual). O caso-base None → 0.",
+    },
+    {
+      question: "Por que o DFS recursivo em árvore é O(n) de tempo?",
+      options: [
+        "Porque a árvore é balanceada",
+        "Porque a função é chamada exatamente uma vez por nó, com trabalho O(1) de combinação em cada",
+        "Porque usa uma fila",
+        "Porque ordena os valores",
+      ],
+      answer: 1,
+      explanation:
+        "Cada nó é o 'no' de uma única chamada. n chamadas × O(1) para combinar = O(n). O espaço é O(h) pela pilha de recursão.",
+    },
+    {
+      question:
+        "Inverter a árvore e checar se duas árvores são iguais usam o MESMO template. O que muda entre eles?",
+      options: [
+        "Tudo — são algoritmos diferentes",
+        "Só o caso-base e a linha que COMBINA os resultados dos filhos; a estrutura recursiva é idêntica",
+        "Um usa fila, o outro recursão",
+        "A complexidade",
+      ],
+      answer: 1,
+      explanation:
+        "Ambos: caso-base + resolver filhos + combinar. Inverter combina trocando os lados; igualdade combina comparando val e os filhos correspondentes. Dominar o template resolve os dois.",
+    },
+  ]}
+/>
+
+## Resumo
+
+- Template universal: **caso-base (None) → resolve(esq) → resolve(dir) →
+  combinar**.
+- "Salto de fé": confie que a recursão resolve os filhos; foque na combinação.
+- **O(n)** tempo, **O(h)** espaço (pilha de recursão).
+- Profundidade, inverter, igualdade, soma... todos são o mesmo template.
+
+Próxima aula: quando a pergunta é **por nível** — BFS.

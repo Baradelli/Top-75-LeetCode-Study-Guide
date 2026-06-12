@@ -1,0 +1,217 @@
+# Padrão 4: Construção e serialização
+
+> Até aqui consumimos árvores prontas. Agora o problema inverso: **construir**
+> uma árvore (a partir de travessias ou de uma string) sem ambiguidade. É
+> recursão de novo — mas a sacada está em entender o que cada travessia revela.
+
+<Challenge id="build-tree" />
+
+> Tentou? O desafio é descobrir, a cada passo, **quem é a raiz** e **onde a
+> árvore se divide** em esquerda e direita. A teoria abaixo mostra como
+> pré-ordem e em-ordem, juntas, dão essa informação.
+
+## A teoria 1: reconstruir a partir de travessias
+
+Uma única travessia não basta para reconstruir a árvore (várias árvores
+diferentes dão a mesma pré-ordem). Mas **pré-ordem + em-ordem** juntas
+determinam a árvore de forma única. A chave são duas observações:
+
+- **Pré-ordem** (nó → esq → dir): o **primeiro** elemento é sempre a **raiz**.
+- **Em-ordem** (esq → nó → dir): a raiz **divide** a lista — tudo à esquerda
+  dela é a subárvore esquerda, tudo à direita é a direita.
+
+```text
+pré:  [3, 9, 20, 15, 7]   → raiz é 3
+em:   [9, 3, 15, 20, 7]   → 9 | 3 | 15,20,7
+                             ↑esq  ↑raiz  ↑dir
+```
+
+Então: pegue a raiz da pré-ordem, ache-a na em-ordem para saber o tamanho de
+cada lado, e **recursivamente** construa esquerda e direita. Consuma a
+pré-ordem com um ponteiro que só avança (ela já está na ordem certa: raiz, toda
+a esquerda, toda a direita). Um mapa `valor → posição na em-ordem` evita buscas
+e mantém O(n).
+
+## A teoria 2: serializar e desserializar
+
+*Serializar* é transformar a árvore numa string; *desserializar* é reconstruí-la
+exatamente. É o mesmo problema de **representação sem ambiguidade** que você viu
+em String (codificação) — agora aplicado à estrutura da árvore.
+
+A forma mais limpa: **pré-ordem com marcadores de vazio**. Escreva o valor do
+nó e, para cada filho ausente, um marcador (`#`). Isso registra a estrutura
+completa, então a reconstrução é única:
+
+```text
+      1
+     / \      →  serializa (pré-ordem) →  "1,2,#,#,3,#,#"
+    2   3
+```
+
+Na volta, leia os tokens em ordem: um valor cria um nó (e recursivamente lê
+seus dois filhos); um `#` é `None`. Como a pré-ordem coloca cada nó **antes**
+dos filhos, ler na mesma ordem reconstrói perfeitamente.
+
+<CodeRunner
+  python={`class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val; self.left = left; self.right = right
+
+def serialize(root):
+    saida = []
+    def dfs(no):
+        if not no:
+            saida.append("#")           # marcador de vazio
+            return
+        saida.append(str(no.val))
+        dfs(no.left)
+        dfs(no.right)
+    dfs(root)
+    return ",".join(saida)
+
+def deserialize(dados):
+    tokens = dados.split(",")
+    idx = [0]
+    def build():
+        t = tokens[idx[0]]
+        idx[0] += 1
+        if t == "#":
+            return None
+        no = TreeNode(int(t))
+        no.left = build()               # lê os filhos na mesma ordem
+        no.right = build()
+        return no
+    return build()
+
+def em_ordem(no, s):
+    if not no: return
+    em_ordem(no.left, s); s.append(no.val); em_ordem(no.right, s)
+
+raiz = TreeNode(1, TreeNode(2), TreeNode(3, TreeNode(4), TreeNode(5)))
+s = serialize(raiz)
+print("serializada:", s)
+volta = deserialize(s)
+ordem = []; em_ordem(volta, ordem)
+print("em-ordem da reconstruída:", ordem)`}
+  javascript={`function TreeNode(val, left, right) {
+  this.val = val; this.left = left || null; this.right = right || null;
+}
+function serialize(root) {
+  var saida = [];
+  function dfs(no) {
+    if (!no) { saida.push("#"); return; }   // marcador de vazio
+    saida.push(String(no.val));
+    dfs(no.left);
+    dfs(no.right);
+  }
+  dfs(root);
+  return saida.join(",");
+}
+function deserialize(dados) {
+  var tokens = dados.split(",");
+  var idx = { v: 0 };
+  function build() {
+    var t = tokens[idx.v++];
+    if (t === "#") return null;
+    var no = new TreeNode(parseInt(t, 10));
+    no.left = build();                        // lê os filhos na mesma ordem
+    no.right = build();
+    return no;
+  }
+  return build();
+}
+function emOrdem(no, s) {
+  if (!no) return;
+  emOrdem(no.left, s); s.push(no.val); emOrdem(no.right, s);
+}
+var raiz = new TreeNode(1, new TreeNode(2), new TreeNode(3, new TreeNode(4), new TreeNode(5)));
+var s = serialize(raiz);
+console.log("serializada:", s);
+var volta = deserialize(s);
+var ordem = []; emOrdem(volta, ordem);
+console.log("em-ordem da reconstruída:", ordem);`}
+/>
+
+### Complexidade
+
+Ambas as direções visitam cada nó (e cada marcador de vazio) uma vez →
+**O(n)** de tempo. A serialização produz uma string O(n); a desserialização
+usa a pilha de recursão O(h). O ponteiro de leitura **nunca volta** — cada
+token é consumido uma vez.
+
+## A lição que conecta as seções
+
+Construir a partir de travessias e serializar são variações de uma ideia:
+**a ordem em que você grava/lê os nós precisa carregar a estrutura sem
+ambiguidade**. A pré-ordem resolve isso porque coloca a raiz antes dos filhos.
+É o mesmo princípio do *length-prefix* da seção String — representar dados de
+forma reconstruível. Padrões viajam entre seções.
+
+<Quiz
+  title="Quiz de fixação"
+  questions={[
+    {
+      question:
+        "Por que uma única travessia (só pré-ordem, por exemplo) não basta para reconstruir a árvore?",
+      options: [
+        "Porque é lenta",
+        "Porque várias árvores diferentes podem ter a mesma pré-ordem — falta a informação de como os nós se dividem em esquerda/direita",
+        "Porque pré-ordem não inclui a raiz",
+        "Basta sim",
+      ],
+      answer: 1,
+      explanation:
+        "Pré-ordem dá a ordem dos nós, mas não onde cada subárvore termina. Em-ordem fornece essa divisão; juntas, determinam a árvore unicamente.",
+    },
+    {
+      question:
+        "Na reconstrução com pré + em-ordem, o que cada travessia fornece?",
+      options: [
+        "Ambas dão a raiz",
+        "Pré-ordem dá a RAIZ (primeiro elemento); em-ordem mostra onde a raiz DIVIDE esquerda e direita",
+        "Em-ordem dá a raiz; pré-ordem divide",
+        "Nenhuma é necessária",
+      ],
+      answer: 1,
+      explanation:
+        "O 1º da pré-ordem é a raiz; localizando-a na em-ordem, tudo à esquerda é a subárvore esquerda e à direita é a direita. Recursão faz o resto.",
+    },
+    {
+      question:
+        "Por que a serialização em pré-ordem COM marcadores de vazio (#) reconstrói a árvore sem ambiguidade?",
+      options: [
+        "Porque é mais curta",
+        "Porque registra a estrutura completa (inclusive os filhos ausentes); lendo na mesma ordem — nó antes dos filhos — a reconstrução é única",
+        "Porque ordena os valores",
+        "Porque usa BFS",
+      ],
+      answer: 1,
+      explanation:
+        "Os '#' marcam onde a árvore 'acaba' em cada ramo. Sem eles, não dá para saber se um nó tem ou não filhos. Com eles, a pré-ordem vira reconstruível.",
+    },
+    {
+      question:
+        "Que princípio de outra seção a serialização de árvore reaproveita?",
+      options: [
+        "Busca binária",
+        "Representação sem ambiguidade (como o length-prefix da codificação de strings): gravar os dados de forma que a reconstrução seja única",
+        "Sliding window",
+        "XOR",
+      ],
+      answer: 1,
+      explanation:
+        "É o mesmo problema de design: escolher uma representação reconstruível. Lá era o comprimento como prefixo; aqui é a pré-ordem com marcadores de vazio.",
+    },
+  ]}
+/>
+
+## Resumo
+
+- **Reconstruir** de pré + em-ordem: pré dá a raiz; em-ordem divide
+  esquerda/direita; recursão monta. O(n).
+- **Serializar**: pré-ordem com **marcadores de vazio** (`#`) registra a
+  estrutura sem ambiguidade; desserializar lê na mesma ordem.
+- Mesmo princípio do *length-prefix* da seção String: representação
+  reconstruível.
+
+Próxima aula: uma árvore especializada em texto — a **Trie**.
