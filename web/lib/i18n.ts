@@ -46,6 +46,8 @@ const UI = {
     clearConfirm:
       "Apagar todo o seu progresso? Esta ação não pode ser desfeita.",
     exportProgress: "Exportar (JSON)",
+    importProgress: "Importar (JSON)",
+    importError: "Arquivo inválido — não foi possível importar o progresso.",
     noProgressYet:
       "Você ainda não concluiu nada. Comece pela primeira seção e seu progresso aparece aqui.",
   },
@@ -82,6 +84,8 @@ const UI = {
     clearProgress: "Clear progress",
     clearConfirm: "Erase all your progress? This cannot be undone.",
     exportProgress: "Export (JSON)",
+    importProgress: "Import (JSON)",
+    importError: "Invalid file — could not import progress.",
     noProgressYet:
       "You haven't completed anything yet. Start with the first section and your progress will show up here.",
   },

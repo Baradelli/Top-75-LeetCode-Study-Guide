@@ -19,16 +19,24 @@ export interface ProgressStore {
   setLessonComplete(lessonKey: string, complete: boolean): void;
   setExamProblemPassed(problemKey: string): void;
   clear(): void;
+  /** Substitui o progresso por um importado (ex.: arquivo JSON exportado). */
+  importData(data: Partial<ProgressData>): void;
   subscribe(listener: () => void): () => void;
 }
 
 const STORAGE_KEY = "leetcode-course-progress-v1";
 const EMPTY: ProgressData = { completedLessons: [], passedExamProblems: [] };
 
+function asStringArray(value: unknown): string[] {
+  return Array.isArray(value)
+    ? value.filter((item): item is string => typeof item === "string")
+    : [];
+}
+
 function normalize(raw: Partial<ProgressData> | null): ProgressData {
   return {
-    completedLessons: raw?.completedLessons ?? [],
-    passedExamProblems: raw?.passedExamProblems ?? [],
+    completedLessons: asStringArray(raw?.completedLessons),
+    passedExamProblems: asStringArray(raw?.passedExamProblems),
   };
 }
 
@@ -81,6 +89,9 @@ function createLocalStorageStore(): ProgressStore {
     },
     clear() {
       write({ completedLessons: [], passedExamProblems: [] });
+    },
+    importData(data) {
+      write(normalize(data));   // descarta o atual e adota o importado
     },
     subscribe(listener) {
       listeners.add(listener);

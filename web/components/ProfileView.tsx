@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import Link from "next/link";
 import { progressStore, useProgress } from "@/lib/progress";
 import { examLabel, useCourseProgress } from "@/lib/useCourseProgress";
@@ -8,6 +9,7 @@ import { t, type Locale } from "@/lib/i18n";
 export default function ProfileView({ locale }: { locale: Locale }) {
   const progress = useProgress();
   const strings = t(locale);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const {
     perSection,
     overallPercent,
@@ -32,6 +34,21 @@ export default function ProfileView({ locale }: { locale: Locale }) {
   function handleClear() {
     if (window.confirm(strings.clearConfirm)) {
       progressStore.clear();
+    }
+  }
+
+  async function handleImportFile(
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) {
+    const file = event.target.files?.[0];
+    event.target.value = ""; // permite reimportar o mesmo arquivo
+    if (!file) return;
+    try {
+      const texto = await file.text();
+      const dados = JSON.parse(texto);
+      progressStore.importData(dados);
+    } catch {
+      window.alert(strings.importError);
     }
   }
 
@@ -82,20 +99,34 @@ export default function ProfileView({ locale }: { locale: Locale }) {
             </span>
           )}
           {hasAnyProgress && (
-            <>
-              <button
-                onClick={handleExport}
-                className="rounded-lg border border-zinc-300 px-4 py-2 text-sm text-zinc-700 transition hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
-              >
-                {strings.exportProgress}
-              </button>
-              <button
-                onClick={handleClear}
-                className="rounded-lg border border-red-300 px-4 py-2 text-sm text-red-600 transition hover:bg-red-50 dark:border-red-900 dark:hover:bg-red-950/40"
-              >
-                {strings.clearProgress}
-              </button>
-            </>
+            <button
+              onClick={handleExport}
+              className="rounded-lg border border-zinc-300 px-4 py-2 text-sm text-zinc-700 transition hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+            >
+              {strings.exportProgress}
+            </button>
+          )}
+          {/* Importar fica sempre disponível (restaurar de um backup) */}
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="rounded-lg border border-zinc-300 px-4 py-2 text-sm text-zinc-700 transition hover:bg-zinc-100 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-800"
+          >
+            {strings.importProgress}
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="application/json,.json"
+            onChange={handleImportFile}
+            className="hidden"
+          />
+          {hasAnyProgress && (
+            <button
+              onClick={handleClear}
+              className="rounded-lg border border-red-300 px-4 py-2 text-sm text-red-600 transition hover:bg-red-50 dark:border-red-900 dark:hover:bg-red-950/40"
+            >
+              {strings.clearProgress}
+            </button>
           )}
         </div>
       </div>
