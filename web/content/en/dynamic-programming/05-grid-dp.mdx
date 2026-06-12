@@ -1,0 +1,121 @@
+# Pattern 4: Grid DP
+
+> When the DP has **two dimensions**, the table becomes a **grid**: `dp[r][c]`.
+> Each cell is built from already-computed neighboring cells — and watching the
+> table fill in makes the recurrence obvious.
+
+<Challenge id="unique-paths" />
+
+> Tried it? Counting all the paths by brute force (recursion without a cache) is
+> exponential. The theory below fills a 2D table in O(m·n).
+
+## The theory: each cell comes from its neighbors
+
+In *Unique Paths*, the robot only moves **down** or to the **right**. So, to
+reach cell `(r, c)`, it came **from above** `(r-1, c)` or **from the left**
+`(r, c-1)`. The number of paths to `(r, c)` is the sum of the paths to those
+two:
+
+```text
+dp[r][c] = dp[r-1][c] + dp[r][c-1]
+base cases: 1st row and 1st column = 1 (there's only one straight-line path)
+```
+
+Fill the table row by row; each cell uses the one above and the one to the left,
+which have already been computed. Watch the `dp` grid fill in, with the cursor on
+the current cell:
+
+<TraceDemo id="unique-paths" />
+
+The answer is `dp[m-1][n-1]` — the bottom-right corner.
+
+### Why is it O(m·n)?
+
+There are `m × n` cells (states), each computed in O(1) (one sum) →
+**O(m·n) time**, O(m·n) space. Again the "states × cost": here the
+number of states is two-dimensional. And, since each row only depends on the
+previous one, you can reduce the space to **O(n)** (keeping just one row) — the
+same "I only need the last states" idea from 1D DP.
+
+## The shape of every grid DP
+
+Many 2D problems follow this template, changing only the recurrence and the operation:
+
+| Problem | dp[r][c] means | Recurrence |
+| --- | --- | --- |
+| Unique Paths | paths to (r,c) | `dp[r-1][c] + dp[r][c-1]` |
+| Minimum Path Sum | smallest sum to (r,c) | `grid[r][c] + min(above, left)` |
+| Maximal Square | side of the largest square at (r,c) | `1 + min(above, left, diagonal)` if '1' |
+
+The method is the same as the other DPs: **what `dp[r][c]` means**, **which
+neighboring cells it depends on**, and **the base cases** (usually the first row
+and/or column). The only difference is the extra dimension.
+
+> Connection to the Matrix section: there you filled grids with traversals
+> (spiral, DFS); here the grid is a **table of answers** that is built by
+> recurrence. Same 2D structure, different use.
+
+<Quiz
+  title="Review quiz"
+  questions={[
+    {
+      question: "In Unique Paths, what is the recurrence and why?",
+      options: [
+        "dp[r][c] = dp[r-1][c-1] (diagonal only)",
+        "dp[r][c] = dp[r-1][c] + dp[r][c-1], because you reach cell (r,c) coming from above or from the left (the only allowed moves)",
+        "dp[r][c] = r * c",
+        "dp[r][c] = 1 always",
+      ],
+      answer: 1,
+      explanation:
+        "Since the robot only goes down or right, the paths to (r,c) are the sum of the paths to the cell above and the one to the left.",
+    },
+    {
+      question: "What are the base cases of Unique Paths?",
+      options: [
+        "Everything zero",
+        "The first row and first column are 1 — there is a single straight-line path to each of those cells",
+        "Only dp[0][0] = 1",
+        "The diagonal is 1",
+      ],
+      answer: 1,
+      explanation:
+        "To reach any cell on the top or left border there is only one path (always straight), so those cells start at 1.",
+    },
+    {
+      question: "Why is Unique Paths O(m·n) time?",
+      options: [
+        "Because it's recursive",
+        "Because there are m·n cells (states) and each is computed in O(1) — states × cost per state",
+        "Because it sorts the grid",
+        "Because it's O(n²)",
+      ],
+      answer: 1,
+      explanation:
+        "Each cell of the table is filled once with an O(1) sum. Total = number of cells = m·n. (The space can drop to O(n) by keeping just one row.)",
+    },
+    {
+      question:
+        "'Smallest path sum from top-left to bottom-right in a grid of costs.' How do you adapt it?",
+      options: [
+        "It can't be done with DP",
+        "Same 2D shape: dp[r][c] = grid[r][c] + min(dp[r-1][c], dp[r][c-1]) — swap 'summing paths' for 'summing the cost and minimizing'",
+        "Use BFS",
+        "Sort the grid",
+      ],
+      answer: 1,
+      explanation:
+        "It's the grid DP template with another operation: instead of counting paths, you accumulate the cell's cost and take the minimum between above and left.",
+    },
+  ]}
+/>
+
+## Summary
+
+- **Grid DP**: a 2D table `dp[r][c]`, each cell coming from the already-computed
+  neighbors.
+- Unique Paths: `dp[r][c] = dp[r-1][c] + dp[r][c-1]`, borders = 1.
+- **O(m·n)** time; space reducible to O(n) (one row).
+- Same template as the other DPs, with one more dimension.
+
+Next lesson: comparing **two sequences** in a 2D table — string DP.

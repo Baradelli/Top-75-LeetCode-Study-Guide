@@ -1,0 +1,193 @@
+# Pattern 1: Dummy node and two pointers
+
+> Two tools that show up in almost every list problem: the **sentinel node**
+> (dummy), which removes the special case "what if it's the head?", and the
+> **two pointers with a fixed gap**, which solve "from the end" in one pass.
+
+<Challenge id="remove-nth-from-end" />
+
+> Did you try? The natural approach is to count the list size in one pass and,
+> in another, walk to the right node — **two passes**, and still handle removing
+> the head as a separate case. The theory below does it all in one pass and with
+> no special case.
+
+## Theory 1: the dummy node (sentinel)
+
+Operations on the **head** are annoying because the head has no "previous node"
+to relink. The result: a bunch of `if head is None` and `if previous is None`
+scattered around.
+
+The **dummy** trick: create a fake node that points to the real head.
+
+```text
+dummy ──▶ [1] ──▶ [2] ──▶ [3] ──▶ ∅
+```
+
+Now **every** real node has a previous one (in the worst case, the dummy). You
+operate without special cases and, at the end, return `dummy.next` — which is
+the head (possibly a new one). Add one paper node, get branch-free code.
+
+## Theory 2: two pointers with a fixed gap
+
+For questions like *"the n-th from the end"*, you don't know where the end is
+without traversing. The insight: keep two pointers with a **fixed gap of n
+nodes** between them.
+
+1. Advance `fast` **n steps** ahead.
+2. Move `fast` and `slow` **together** until `fast` reaches the end.
+3. Since the distance between them is n, when `fast` runs out, `slow` is
+   exactly **n nodes before the end** — right where you need it to relink.
+
+One pass, without counting the size first. Combined with the dummy (for the case
+of removing the head), the code stays clean:
+
+<CodeRunner
+  python={`class ListNode:
+    def __init__(self, val=0, next=None):
+        self.val = val
+        self.next = next
+
+def remove_nth_from_end(head, n):
+    dummy = ListNode(0, head)   # sentinel before the head
+    fast = dummy
+    slow = dummy
+    for _ in range(n):          # open a gap of n nodes
+        fast = fast.next
+    while fast.next:            # move both to the end
+        fast = fast.next
+        slow = slow.next
+    slow.next = slow.next.next  # slow is right before the target
+    return dummy.next
+
+# helpers for testing
+def build(arr):
+    d = ListNode(0)
+    c = d
+    for x in arr:
+        c.next = ListNode(x)
+        c = c.next
+    return d.next
+
+def to_list(head):
+    r = []
+    while head:
+        r.append(head.val)
+        head = head.next
+    return r
+
+print(to_list(remove_nth_from_end(build([1,2,3,4,5]), 2)))  # [1,2,3,5]
+print(to_list(remove_nth_from_end(build([1]), 1)))           # []  (removed the head)`}
+  javascript={`function ListNode(val, next) {
+  this.val = val;
+  this.next = next || null;
+}
+function removeNthFromEnd(head, n) {
+  var dummy = new ListNode(0, head); // sentinel before the head
+  var fast = dummy;
+  var slow = dummy;
+  for (var i = 0; i < n; i++) {      // open a gap of n nodes
+    fast = fast.next;
+  }
+  while (fast.next) {                // move both to the end
+    fast = fast.next;
+    slow = slow.next;
+  }
+  slow.next = slow.next.next;        // slow is right before the target
+  return dummy.next;
+}
+
+function build(arr) {
+  var d = new ListNode(0), c = d;
+  for (var i = 0; i < arr.length; i++) { c.next = new ListNode(arr[i]); c = c.next; }
+  return d.next;
+}
+function toList(head) {
+  var r = [];
+  while (head) { r.push(head.val); head = head.next; }
+  return r;
+}
+
+console.log(toList(removeNthFromEnd(build([1,2,3,4,5]), 2))); // [1,2,3,5]
+console.log(toList(removeNthFromEnd(build([1]), 1)));          // []  (removed the head)`}
+/>
+
+### Why is it O(n) time and O(1) space?
+
+Each pointer traverses the list **once** (`fast` walks n + the rest; `slow`
+walks the rest) — O(n) total, a single pass. We use only a few pointers, no
+auxiliary array → **O(1) space**. The "count and then walk" version is also
+O(n), but makes **two** passes and needs the special case for the head (which
+the dummy eliminates).
+
+## When to use each one
+
+- **Dummy node:** whenever the operation might touch the **head** (remove,
+  insert at the start, merge). It costs one node and removes a bunch of `if`s.
+- **Two pointers with a gap:** "n-th from the end", "remove the middle one", any
+  "position relative to the end" in one pass.
+
+<Quiz
+  title="Quick-check quiz"
+  questions={[
+    {
+      question: "What is the dummy node (sentinel) for?",
+      options: [
+        "To store the size of the list",
+        "To give the head a 'previous node', eliminating the special case of operating at the start of the list",
+        "To keep the list sorted",
+        "To detect cycles",
+      ],
+      answer: 1,
+      explanation:
+        "With the dummy pointing to the head, every real node has a previous one — including the head. You operate without branches and return dummy.next at the end.",
+    },
+    {
+      question:
+        "In 'n-th from the end', why does advancing fast n steps before moving both together solve it in one pass?",
+      options: [
+        "Because it counts the size of the list",
+        "Because it creates a fixed gap of n between fast and slow; when fast reaches the end, slow is n nodes before it",
+        "Because fast goes faster",
+        "Because it sorts the list",
+      ],
+      answer: 1,
+      explanation:
+        "The fixed gap is the key: 'before the end' becomes 'behind fast by n nodes'. Without needing to know the size, slow stops in the right place.",
+    },
+    {
+      question:
+        "Why is the dummy especially useful in 'remove the n-th from the end'?",
+      options: [
+        "It is not useful here",
+        "Because the node to remove may be the head itself; with the dummy, slow stops before it with no special case",
+        "Because it speeds up the search",
+        "Because it counts the nodes",
+      ],
+      answer: 1,
+      explanation:
+        "If n equals the size of the list, the target is the head. Starting slow/fast at the dummy guarantees that slow.next points to the target even when it is the first node.",
+    },
+    {
+      question: "What is the complexity of remove-nth with two pointers + dummy?",
+      options: [
+        "O(n²) time",
+        "O(n) time and O(1) space, in a single pass",
+        "O(n) time and O(n) space",
+        "O(log n) time",
+      ],
+      answer: 1,
+      explanation:
+        "The pointers cross the list once (O(n)), using only variables (O(1) space). That is the advantage over count-and-walk, which makes two passes.",
+    },
+  ]}
+/>
+
+## Summary
+
+- **Dummy node**: a sentinel node before the head removes the special cases of
+  operating at the start; return `dummy.next`.
+- **Two pointers with a gap of n**: solves "from the end" in one pass, without
+  counting the size.
+- Together: O(n) time, O(1) space, no ugly branches.
+
+Next lesson: the most classic pattern in this section — **in-place reversal**.

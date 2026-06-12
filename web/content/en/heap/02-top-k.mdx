@@ -1,0 +1,172 @@
+# Pattern 1: Top-K with a heap of size K
+
+> "The K largest", "the K-th smallest", "the K most frequent" — a whole family
+> of problems. The key insight: you **do not need to sort everything**. All you
+> need is a heap that keeps **only the K best** seen so far.
+
+<Challenge id="kth-largest" />
+
+> Tried it? Sorting the array and taking the right position works (O(n log n))
+> — and it passes! But there is an approach that is better when K is small and
+> the stream is large. The theory below shows the heap of size K.
+
+## The theory: a fixed-size heap of K
+
+To find the **K-th largest**, keep a **min-heap with at most K elements** — the
+K largest seen so far. The trick is counterintuitive: to keep the **largest**
+ones, use a **min-heap**, because that way the **smallest of the K large ones**
+sits at the top, easy to discard:
+
+```text
+for each number x:
+    push x onto the heap
+    if the heap exceeded K elements:
+        remove the top (the smallest) → the K largest remain
+at the end: the top of the heap is the K-th largest
+```
+
+Why does it work? The heap always holds the K largest so far; its smallest
+element (the top) is exactly the K-th largest. Any number smaller than that top
+is discarded right away.
+
+### Why O(n log k) — and when is it worth it?
+
+There are `n` elements; each push/pop costs O(log **k**) (the heap never
+exceeds K). Total: **O(n log k)**, with **O(k)** space. Compare it to sorting
+everything (O(n log n), O(n) space): when **k is much smaller than n**, log k ≪
+log n, and the heap wins — plus it works for **streams** (data that arrives bit
+by bit), where sorting everything would not even be possible.
+
+| Approach | Time | Space | Good when |
+| --- | --- | --- | --- |
+| Sort everything | O(n log n) | O(n) | you need everything sorted |
+| Heap of size K | O(n log k) | O(k) | K ≪ n, or a stream |
+
+## Example: Top K Frequent Elements
+
+*"The K elements that appear most."* It combines two patterns you already have:
+**frequency counting** (hash map, from the Array/String section) + **top-K with
+a heap**. Count the frequencies, then use a heap of size K over the pairs
+`(frequency, element)`:
+
+<CodeRunner
+  python={`import heapq
+
+def top_k_frequent(nums, k):
+    contagem = {}
+    for x in nums:
+        contagem[x] = contagem.get(x, 0) + 1
+    h = []   # min-heap of (frequency, element), size <= k
+    for elem, freq in contagem.items():
+        heapq.heappush(h, (freq, elem))
+        if len(h) > k:
+            heapq.heappop(h)     # discards the least frequent of those kept
+    return sorted([elem for freq, elem in h])
+
+print(top_k_frequent([1, 1, 1, 2, 2, 3], 2))   # [1, 2]
+print(top_k_frequent([4, 4, 4, 5, 5, 6], 1))   # [4]`}
+  javascript={`function Heap(cmp) { this.a = []; this.cmp = cmp; }
+Heap.prototype.size = function () { return this.a.length; };
+Heap.prototype.push = function (x) {
+  var a = this.a, c = this.cmp; a.push(x); var i = a.length - 1;
+  while (i > 0) { var p = (i - 1) >> 1; if (c(a[p], a[i]) <= 0) break; var t = a[p]; a[p] = a[i]; a[i] = t; i = p; }
+};
+Heap.prototype.pop = function () {
+  var a = this.a, c = this.cmp, top = a[0], last = a.pop();
+  if (a.length) { a[0] = last; var i = 0, n = a.length;
+    for (;;) { var l = 2*i+1, r = 2*i+2, s = i;
+      if (l < n && c(a[l], a[s]) < 0) s = l; if (r < n && c(a[r], a[s]) < 0) s = r;
+      if (s === i) break; var t = a[s]; a[s] = a[i]; a[i] = t; i = s; } }
+  return top;
+};
+function topKFrequent(nums, k) {
+  var contagem = {};
+  for (var i = 0; i < nums.length; i++) contagem[nums[i]] = (contagem[nums[i]] || 0) + 1;
+  var h = new Heap(function (a, b) { return a[0] - b[0]; }); // by frequency
+  for (var elem in contagem) {
+    h.push([contagem[elem], Number(elem)]);
+    if (h.size() > k) h.pop();           // discards the least frequent
+  }
+  var res = [];
+  while (h.size() > 0) res.push(h.pop()[1]);
+  res.sort(function (a, b) { return a - b; });
+  return res;
+}
+console.log(topKFrequent([1, 1, 1, 2, 2, 3], 2)); // [1, 2]
+console.log(topKFrequent([4, 4, 4, 5, 5, 6], 1)); // [4]`}
+/>
+
+## The lesson: for the K largest, use a MIN-heap
+
+The inversion is the confusing part — and that is why it is worth fixing in
+your mind: **K largest → min-heap of size K** (the top is the "gatekeeper", the
+smallest of the large ones, ready to be evicted). **K smallest → max-heap of
+size K** (the top is the largest of the small ones). Keeping only K, and
+discarding the wrong extreme, is what gives the O(n log k).
+
+<Quiz
+  title="Review quiz"
+  questions={[
+    {
+      question:
+        "To find the K LARGEST elements, why use a MIN-heap (and not a max-heap)?",
+      options: [
+        "By convention",
+        "Because the min-heap keeps the SMALLEST of the K largest kept at the top — exactly the candidate to be discarded when something larger arrives",
+        "Because min-heaps are faster",
+        "Because max-heaps do not exist",
+      ],
+      answer: 1,
+      explanation:
+        "Keeping the K largest in a min-heap, the top is the smallest of them (the K-th largest). Any new number larger than the top enters and evicts the top; smaller ones are ignored.",
+    },
+    {
+      question: "Why is the heap of size K O(n log k) and not O(n log n)?",
+      options: [
+        "Because K is always 1",
+        "Because the heap never exceeds K elements, so each push/pop costs O(log k); there are n operations → O(n log k)",
+        "Because it does not use a heap",
+        "Because it sorts at the end",
+      ],
+      answer: 1,
+      explanation:
+        "The heap's size is capped at K. log k < log n when K ≪ n, so the heap of size K beats sorting everything in those cases (and works on streams).",
+    },
+    {
+      question:
+        "When is the heap of size K preferable to simply sorting the array?",
+      options: [
+        "Never",
+        "When K is much smaller than n, or when the data arrives as a STREAM (you cannot sort everything at once)",
+        "When the array is small",
+        "When there are duplicates",
+      ],
+      answer: 1,
+      explanation:
+        "Sorting gives everything in order (O(n log n)). If you only want the K best — especially in a stream — the heap of size K saves time and memory.",
+    },
+    {
+      question: "How does Top K Frequent combine patterns you already know?",
+      options: [
+        "It only uses a heap",
+        "Frequency counting (hash map) to count, then a heap of size K over the pairs (frequency, element)",
+        "It sorts twice",
+        "It uses binary search",
+      ],
+      answer: 1,
+      explanation:
+        "First the hash map counts (the Array/String section pattern); then the heap of size K selects the K most frequent. Patterns combine.",
+    },
+  ]}
+/>
+
+## Summary
+
+- **Top-K**: keep a heap of size K with the K best; the top is the K-th.
+- **K largest → min-heap**; **K smallest → max-heap** (the top is what gets
+  discarded).
+- **O(n log k)**, O(k) space — beats sorting when K ≪ n or in streams.
+- Top K Frequent = hash map (count) + heap of size K.
+
+Next lesson: the heap picking the next smallest among **K sources** — k-way
+merge.

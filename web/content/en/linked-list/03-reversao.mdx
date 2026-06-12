@@ -1,0 +1,191 @@
+# Pattern 2: In-place reversal
+
+> Reversing a linked list is the most classic problem in this section — and the
+> one that shows up most as a building block of bigger problems. The trick: walk
+> along the list **turning each pointer backward**, being careful not to lose
+> the rest.
+
+<Challenge id="reverse-list" />
+
+> Did you try? One approach is to copy the values into an array, reverse it, and
+> rebuild — but that spends O(n) memory. The theory below reverses **in place**,
+> with O(1) space, just by repointing the `next` pointers.
+
+## The theory: turning the pointers, one by one
+
+Reversing the list means each `next`, which used to point forward, now points
+**backward**. The danger: if you do `curr.next = previous` without first saving
+where `curr` pointed, you **lose the rest of the list**.
+
+That is why the pattern uses **three pointers**:
+
+- `prev`: the previous node (starts at `None` — there is nothing before the
+  head);
+- `curr`: the current node (starts at the head);
+- a temporary (`seguinte`): saves `curr.next` **before** overwriting it.
+
+At each step, the dance is always the same:
+
+```text
+1. seguinte = curr.next   (save it so you don't lose the rest)
+2. curr.next = prev       (turn the pointer backward)
+3. prev = curr            (advance prev)
+4. curr = seguinte        (advance curr)
+```
+
+When `curr` reaches `None`, `prev` is the last node visited — that is, the **new
+head**. Watch the pointers (`next`) reversing one by one:
+
+<TraceDemo id="reverse-list" />
+
+### Why is it O(n) time and O(1) space?
+
+The loop visits each node **exactly once** (`curr` walks from start to end),
+doing O(1) work per node (four assignments) → **O(n) time**. We create no new
+structure — just three pointers that walk — so **O(1) space**. Copying into an
+array and rebuilding would also be O(n) time, but with O(n) space; in-place
+reversal is strictly better.
+
+| Solution | Time | Space |
+| --- | --- | --- |
+| Copy values to array and rebuild | O(n) | O(n) |
+| In-place reversal (3 pointers) | O(n) | O(1) |
+
+## The same idea, with a real ListNode
+
+In the editor you manipulate `node.next` directly. It is the same three-pointer
+dance:
+
+<CodeRunner
+  python={`class ListNode:
+    def __init__(self, val=0, next=None):
+        self.val = val
+        self.next = next
+
+def reverse_list(head):
+    prev = None
+    curr = head
+    while curr:
+        seguinte = curr.next   # 1) save the rest
+        curr.next = prev       # 2) turn it backward
+        prev = curr            # 3) advance prev
+        curr = seguinte        # 4) advance curr
+    return prev                # new head
+
+def build(arr):
+    d = ListNode(0); c = d
+    for x in arr:
+        c.next = ListNode(x); c = c.next
+    return d.next
+def to_list(h):
+    r = []
+    while h: r.append(h.val); h = h.next
+    return r
+
+print(to_list(reverse_list(build([1,2,3,4,5]))))   # [5,4,3,2,1]
+print(to_list(reverse_list(build([]))))            # []`}
+  javascript={`function ListNode(val, next) {
+  this.val = val;
+  this.next = next || null;
+}
+function reverseList(head) {
+  var prev = null;
+  var curr = head;
+  while (curr) {
+    var seguinte = curr.next; // 1) save the rest
+    curr.next = prev;         // 2) turn it backward
+    prev = curr;              // 3) advance prev
+    curr = seguinte;          // 4) advance curr
+  }
+  return prev;                // new head
+}
+
+function build(arr) {
+  var d = new ListNode(0), c = d;
+  for (var i = 0; i < arr.length; i++) { c.next = new ListNode(arr[i]); c = c.next; }
+  return d.next;
+}
+function toList(h) {
+  var r = [];
+  while (h) { r.push(h.val); h = h.next; }
+  return r;
+}
+
+console.log(toList(reverseList(build([1,2,3,4,5])))); // [5,4,3,2,1]
+console.log(toList(reverseList(build([]))));          // []`}
+/>
+
+## Why mastering this is worth so much
+
+In-place reversal is a **Lego brick**. Reversing only part of the list,
+reversing in groups of k (a "hard" problem!), checking whether the list is a
+palindrome, reordering — all of them use this same three-pointer dance as a
+subroutine. Whoever automates reversal unlocks half the hard problems in the
+section. Repeat the dance until it comes out without thinking.
+
+<Quiz
+  title="Quick-check quiz"
+  questions={[
+    {
+      question:
+        "Why does reversal need to save curr.next in a temporary BEFORE doing curr.next = prev?",
+      options: [
+        "For style",
+        "Because overwriting curr.next would lose the reference to the rest of the list — the temporary preserves the path forward",
+        "To save memory",
+        "Because prev may be None",
+      ],
+      answer: 1,
+      explanation:
+        "curr.next is the only link to the rest of the list. If you overwrite it without saving, the rest becomes unreachable. That is why 'seguinte = curr.next' comes first.",
+    },
+    {
+      question: "Why does prev start at None?",
+      options: [
+        "To detect errors",
+        "Because what was the head becomes the LAST node of the reversed list, and the last node points to None",
+        "Because the list might be empty",
+        "It is arbitrary",
+      ],
+      answer: 1,
+      explanation:
+        "In the reversed list, the old head becomes the end — and the end points to None. Starting prev=None guarantees that the first node processed ends up correctly pointing to None.",
+    },
+    {
+      question: "At the end of the loop (curr == None), what is prev?",
+      options: [
+        "The middle node",
+        "The new head of the reversed list (the last node that was visited)",
+        "Always None",
+        "The original head node",
+      ],
+      answer: 1,
+      explanation:
+        "prev always 'lags behind' curr. When curr goes past the end (None), prev is the last real node visited — which, reversed, is the new head.",
+    },
+    {
+      question: "What is the advantage of in-place reversal over copying into an array?",
+      options: [
+        "It is easier to read",
+        "It uses O(1) space instead of O(n) — it creates no new structure, just repoints",
+        "It is O(log n)",
+        "There is no advantage",
+      ],
+      answer: 1,
+      explanation:
+        "Both are O(n) time, but the in-place version does not allocate an array of n elements: it works with only three pointers, O(1) space.",
+    },
+  ]}
+/>
+
+## Summary
+
+- Reverse = turn each `next` backward, with **three pointers** (prev, curr,
+  temporary).
+- Save `curr.next` **before** overwriting it, or you lose the rest of the list.
+- O(n) time, **O(1) space** — better than copying into an array.
+- It is a Lego brick of many hard problems (reverse in groups, palindrome,
+  reorder).
+
+Next lesson: two pointers at **different speeds** — the middle of the list and
+cycle detection.

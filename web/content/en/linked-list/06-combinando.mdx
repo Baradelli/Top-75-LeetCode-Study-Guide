@@ -1,0 +1,207 @@
+# Pattern 5: Combining the patterns
+
+> The "hard" linked list problems rarely bring a new idea — they **fit
+> together** the patterns you already master. This lesson shows how to compose
+> middle + reversal + merge to solve something that, at first glance, looks
+> scary.
+
+<Challenge id="reorder-list" />
+
+> Did you try? Without a plan, reordering `L0 → Ln → L1 → Ln-1 → ...` in place
+> looks chaotic. The theory below shows it is just **three familiar pieces** in
+> sequence.
+
+## The theory: break it into known sub-problems
+
+Reorder List asks you to turn `L0 → L1 → ... → Ln` into
+`L0 → Ln → L1 → Ln-1 → ...` — interleaving the first half with the reversed
+second half. Instead of attacking it all at once, **decompose** it:
+
+1. **Find the middle** of the list → *slow/fast* pattern (lesson 4).
+2. **Reverse the second half** → *in-place reversal* pattern (lesson 3).
+3. **Interleave** the two halves, alternating one node from each → pointer
+   stitching (as in *merge*, lesson 5).
+
+Each piece is O(n) and O(1), done one after another — so the whole thing is
+**O(n) time and O(1) space**. The "hard" one became three "easy" ones in
+sequence.
+
+```text
+1 → 2 → 3 → 4 → 5
+   (1) middle:       first [1,2,3]   |  second [4,5]
+   (2) reverse 2nd:  first [1,2,3]   |  second [5,4]
+   (3) interleave:   1 → 5 → 2 → 4 → 3
+```
+
+<CodeRunner
+  python={`class ListNode:
+    def __init__(self, val=0, next=None):
+        self.val = val
+        self.next = next
+
+def reorder_list(head):
+    if not head or not head.next:
+        return head
+    # 1) middle: slow/fast
+    slow = fast = head
+    while fast.next and fast.next.next:
+        slow = slow.next
+        fast = fast.next.next
+    # 2) reverse the second half (starting from slow.next)
+    prev = None
+    curr = slow.next
+    slow.next = None        # cut the list in two
+    while curr:
+        nx = curr.next
+        curr.next = prev
+        prev = curr
+        curr = nx
+    # 3) interleave first half (head) with the reversed second (prev)
+    first, second = head, prev
+    while second:
+        t1, t2 = first.next, second.next
+        first.next = second
+        second.next = t1
+        first, second = t1, t2
+    return head
+
+def build(arr):
+    d = ListNode(0); c = d
+    for x in arr:
+        c.next = ListNode(x); c = c.next
+    return d.next
+def to_list(h):
+    r = []
+    while h: r.append(h.val); h = h.next
+    return r
+
+print(to_list(reorder_list(build([1,2,3,4]))))     # [1,4,2,3]
+print(to_list(reorder_list(build([1,2,3,4,5]))))   # [1,5,2,4,3]`}
+  javascript={`function ListNode(val, next) {
+  this.val = val;
+  this.next = next || null;
+}
+function reorderList(head) {
+  if (!head || !head.next) return head;
+  // 1) middle: slow/fast
+  var slow = head, fast = head;
+  while (fast.next && fast.next.next) {
+    slow = slow.next;
+    fast = fast.next.next;
+  }
+  // 2) reverse the second half
+  var prev = null, curr = slow.next;
+  slow.next = null;          // cut the list in two
+  while (curr) {
+    var nx = curr.next;
+    curr.next = prev;
+    prev = curr;
+    curr = nx;
+  }
+  // 3) interleave
+  var first = head, second = prev;
+  while (second) {
+    var t1 = first.next, t2 = second.next;
+    first.next = second;
+    second.next = t1;
+    first = t1;
+    second = t2;
+  }
+  return head;
+}
+
+function build(arr) {
+  var d = new ListNode(0), c = d;
+  for (var i = 0; i < arr.length; i++) { c.next = new ListNode(arr[i]); c = c.next; }
+  return d.next;
+}
+function toList(h) {
+  var r = [];
+  while (h) { r.push(h.val); h = h.next; }
+  return r;
+}
+
+console.log(toList(reorderList(build([1,2,3,4]))));   // [1,4,2,3]
+console.log(toList(reorderList(build([1,2,3,4,5])))); // [1,5,2,4,3]`}
+/>
+
+## The general strategy: decompose
+
+When a list problem seems too big, ask: **what familiar pieces make it up?**
+Several "hard" ones come apart like this:
+
+| Problem | Pieces it combines |
+| --- | --- |
+| Reorder List | middle + reversal + interleave |
+| Palindrome Linked List | middle + reversal (of the 2nd half) + comparison |
+| Sort List (merge sort) | middle (divide) + merge + recursion |
+| Reverse Nodes in k-Group | reversal (in blocks of k) + counting |
+
+Notice: none of them requires a brand-new idea. What separates whoever gets
+stuck from whoever solves it is **having the patterns automated** and seeing the
+decomposition. That is why we invested so much in each piece in the previous
+lessons.
+
+<Quiz
+  title="Quick-check quiz"
+  questions={[
+    {
+      question: "What is the central strategy for 'hard' linked list problems?",
+      options: [
+        "Memorizing a solution for each one",
+        "Decomposing the problem into sub-problems that are already-known patterns (middle, reversal, merge) and applying them in sequence",
+        "Converting everything to an array",
+        "Always using recursion",
+      ],
+      answer: 1,
+      explanation:
+        "The hard ones combine simple pieces. Recognizing 'this is middle + reversal + interleave' turns a scary problem into three known steps.",
+    },
+    {
+      question: "In Reorder List, why do slow.next = None after finding the middle?",
+      options: [
+        "To free memory",
+        "To CUT the list into two independent halves, and then reverse only the second without affecting the first",
+        "To detect a cycle",
+        "By mistake",
+      ],
+      answer: 1,
+      explanation:
+        "Without cutting, the first half would still point to the second and the reversal/interleaving would get tangled. Cutting isolates the two halves so they can be handled separately.",
+    },
+    {
+      question: "Why is Reorder List O(n) time and O(1) space?",
+      options: [
+        "Because it uses recursion",
+        "Because it is the sum of three steps, each O(n)/O(1) (find middle, reverse, interleave) — in sequence, it stays O(n)/O(1)",
+        "Because it copies into an array",
+        "Because it is O(n log n)",
+      ],
+      answer: 1,
+      explanation:
+        "Three linear passes in sequence add up to O(n) (the constant drops), and none creates a new structure — they only relink pointers — keeping O(1) space.",
+    },
+    {
+      question:
+        "'Check whether a list is a palindrome in O(1) space' decomposes into which patterns?",
+      options: [
+        "Just reversal",
+        "Find the middle (slow/fast) + reverse the second half + compare the two halves node by node",
+        "Merge + cycle",
+        "Dummy node + sorting",
+      ],
+      answer: 1,
+      explanation:
+        "Same recipe: middle (lesson 4) + reversal (lesson 3) + a comparison. The same pieces, recombined for a different question.",
+    },
+  ]}
+/>
+
+## Summary
+
+- Hard list problems = **combinations** of the basic patterns, not new ideas.
+- Reorder List = middle (slow/fast) + reverse the 2nd half + interleave; each
+  piece O(n)/O(1), so the whole thing is O(n)/O(1).
+- The key skill is to **decompose**: "what familiar pieces make this up?".
+
+Last stop: the section **synthesis** and the quiz before the final exam.

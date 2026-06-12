@@ -1,0 +1,116 @@
+# Recognizing string problems
+
+> Good news: you already know half of this section. A string is an **array of
+> characters** — so two pointers, sliding window, and the hash map (which you
+> mastered in the Array section) show up again here. This section adds what is
+> genuinely new about strings.
+>
+> As in the Array section, every pattern lesson opens with a **🎯 Try first**:
+> solve it before seeing the theory. Feeling the difficulty is what makes the
+> idea click.
+
+## A string is an array of characters
+
+`"abc"` is, in practice, `['a', 'b', 'c']` with indices `0, 1, 2`. Accessing
+`s[i]` is O(1), scanning the string is O(n), and the array patterns work
+almost identically. That's why String comes **right after** Array in the
+course: it's the perfect place to consolidate those patterns in a new context
+before moving on to more complex structures.
+
+There's just one technical difference worth noting now: in many languages
+(including Python and JavaScript) **strings are immutable**. You don't swap a
+character in place — you create a new string. Building a string by
+concatenating inside a loop can hide an O(n²) cost; when you need to build a
+large output, accumulate it in a list and join at the end.
+
+## What carries over from Array
+
+| Array pattern | How it shows up in String |
+| --- | --- |
+| Hash map ("seen it?") | **character counting** — the frequency signature |
+| Sliding window | **substring** that grows/shrinks, with a count map as its state |
+| Two pointers | scanning the string from **both ends** (palindromes) |
+
+## What's new in this section
+
+| New tool | What for |
+| --- | --- |
+| **Frequency map** | a string's identity ignoring order (anagrams) |
+| **Expand from the center** | find palindromes by growing from each center |
+| **Stack** | match openings/closings, resolve the "most nested" first |
+| **Encoding** | serialize data into text without ambiguity |
+
+## The method stays the same
+
+The Array section's playbook applies exactly here: **solve it by hand → brute
+force → spot the waste → check the limits**. Only the repertoire of patterns
+you consider in the "waste" step changes.
+
+One string-specific detail is worth gold in the "brute force" step: generating
+**all substrings** of a string costs O(n²) (there are n² of them), and
+evaluating each one can add another factor. Much of this section is precisely
+about not falling into that naive O(n²)/O(n³).
+
+## The section's 10 problems
+
+We'll use these Top 75 problems as **examples** of the patterns:
+
+- Valid Anagram and Group Anagrams → *character counting*
+- Longest Substring Without Repeating, Longest Repeating Character
+  Replacement, Minimum Window Substring → *sliding window with frequency*
+- Valid Palindrome, Longest Palindromic Substring, Palindromic Substrings →
+  *two pointers and expand from the center*
+- Valid Parentheses → *stack*
+- Encode and Decode Strings → *encoding / design*
+
+<Quiz
+  title="Review quiz"
+  questions={[
+    {
+      question:
+        "Why do the Array section's patterns (two pointers, sliding window, hash map) reappear in String?",
+      options: [
+        "Coincidence — they're different problems",
+        "Because a string is an array of characters: the same indices, the same O(1) access, the same patterns",
+        "Because strings are always sorted",
+        "Because LeetCode repeats problems on purpose",
+      ],
+      answer: 1,
+      explanation:
+        "String = array of chars. Everything you learned to do with indices and windows on arrays applies here; only the element type changes, plus a few new tools (frequency, stack, expand from the center).",
+    },
+    {
+      question:
+        "Generating and evaluating all substrings of a string of size n costs, at a minimum:",
+      options: ["O(n)", "O(n log n)", "O(n²) (there are n² substrings)", "O(1)"],
+      answer: 2,
+      explanation:
+        "There are about n²/2 substrings (pick a start and an end). Just enumerating them is already O(n²) — and evaluating each one can add another factor. The section's patterns exist to avoid this brute force.",
+    },
+    {
+      question:
+        "Why can concatenating characters into a string inside a loop be a performance trap?",
+      options: [
+        "Because strings don't support concatenation",
+        "Because strings are immutable: each concatenation can create a new copy, leading to a hidden O(n²)",
+        "Because the result comes out wrong",
+        "It isn't a trap, it's O(1)",
+      ],
+      answer: 1,
+      explanation:
+        "Immutable strings make each `s += c` potentially copy everything. To build large outputs, accumulate them in a list and join once at the end.",
+    },
+  ]}
+/>
+
+## Summary
+
+- A string is an array of characters: indices, O(1) access, and the array
+  patterns apply here.
+- New in this section: frequency counting, expand from the center, stack,
+  encoding.
+- Watch out for the O(n²) of "all substrings" and the hidden O(n²) of
+  concatenation in a loop.
+
+Next lesson: the tool that gives a string its **order-free identity** —
+character counting, and anagrams.

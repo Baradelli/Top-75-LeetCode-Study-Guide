@@ -1,0 +1,97 @@
+# Recognizing matrix problems
+
+> A matrix (grid) is an **array of arrays**: rows and columns. Everything you
+> know about arrays still holds — only now in **two dimensions**. That brings
+> `(row, column)` coordinates, neighbors, and a new look for Big-O.
+
+> As in the previous sections, each pattern lesson opens with a **🎯 Try
+> first**.
+
+## Thinking in two dimensions
+
+You access a cell by **row and column**: `grid[r][c]`. Almost universal
+convention on LeetCode: `r` (row) grows **downward**, `c` (col) grows to the
+**right**. The top-left corner is `(0, 0)`.
+
+```text
+        c=0   c=1   c=2
+ r=0  [  1  ,  2  ,  3  ]
+ r=1  [  4  ,  5  ,  6  ]
+ r=2  [  7  ,  8  ,  9  ]
+```
+
+Dimensions: `rows = len(grid)` and `cols = len(grid[0])`. A matrix does not
+have to be square — it can be `m × n` (m rows, n columns).
+
+## Big-O in 2D: O(m·n), and why not O(n²)
+
+This is the section's complexity novelty. To visit **all** the cells of an
+`m × n` matrix, you use two nested loops — one over rows, one over columns:
+
+```text
+for r from 0 to m-1:
+    for c from 0 to n-1:
+        ... O(1) per cell
+```
+
+The body runs `m × n` times. The complexity is **O(m·n)** — the number of
+cells. Notice: it is **not** O(n²)! It would only be n² if the matrix were
+square (m = n). Calling it "O(n²)" when the matrix is, say, `1000 × 3` would be
+misleading: the work is 3,000, not 1,000,000. **Whenever there are two
+different dimensions, name both.** That is the honest justification.
+
+And space? If you create an auxiliary matrix of the same size (e.g. a
+`visited` grid), that costs **O(m·n) space**. Several patterns in the section
+fight to avoid that copy and stay at O(1).
+
+## The recurring tool: neighbors and bounds
+
+Almost every grid problem needs to visit the **neighbors** of a cell. The 4
+orthogonal neighbors of `(r, c)` are:
+
+```text
+(r-1, c)  up         (r+1, c)  down
+(r, c-1)  left       (r, c+1)  right
+```
+
+A trick that keeps the code clean is the **direction list**:
+
+```python
+directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]
+for dr, dc in directions:
+    nr, nc = r + dr, c + dc
+    if 0 <= nr < rows and 0 <= nc < cols:   # check the bounds!
+        ... grid[nr][nc]
+```
+
+And the section's #1 mistake: **forgetting to check the bounds** before
+accessing `grid[nr][nc]`, blowing past the index. Every time you compute a
+neighbor, ask: "is it inside the grid?".
+
+## A grid is a graph in disguise
+
+Hold on to this idea, which is worth its weight in gold from here to the Graphs
+section: **a grid is a graph**. Each cell is a "node", and there is an "edge"
+between neighboring cells. That is why traversing connected regions of a grid
+uses **DFS** and **BFS** — the same algorithms as graphs. The Matrix section
+is, in practice, your hands-on introduction to DFS/BFS before the general
+theory.
+
+## The section's problems
+
+- Spiral Matrix → *layer-by-layer traversal*
+- Rotate Image, Set Matrix Zeroes → *in-place transformation*
+- Number of Islands → *DFS / flood fill*
+- Word Search → *backtracking on a grid*
+- Shortest Path → *BFS on a grid*
+
+## Summary
+
+- Matrix = 2D array; access via `grid[r][c]`, with `r` going down and `c` to
+  the right.
+- Visiting everything is **O(m·n)** — name both dimensions; it is only O(n²) if
+  it is square.
+- Use a **direction list** and **always check the bounds** before accessing.
+- A grid is a **graph**: DFS and BFS are the core tools.
+
+Next lesson: traversing the matrix in a **spiral**, controlling four bounds.

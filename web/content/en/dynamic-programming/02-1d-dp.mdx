@@ -1,0 +1,129 @@
+# Pattern 1: 1D DP (the recurrence)
+
+> The simplest form of DP: a **one-dimensional** table `dp[]`, where each
+> entry is built from a few previous ones. Mastering this recurrence is the
+> foundation of everything that comes next.
+
+<Challenge id="climb-stairs" />
+
+> Tried it? If you went with pure recursion (`ways(n-1) + ways(n-2)`), it works
+> but recomputes the same values — exponential. The theory below shows how to
+> fill a table from the bottom up, in O(n).
+
+## The theory: building from the previous answers
+
+In Climbing Stairs, to reach step `i` you took a last step of 1 (coming from
+`i-1`) or of 2 (coming from `i-2`). So the number of ways to reach `i` is the
+**sum** of the ways to reach those two:
+
+```text
+dp[i] = dp[i-1] + dp[i-2]
+base cases: dp[0] = 1, dp[1] = 1
+```
+
+It's the Fibonacci recurrence! Instead of the exponential recursion, fill the
+table **from the base cases upward** — each `dp[i]` uses values already
+computed. Watch the `dp` table fill in, with the cursor `i` reading from `i-1`
+and `i-2`:
+
+<TraceDemo id="climb-stairs" />
+
+### Why it's O(n) — and how to drop to O(1) space
+
+There are `n` states (`dp[0..n]`), each computed in O(1) (one sum) →
+**O(n) time**. The table takes O(n) space, **but** notice: `dp[i]` only
+depends on the **last two** values. So you can throw away the array and
+keep just two variables — **O(1) space**:
+
+```text
+prev, curr = 1, 1
+repeat n-1 times:
+    prev, curr = curr, prev + curr
+```
+
+This reduction ("I only need the last k values") is a recurring trick in
+1D DP. Always check **how many previous states** the recurrence depends on.
+
+## The shape of every 1D DP
+
+Climbing Stairs is the template. Many 1D problems follow the same structure,
+changing only the recurrence:
+
+| Problem | dp[i] means | Recurrence |
+| --- | --- | --- |
+| Climbing Stairs | ways to reach step i | `dp[i-1] + dp[i-2]` |
+| House Robber | maximum robbing up to house i | `max(dp[i-1], nums[i] + dp[i-2])` |
+| Min Cost Climbing | minimum cost up to step i | `cost[i] + min(dp[i-1], dp[i-2])` |
+| Decode Ways | ways to decode up to i | sum depending on 1 or 2 valid digits |
+
+All of them: one state per position, a recurrence looking backward, base cases
+at the start. The secret is to figure out **what `dp[i]` means** and **which
+previous ones it depends on**.
+
+<Quiz
+  title="Review quiz"
+  questions={[
+    {
+      question:
+        "Why is the naive recursion for Climbing Stairs slow, and how does DP fix it?",
+      options: [
+        "The recursion is wrong",
+        "The recursion recomputes the same subproblems (ways(i)) many times — exponential; DP stores each answer once and reuses it — O(n)",
+        "DP uses more memory",
+        "There's no difference",
+      ],
+      answer: 1,
+      explanation:
+        "ways(i) reappears in several branches of the recursion. Memoizing or tabulating computes each state exactly once, trading exponential time for O(n).",
+    },
+    {
+      question: "What is the Climbing Stairs recurrence and why?",
+      options: [
+        "dp[i] = dp[i-1] (only one path)",
+        "dp[i] = dp[i-1] + dp[i-2], because you reach step i by taking a last step of 1 (from i-1) or of 2 (from i-2)",
+        "dp[i] = i",
+        "dp[i] = 2 * dp[i-1]",
+      ],
+      answer: 1,
+      explanation:
+        "The last step came from i-1 or i-2; you sum the ways to reach each. It's the Fibonacci recurrence.",
+    },
+    {
+      question:
+        "How can Climbing Stairs use only O(1) space?",
+      options: [
+        "It can't, it needs the array",
+        "Because dp[i] only depends on the TWO last values — just keep two variables instead of the whole array",
+        "By using recursion",
+        "By compressing the array",
+      ],
+      answer: 1,
+      explanation:
+        "When the recurrence looks only k positions back, you keep k variables. Here k=2, so two variables suffice: O(1) space.",
+    },
+    {
+      question:
+        "What is the method for solving a new 1D DP?",
+      options: [
+        "Try random values",
+        "Define what dp[i] means, find the recurrence (which previous ones it depends on), and the base cases",
+        "Always use pure recursion",
+        "Sort the input",
+      ],
+      answer: 1,
+      explanation:
+        "State + recurrence + base cases. With those three defined, the loop that fills the table comes naturally.",
+    },
+  ]}
+/>
+
+## Summary
+
+- 1D DP: a `dp[]` table where each entry is built from the previous ones.
+- Climbing Stairs: `dp[i] = dp[i-1] + dp[i-2]` (Fibonacci), base cases
+  `dp[0]=dp[1]=1`.
+- **O(n)** time; **O(1)** space when only the last k values
+  matter.
+- General template: define the meaning of `dp[i]`, the recurrence, and the base cases.
+
+Next lesson: when each item carries a **decision** — include or exclude.

@@ -1,0 +1,165 @@
+# Synthesis: which pattern to use?
+
+> Two modules, five patterns. Time to train the reflex: glance at a statement
+> and know whether it's binary search, which flavor, or whether it's a bit
+> problem — with justification.
+
+## The section's decision tree
+
+```text
+1. Is the data SORTED (or is there a monotonic "no→yes" boundary)?
+   ├── search for an exact value             → classic BINARY SEARCH
+   ├── SORTED but ROTATED array              → modified binary search
+   │                                           (which half is sorted?)
+   ├── "first/last that satisfies..."        → BOUNDARY binary search
+   └── "the SMALLEST/LARGEST x that works"   → binary search ON THE ANSWER
+                                               (testing a candidate x is O(n))
+
+2. Does the problem mention BITS, binary, or have a strange space constraint?
+   ├── "appears 2x except one" / "missing"   → XOR (pairs cancel out)
+   ├── count/look at/turn on/clear bits      → operators & | ^ ~ << >>
+   ├── "for each i, count the bits"          → counting bits (ans[i]=ans[i>>1]+(i&1))
+   └── "without using +", reverse bits       → techniques (carry via &<<1, mirror)
+```
+
+And the usual sanity check: if the statement asks for **better than O(n)** on
+sorted data, it's almost certain the answer is **O(log n)** — binary search.
+
+## The section's complete map
+
+| Pattern | Key question | Time | Space |
+| --- | --- | --- | --- |
+| Classic binary search | "find a value in a sorted array" | O(log n) | O(1) |
+| Rotated binary search | "sorted and rotated array" | O(log n) | O(1) |
+| Search on the answer | "smallest/largest x that satisfies" | O(n log(range)) | O(1) |
+| XOR | "appears 2x except one / missing" | O(n) | O(1) |
+| Bit operators | test/turn on/clear/count bits | O(1)–O(width) | O(1) |
+| Counting bits | "1 bits of 0..n" | O(n) | O(n) (output) |
+
+The idea that unites the binary search module: **discard half with certainty
+at each step**. The one that unites the bits module: **operate on the 0s and
+1s directly**, instead of treating the number as a quantity.
+
+## Section quiz
+
+Statements you **haven't seen** in the lessons. Identify the pattern and the
+why. 7+ correct: ready for the exam.
+
+<Quiz
+  title="Section quiz: Binary"
+  questions={[
+    {
+      question:
+        "'In a sorted array, find the position where a target should be inserted to keep it sorted.' Which pattern?",
+      options: [
+        "XOR",
+        "Boundary binary search (the first index with value ≥ target)",
+        "Counting bits",
+        "O(n) brute force",
+      ],
+      answer: 1,
+      explanation:
+        "It's binary search looking for the boundary 'first ≥ target'. Sorted space + looking for a position = O(log n).",
+    },
+    {
+      question:
+        "'Given an array where every number appears 3x, except one that appears 1x, find the loner.' Does simple XOR solve it?",
+      options: [
+        "Yes, XOR everything solves it just like the 2x case",
+        "Not directly — XOR cancels PAIRS; with triples you need to count bits per position (mod 3). The reasoning is bit-based, but adapted",
+        "Yes, just apply XOR twice",
+        "It's binary search",
+      ],
+      answer: 1,
+      explanation:
+        "a^a=0 cancels pairs, not triples. The generalization counts, for each bit position, how many 1s appear and takes mod 3 — it's still bit thinking, but pure XOR isn't enough. Recognizing the limits of the pattern is part of mastery.",
+    },
+    {
+      question:
+        "'What's the smallest capacity of a ship to carry all the packages in D days?' Which pattern?",
+      options: [
+        "Binary search ON THE ANSWER: capacity ranges from max(package) to sum(packages); for a candidate capacity, check in O(n) whether it fits in D days",
+        "XOR",
+        "Counting bits",
+        "Classic binary search on the array of packages",
+      ],
+      answer: 0,
+      explanation:
+        "There's no sorted array to search — we search in the SPACE OF ANSWERS (capacities). 'Does it fit in D days?' is monotonic with respect to capacity, so binary search finds the smallest that satisfies.",
+    },
+    {
+      question:
+        "'Find the peak (an element greater than its neighbors) in O(log n).' Why does binary search work even without the array being sorted?",
+      options: [
+        "It doesn't, it needs to be O(n)",
+        "Because you can decide the side with certainty: if nums[mid] < nums[mid+1], there's a peak to the right (going up) — half is discarded",
+        "Because the array is always sorted",
+        "Because of XOR",
+      ],
+      answer: 1,
+      explanation:
+        "Binary search only requires deciding the side with certainty in O(1). The slope at mid guarantees there's a peak going up in that direction, allowing you to discard half.",
+    },
+    {
+      question:
+        "'Detect whether an integer is a power of 2.' Which bit technique solves it in O(1)?",
+      options: [
+        "Count all the bits with a loop of 32",
+        "n > 0 and (n & (n - 1)) == 0 — powers of 2 have exactly one bit set, which n & (n-1) zeroes",
+        "XOR of n with 2",
+        "Binary search",
+      ],
+      answer: 1,
+      explanation:
+        "A power of 2 has a single 1 bit. n & (n-1) clears the rightmost 1 bit; if the result is 0 (and n>0), there was only one bit — hence, a power of 2.",
+    },
+    {
+      question:
+        "What is the GENERAL condition for using binary search, as seen in this section?",
+      options: [
+        "The array needs to be fully sorted",
+        "Being able to decide, in O(1) at each step, which half of the space to go to with certainty",
+        "The values need to be powers of 2",
+        "The input needs to be small",
+      ],
+      answer: 1,
+      explanation:
+        "We saw this in the rotated array, in boundaries, and in search on the answer: what matters is discarding half with certainty — not total sorting.",
+    },
+    {
+      question:
+        "Why is XOR preferable to the 'Gauss sum' for finding a missing number?",
+      options: [
+        "It's shorter",
+        "It runs no risk of overflow and uses O(1) space, always operating at the same bit width",
+        "It's O(log n)",
+        "It's not preferable",
+      ],
+      answer: 1,
+      explanation:
+        "Both are O(n)/O(1), but the sum can overflow integers on large inputs; XOR stays at a fixed width, with no overflow.",
+    },
+    {
+      question:
+        "What's the master idea that unites the binary search MODULE?",
+      options: [
+        "Sorting the array first",
+        "At each step, discard HALF of the search space with certainty — reducing n to 1 in log₂(n) steps",
+        "Using XOR to compare",
+        "Walking through everything once",
+      ],
+      answer: 1,
+      explanation:
+        "Classic, rotated, boundary or on the answer: they all discard half per step with an O(1) decision. That's the heart of O(log n).",
+    },
+  ]}
+/>
+
+## Ready for the exam?
+
+The final exam for the Binary section has **three brand-new problems** — easy,
+medium and hard — with hidden cases. The hard one applies **binary search on
+the answer** (the flavor from the decision tree that might be the most
+surprising). The five lessons cover everything you need.
+
+**Good luck!** Go back to the section page and click "Final exam".

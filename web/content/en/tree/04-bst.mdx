@@ -1,0 +1,199 @@
+# Pattern 3: Binary search tree (BST)
+
+> A BST is a binary tree with a **golden rule**: for every node, everything to
+> the left is **smaller** and everything to the right is **larger**. That
+> single rule gives search, insertion and removal in **O(h)** — and reveals a
+> magical property in the in-order traversal.
+
+<Challenge id="validate-bst" />
+
+> Did you try? Mistake #1 is comparing each node only with its **direct
+> children** — and passing trees that are not valid BSTs. The theory below
+> shows why you must think in terms of **ranges**.
+
+## The theory: the rule holds for the whole subtree
+
+The BST rule is not local ("greater than the parent") — it is **global**:
+*all* of a node's left subtree is smaller than it, and *all* of the right is
+larger. That is why validating by comparing only parent and child fails:
+
+```text
+        5
+       / \
+      1   4        ← 4 < 5? yes. But 4 is to the RIGHT of 5...
+         / \          ...and 3 < 5 too! It is NOT a valid BST.
+        3   6
+```
+
+The correct way: each node has an **allowed range** `(min, max)` that
+**narrows** as you descend. When going **left**, the node's value becomes the
+new **max**; when going **right**, it becomes the new **min**:
+
+```text
+valid(node, min, max):
+    if node is None                 → True
+    if not (min < node.val < max)   → False
+    return valid(node.left, min, node.val)  and  valid(node.right, node.val, max)
+```
+
+## The magical property: in-order = ascending order
+
+Remember the traversals (lesson 1)? In a BST, the **in-order** traversal (left
+→ node → right) visits the values in **ascending** order. It makes sense: you
+always visit everything smaller (left) before the node, and everything larger
+(right) after. This solves a family of problems — *Kth Smallest Element*, for
+example, is just "stop at the k-th visit of the in-order traversal".
+
+## Search in a BST: O(h)
+
+Looking for a value in a BST is like binary search (the Binary section!):
+compare with the node; if the target is smaller, go left; if larger, go right.
+Each step **discards half** the tree (a whole subtree). Watch the search go
+down — note how it skips whole branches:
+
+<TraceDemo id="bst-search" />
+
+It costs **O(h)**: log n in a balanced tree, n in a degenerate one. It is the
+same "cut in half" logic as binary search, now on the tree's structure.
+
+<CodeRunner
+  python={`class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val; self.left = left; self.right = right
+
+# Kth smallest: the k-th visit of the in-order traversal
+def kth_smallest(root, k):
+    pilha = []
+    no = root
+    while pilha or no:
+        while no:
+            pilha.append(no)      # go down to the smallest
+            no = no.left
+        no = pilha.pop()
+        k -= 1
+        if k == 0:
+            return no.val         # k-th in ascending order
+        no = no.right
+
+# LCA in a BST: the point where the paths to p and q split
+def lca(root, p, q):
+    no = root
+    while no:
+        if p < no.val and q < no.val:
+            no = no.left          # both smaller: ancestor is on the left
+        elif p > no.val and q > no.val:
+            no = no.right         # both larger: on the right
+        else:
+            return no.val         # they split here: this is the LCA
+
+#       5
+#      / \\
+#     3   8
+#    / \\
+#   2   4
+raiz = TreeNode(5, TreeNode(3, TreeNode(2), TreeNode(4)), TreeNode(8))
+print("3rd smallest:", kth_smallest(raiz, 3))   # 4
+print("LCA(2,4):", lca(raiz, 2, 4))          # 3`}
+  javascript={`function TreeNode(val, left, right) {
+  this.val = val; this.left = left || null; this.right = right || null;
+}
+function kthSmallest(root, k) {
+  var pilha = [];
+  var no = root;
+  while (pilha.length > 0 || no) {
+    while (no) { pilha.push(no); no = no.left; }   // go down to the smallest
+    no = pilha.pop();
+    k -= 1;
+    if (k === 0) return no.val;                     // k-th ascending
+    no = no.right;
+  }
+}
+function lca(root, p, q) {
+  var no = root;
+  while (no) {
+    if (p < no.val && q < no.val) no = no.left;     // both smaller
+    else if (p > no.val && q > no.val) no = no.right; // both larger
+    else return no.val;                             // they split: LCA
+  }
+}
+var raiz = new TreeNode(5, new TreeNode(3, new TreeNode(2), new TreeNode(4)), new TreeNode(8));
+console.log("3rd smallest:", kthSmallest(raiz, 3)); // 4
+console.log("LCA(2,4):", lca(raiz, 2, 4));       // 3`}
+/>
+
+Notice the **LCA** (lowest common ancestor) in a BST: it is the node where the
+values `p` and `q` "split" (one goes left, the other right, or one of them is
+the node itself). The BST rule tells you exactly which way each one goes — so
+we find the LCA in O(h) just by descending.
+
+## The lesson
+
+The BST rule (left &lt; node &lt; right, **for the whole subtree**) is what
+turns an ordinary tree into a search structure. Whenever you see "BST" in the
+statement, think: **(1)** can I use the rule to descend down only one side
+(O(h) search)? **(2)** does the **in-order** (ascending) traversal help?
+
+<Quiz
+  title="Review quiz"
+  questions={[
+    {
+      question: "What is the rule that defines a BST?",
+      options: [
+        "Each node is larger than its parent",
+        "For every node, ALL of the left subtree is smaller than it and ALL of the right is larger",
+        "The tree is balanced",
+        "Each node has at most two children",
+      ],
+      answer: 1,
+      explanation:
+        "The rule is global, not just about the direct children. That is what lets you discard whole subtrees during the search.",
+    },
+    {
+      question:
+        "Why is validating a BST by comparing each node only with its direct children wrong?",
+      options: [
+        "It is slow",
+        "Because the rule holds for the whole subtree: a grandchild on the right may be smaller than the grandparent and go unnoticed. You must carry a range (min, max) that narrows as you descend",
+        "Because it does not use recursion",
+        "It is not wrong",
+      ],
+      answer: 1,
+      explanation:
+        "Comparing only parent/child accepts invalid trees (a value may violate a distant ancestor). The (min,max) range propagates that global constraint.",
+    },
+    {
+      question: "What order does the in-order traversal produce in a BST, and why?",
+      options: [
+        "Random",
+        "Ascending — because it visits everything smaller (left) before the node, and everything larger (right) after",
+        "Descending",
+        "By level",
+      ],
+      answer: 1,
+      explanation:
+        "left → node → right, with the BST rule, walks the values from smallest to largest. That is why 'k-th smallest' = k-th in-order visit.",
+    },
+    {
+      question: "Why is search in a BST O(h)?",
+      options: [
+        "Because it visits all the nodes",
+        "Because at each step the comparison discards a whole subtree (half), going down only one level — the number of steps is the height h",
+        "Because it uses a queue",
+        "Because it sorts the tree",
+      ],
+      answer: 1,
+      explanation:
+        "It is binary search applied to the tree: comparing and going to one side eliminates the other. h steps — log n if balanced, n if degenerate.",
+    },
+  ]}
+/>
+
+## Summary
+
+- BST: **left &lt; node &lt; right**, for the whole subtree (global rule).
+- Validating requires a **range (min, max)** that narrows as you descend — not
+  just comparing parent/child.
+- **In-order traversal = ascending** (solves Kth Smallest).
+- Search/LCA in **O(h)**, descending only one side — the binary search of trees.
+
+Next lesson: **rebuilding** and **serializing** trees.

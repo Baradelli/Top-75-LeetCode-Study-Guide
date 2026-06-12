@@ -1,0 +1,130 @@
+# Pattern 4: Backtracking on a grid
+
+> Backtracking is DFS with a twist: you **mark** a cell when entering a path
+> and **unmark** it when leaving, freeing it for other attempts. It is like
+> exploring a maze by unrolling a thread and reeling it back in when you return.
+
+<Challenge id="word-search" />
+
+> Tried it? The hard part here is not finding the first letter — it is **not
+> reusing** the same cell in the path, and being able to **try another path**
+> when one fails. The theory below shows the missing piece: undoing the mark on
+> the way back.
+
+## The theory: mark, explore, unmark
+
+In flood fill (lesson 4), a visited cell stayed marked **forever** — we wanted
+to cover the region once. In backtracking it is different: we want to find a
+specific **path**, and a cell that did not work for *this* path may work for
+**another**. That is why the mark is **temporary**:
+
+```text
+dfs(r, c, i):                      # try to match word[i] at (r,c)
+    if i == len(word)        → found it all! return True
+    if outside the grid
+       or grid[r][c] != word[i]  → return False
+    if (r,c) is already in the path  → return False
+    mark (r,c) in the path        # ENTER
+    try the 4 neighbors for word[i+1] (if any returns True, propagate)
+    unmark (r,c) from the path    # LEAVE (backtrack!)
+    return (whether any neighbor worked)
+```
+
+The **"unmark"** line is the heart of backtracking. Without it, a failed
+attempt would block cells forever and valid paths would be lost. Watch the path
+(green) grow as it advances and **shrink when the DFS comes back** — that is
+the backtrack happening before your eyes:
+
+<TraceDemo id="word-search" />
+
+(In the visualizer, the word is `ABFD`: follow the path try a direction, fail,
+**back up** and try another, until it assembles the word.)
+
+### Why is the complexity exponential in the worst case?
+
+From each cell, the DFS can follow up to ~4 directions, and the search tries to
+start from each of the `m·n` cells. In the worst case, that gives something
+like **O(m·n·4ᴸ)**, where L is the length of the word (from each cell ~3 new
+directions branch out, L times). It is **exponential in L** — and that's fine:
+backtracking explores a search space that can be large, but the pruning
+(stopping as soon as `grid[r][c] != word[i]`) cuts the vast majority of
+branches early. The space is **O(L)** (recursion depth / path length).
+
+> **DFS vs. backtracking:** they are cousins. In flood fill, the mark is
+> permanent (cover a region). In backtracking, the mark is undone (explore
+> alternative paths). Recognizing which of the two the problem calls for is
+> half the battle.
+
+## Where backtracking shows up
+
+Word Search, generating permutations/combinations, Sudoku, N-Queens, mazes with
+"all paths". The skeleton is always the same: **choose → explore → undo the
+choice**. You will run into it outside grids too — it is one of the most
+transferable patterns in the course.
+
+<Quiz
+  title="Review quiz"
+  questions={[
+    {
+      question:
+        "What is the essential difference between the flood fill DFS (lesson 4) and backtracking?",
+      options: [
+        "None, they are identical",
+        "In flood fill the cell stays marked forever (cover a region); in backtracking the mark is UNDONE on the way back, freeing the cell for other paths",
+        "Backtracking does not use recursion",
+        "Flood fill is slower",
+      ],
+      answer: 1,
+      explanation:
+        "Covering a region wants to mark once. Finding a path wants to be able to reuse a cell across different attempts — hence the undo (backtrack).",
+    },
+    {
+      question: "Why is the 'unmark the cell' line indispensable in word search?",
+      options: [
+        "To save memory",
+        "Because without it a failed attempt would leave the cell blocked forever, preventing other valid paths from using it",
+        "To speed it up",
+        "To sort the letters",
+      ],
+      answer: 1,
+      explanation:
+        "A cell that did not work for one path may be essential in another. Unmarking on return restores the state for the next attempt to explore freely.",
+    },
+    {
+      question:
+        "What lets backtracking, despite exponential worst-case complexity, be viable in practice?",
+      options: [
+        "The matrix being small",
+        "PRUNING: stopping a branch as soon as it cannot work (e.g. grid[r][c] != word[i]) eliminates most branches early",
+        "Using extra memory",
+        "Sorting the word",
+      ],
+      answer: 1,
+      explanation:
+        "Backtracking explores a tree of attempts, but cuts unviable branches immediately. This aggressive pruning makes the average case much better than the theoretical worst case.",
+    },
+    {
+      question: "What is the general skeleton of any backtracking?",
+      options: [
+        "Sort, search, return",
+        "Choose (mark) → explore (recursion) → undo the choice (unmark)",
+        "Split in half repeatedly",
+        "Count and sum",
+      ],
+      answer: 1,
+      explanation:
+        "Choose–explore–undo is the signature of backtracking, and it holds far beyond grids: permutations, Sudoku, N-Queens. Mastering it here transfers to many problems.",
+    },
+  ]}
+/>
+
+## Summary
+
+- Backtracking = DFS with a **temporary** mark: mark on entry, **unmark on
+  exit**.
+- Word Search: match `word[i]` at the cell, try the neighbors for `word[i+1]`,
+  undo on failure.
+- Worst case exponential in L, but **pruning** makes it viable; space O(L).
+- Universal skeleton: **choose → explore → undo**.
+
+Next lesson: when the question is "the **shortest** path" — BFS.

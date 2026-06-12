@@ -1,0 +1,79 @@
+# Recognizing graph problems
+
+> A graph is the most general structure in the course: **nodes** (vertices)
+> linked by **edges**. Trees and grids are particular cases of graphs — so the
+> DFS/BFS you already practiced on them is exactly what we will generalize here.
+
+> As always, each pattern lesson opens with a **🎯 Try it first**.
+
+## The vocabulary
+
+- **Vertex (node):** a point of the graph. **Edge:** a link between two nodes.
+- **Directed** (edges have a direction: `a → b`) vs **undirected** (`a — b`,
+  valid both ways).
+- **Weighted** (edges have a weight/cost) vs unweighted.
+- **Cycle:** a path that returns to its starting point.
+- **Connected:** there is a path between any two nodes (otherwise, there are
+  several **components**).
+
+Where graphs show up: maps and routes, dependencies between tasks, social
+networks, the web (pages and links), course prerequisites... and **grids and
+trees** (which are graphs with a regular shape).
+
+## How to represent a graph
+
+The most common form in LeetCode is the **adjacency list**: an array (or
+dictionary) where `adj[i]` is the list of `i`'s neighbors.
+
+```text
+0 — 1        adj = [[1, 2],     # neighbors of 0
+|   |              [0, 3],     # neighbors of 1
+2 — 3              [0, 3],     # neighbors of 2
+                   [1, 2]]     # neighbors of 3
+```
+
+Often the problem gives you an **edge list** (`[[0,1],[0,2],...]`) and the
+**first step is to build the adjacency list** from it. There is also the
+**adjacency matrix** (`M[i][j]=1` if there is an edge), good for dense graphs
+or when the problem already hands it over that way.
+
+## Big-O in graphs: O(V + E)
+
+Here is the section's deep dive on Big-O. Traversing a graph (DFS or BFS)
+visits **each vertex once** and **walks each edge once** (when looking at the
+neighbors). That is why the complexity is **O(V + E)** — number of vertices
+plus number of edges:
+
+- It is not O(V²) in general! It only becomes that in a **dense** graph
+  (E ≈ V²) or using an adjacency matrix (where looking at a node's neighbors
+  costs O(V)).
+- With an adjacency **list**, you touch each edge exactly twice (once from each
+  end, in an undirected graph) — still O(E) in total.
+
+Always name the two quantities: **V vertices, E edges**. Saying "O(V+E)" is the
+honest form — just as in the Matrix section we said O(m·n) instead of O(n²).
+
+## The ingredient that is never missing: the visited set
+
+Unlike a tree (which has no cycles), a graph **can have cycles** — and
+following edges carelessly leads to an **infinite loop**. That is why every
+graph traversal carries a set of **visited** nodes: before processing a node,
+mark it; never revisit a node already marked. This is the detail that separates
+a graph from a tree.
+
+## The problems of the section
+
+- Number of Connected Components, Clone Graph → *DFS/BFS + visited*
+- Course Schedule, Alien Dictionary → *topological sort*
+- Graph Valid Tree → *union-find / cycle*
+- Rotting Oranges, Pacific Atlantic → *grid as a graph, multi-source BFS*
+
+## Summary
+
+- Graph = nodes + edges; directed/undirected, weighted/not, with or without
+  cycles.
+- Usual representation: **adjacency list** (build it from the edges).
+- **O(V + E)** to traverse — name the vertices and the edges.
+- Always use a set of **visited** nodes (graphs have cycles!).
+
+Next lesson: the two fundamental traversals — **DFS and BFS** in graphs.

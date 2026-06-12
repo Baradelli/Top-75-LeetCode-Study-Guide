@@ -1,0 +1,148 @@
+# Pattern 4: Stack
+
+> The stack is the **LIFO** structure — *Last In, First Out*, the last one to
+> go in is the first to come out. It's the natural tool for matching openings
+> and closings and for resolving what's "most nested" first.
+
+<Challenge id="valid-parentheses" />
+
+> Tried it? Maybe you thought of removing "()" pairs repeatedly until you can't
+> anymore — it works, but it's O(n²) and awkward with mixed types. The crux:
+> each closing matches the most recent opening. The theory below shows the
+> structure built for exactly this.
+
+## The theory: why LIFO fits nesting
+
+Think of a stack of plates: you take from the top, the last one you put down.
+In code, a stack is just a list with two O(1) operations: `push` (place on
+top) and `pop` (remove from the top).
+
+Why does this solve nesting? Because in nested structures — parentheses, HTML
+tags, function calls — **the last one that opened is the first that needs to
+close**. That's exactly LIFO order. When you encounter a closing, the candidate
+to match it is always the **top** of the stack.
+
+```text
+for each symbol:
+    if it's an opening → push
+    if it's a closing → the top of the stack must be the matching opening
+                        (otherwise, it's malformed)
+at the end: the stack must be empty (everything that opened, closed)
+```
+
+### The signs in the prompt
+
+- Balanced **parentheses / brackets / braces**.
+- **Nested** structures (expressions, tags, directory paths).
+- "The **most recent** element not yet resolved" — next greater element,
+  nesting depth, undo.
+- Evaluating or simplifying expressions.
+
+## Example — Valid Parentheses
+
+*"Is the `()[]{}` string correctly balanced?"* E.g.: `"([]{})"` → true;
+`"(]"` → false; `"([)]"` → false (crossed).
+
+- **Why a stack?** Each closing must match the **most recent** opening still
+  open. "Most recent" = the top of the stack.
+- **The logic:** push each opening; on each closing, pop and check whether the
+  opening that came off is the matching one. At the end, an empty stack
+  confirms nothing was left open.
+
+Follow the stack grow with the openings and shrink on each closing that
+matches:
+
+<TraceDemo id="valid-parentheses" />
+
+Notice the two ways to fail, both detected: a closing that **doesn't match**
+the top (or an empty stack at closing time), and **leftover** openings on the
+stack at the end.
+
+### Why is it O(n) time and O(n) space?
+
+- A single pass over the string (n characters); `push` and `pop` are O(1) →
+  **O(n) time**.
+- In the worst case (`"((((("`), all the characters go onto the stack →
+  **O(n) space**. That's the unavoidable cost: to know what to match, you must
+  remember everything that's open.
+
+| Approach | Time | Space | Note |
+| --- | --- | --- | --- |
+| Remove "()" pairs repeatedly | O(n²) | O(n) | reprocesses the whole string each time |
+| Stack | O(n) | O(n) | one pass, matches at the top |
+
+## The stack beyond parentheses
+
+The same LIFO reasoning solves a large family: **Min Stack** (a stack that also
+returns the minimum in O(1)), **Evaluate Reverse Polish Notation** (evaluating
+a postfix expression), **Daily Temperatures / Next Greater Element** (the
+"monotonic stack", which keeps candidates not yet resolved). Whenever the
+question is about "the last pending item", think stack.
+
+<Quiz
+  title="Review quiz"
+  questions={[
+    {
+      question:
+        "Why is the stack (LIFO) the natural structure for checking nested parentheses?",
+      options: [
+        "Because it's faster than an array",
+        "Because the last symbol opened is always the first that needs to close — exactly LIFO order",
+        "Because it keeps the symbols sorted",
+        "Because it uses less memory",
+      ],
+      answer: 1,
+      explanation:
+        "Nesting imposes LIFO order: '([{' closes as '}])'. The candidate to match a closing is always the top of the stack — the most recent opening.",
+    },
+    {
+      question:
+        "What are the TWO ways a parenthesis sequence can be invalid, both detected by the stack?",
+      options: [
+        "An empty or very long string",
+        "A closing that doesn't match the top (or an empty stack on closing); and leftover openings on the stack at the end",
+        "More than one type of parenthesis",
+        "Repeated characters",
+      ],
+      answer: 1,
+      explanation:
+        "Closing without the correct opening on top detects the error right away; a non-empty stack at the end detects openings that never closed. The two checks together cover all cases.",
+    },
+    {
+      question: "Why does Valid Parentheses use O(n) space in the worst case?",
+      options: [
+        "Because it creates a copy of the string",
+        "Because an input like '(((((' pushes all the characters before any closing",
+        "Because the stack duplicates the data",
+        "It doesn't — it's O(1)",
+      ],
+      answer: 1,
+      explanation:
+        "To match closings later, you must remember all pending openings. In the worst case (all openings) the stack holds the n characters: O(n).",
+    },
+    {
+      question:
+        "New prompt: 'for each day, in how many days will a higher temperature come?'. Why think of a stack?",
+      options: [
+        "Because it involves numbers",
+        "Because we keep a stack of the days not yet resolved (with no higher day ahead); each new day resolves the pending ones smaller than it — the 'last pending' is LIFO",
+        "Because the temperatures need sorting",
+        "A stack doesn't apply",
+      ],
+      answer: 1,
+      explanation:
+        "It's the monotonic stack: keep indices still waiting for a higher value. When a higher value arrives, it resolves the pending ones from the top down. 'Last pending first' = LIFO.",
+    },
+  ]}
+/>
+
+## Summary
+
+- Stack = LIFO, with `push`/`pop` in O(1); ideal for **nesting** and "last
+  pending".
+- Valid Parentheses: push openings, match each closing with the top, require an
+  empty stack at the end — O(n) time, O(n) space.
+- Generalizes to min stack, postfix expressions, and the monotonic stack (next
+  greater).
+
+Next lesson: the section's last pattern — string **encoding and design**.

@@ -1,0 +1,212 @@
+# Pattern 3: Sliding Window
+
+> When the question is about **contiguous slices** (windows) of the array, don't
+> recompute each window from scratch: **slide** — update only what entered and
+> what left.
+
+<Challenge id="best-time-stock" />
+
+> Did you try? The brute force tests **all (buy, sell) pairs** — O(n²). And,
+> once again, it recomputes each day something that barely changed: the lowest
+> price up to that point. The theory below shows how to carry that "state"
+> instead of recomputing it.
+
+## The theory: what problem does sliding window solve?
+
+Recognize the statements: *"the largest subarray that..."*, *"the smallest
+window containing..."*, *"the sum of each slice of k days..."*. The keyword is
+**contiguous** — the elements of the answer are neighbors in the array.
+
+The brute force tests every window: O(n²) possible windows, and it still pays
+O(n) to evaluate each one — up to O(n³)! The waste is glaring: window
+`[i..j]` and window `[i+1..j+1]` share almost all their elements, and the
+brute force recomputes everything as if it had never seen them.
+
+The pattern's idea: treat the window as a **living state**. As you slide, one
+element **enters** from the right and one **leaves** from the left — update the
+state with those two O(1) touches and that's it: the new window is evaluated.
+
+### The two variants
+
+**Fixed window** (size k given by the statement):
+
+```text
+compute the state of the first window [0..k-1]
+for right from k to n-1:
+    state += entry of nums[right]
+    state -= exit of nums[right - k]
+    record the best
+```
+
+**Variable window** (looking for the largest/smallest window that satisfies a
+condition):
+
+```text
+left = 0
+for right from 0 to n-1:
+    nums[right] enters the state
+    while the state VIOLATES the condition:
+        nums[left] leaves the state
+        left += 1
+    record the best (window [left..right] is valid)
+```
+
+### Why is the variable window O(n) — and not O(n²)?
+
+The inner `while` is deceptive: it looks like a loop within a loop. But count it
+another way: **each element enters the window exactly 1 time (right passes over
+it) and leaves at most 1 time (left passes over it)**. That's at most 2n
+pointer moves total, each with O(1) work. Total: **O(n)** — the same
+"irreversible progress" argument as two pointers (not by chance: sliding window
+IS two pointers moving in the same direction).
+
+### The signals in the statement
+
+- "**Contiguous** subarray/substring" + "largest/smallest/best".
+- Windows of fixed size k ("average of each k days").
+- A condition the window must satisfy ("at most k distinct characters",
+  "sum ≥ target").
+- **Careful:** with negative numbers, "growing the window" might not increase
+  the sum — then the sum-based sliding window fails and the right pattern
+  changes (prefix, next lesson, or Kadane).
+
+## Example — Best Time to Buy and Sell Stock
+
+*"Given the stock price on each day, choose a day to buy and a later day to
+sell, maximizing profit."*
+
+- **Brute force:** every (buy, sell) pair with the sale after the purchase —
+  O(n²).
+- **The waste:** for each sell day, the brute force re-searches for the lowest
+  price in the past — which barely changed from one day to the next.
+- **The pattern:** slide the sell day (`i`) and carry as state the
+  **lowest price seen so far** (`min_price`). Each day: profit if selling today =
+  `price - min_price`; then update `min_price`.
+
+It's a variable window where the state is a single number — the minimum of the
+window `[0..i]`. Watch the state being carried instead of recomputed:
+
+<TraceDemo id="best-time-stock" />
+
+### Why is it O(n)?
+
+A single pass (n iterations), and the state updates with two O(1) comparisons
+per iteration — because the prefix minimum is **incremental**: the minimum up
+to today is `min(minimum up to yesterday, today's price)`. n × O(1) = **O(n)
+time, O(1) space** (the state is two variables).
+
+| Solution | Time | Space | Why |
+| --- | --- | --- | --- |
+| Brute force | O(n²) | O(1) | all buy/sell pairs |
+| Window with running minimum | O(n) | O(1) | incremental state, 1 pass |
+
+## The template in action: fixed window
+
+To cement the enter/exit mechanics, a classic example: *largest sum of a window
+of k elements*. Notice the two lines that do all the magic — with no
+recomputation:
+
+<CodeRunner
+  python={`def max_window_sum(nums, k):
+    total = sum(nums[:k])        # first window: O(k), once only
+    best = total
+    for right in range(k, len(nums)):
+        total += nums[right]       # entered from the right
+        total -= nums[right - k]   # left from the left
+        best = max(best, total)
+    return best
+
+print(max_window_sum([2, 1, 5, 1, 3, 2], 3))   # expected: 9 (5+1+3)
+print(max_window_sum([2, 3, 4, 1, 5], 2))      # expected: 7 (3+4)`}
+  javascript={`function maxWindowSum(nums, k) {
+  var total = 0;
+  for (var i = 0; i < k; i++) total += nums[i]; // first window
+  var best = total;
+  for (var right = k; right < nums.length; right++) {
+    total += nums[right];       // entered from the right
+    total -= nums[right - k];   // left from the left
+    best = Math.max(best, total);
+  }
+  return best;
+}
+
+console.log(maxWindowSum([2, 1, 5, 1, 3, 2], 3)); // expected: 9 (5+1+3)
+console.log(maxWindowSum([2, 3, 4, 1, 5], 2));    // expected: 7 (3+4)`}
+/>
+
+## Where the pattern shows its full strength
+
+Sliding window really shines in the **String** section: *Longest Substring
+Without Repeating Characters* (variable window + hash set as state),
+*Minimum Window Substring* (variable window + count map). The state gets
+richer, but the skeleton is exactly the template from this lesson — whoever
+masters the template here gets there just by swapping the state.
+
+<Quiz
+  title="Review quiz"
+  questions={[
+    {
+      question: "What is the waste that sliding window eliminates?",
+      options: [
+        "Searching for values repeatedly in the array",
+        "Recomputing from scratch windows that share almost all their elements with the previous one",
+        "Comparing pairs with no chance of being the answer",
+        "Using too much memory",
+      ],
+      answer: 1,
+      explanation:
+        "Neighboring windows differ in only 2 elements (one enters, one leaves). Updating the state with those 2 O(1) touches replaces an O(n) recomputation per window.",
+    },
+    {
+      question:
+        "In the variable window there's a while inside a for. Why is it still O(n)?",
+      options: [
+        "Because the while almost never runs",
+        "Because each element enters 1 time and leaves at most 1 time from the window: at most 2n moves total",
+        "Because the compiler optimizes it",
+        "It isn't — it's O(n²)",
+      ],
+      answer: 1,
+      explanation:
+        "Count pointer moves, not loop passes: right moves n times, left moves at most n times. 2n × O(1) = O(n). It's the irreversible progress argument again.",
+    },
+    {
+      question:
+        "Why does the sum-based sliding window FAIL with negative numbers (e.g. 'largest sum of any subarray')?",
+      options: [
+        "Negatives blow up the memory",
+        "The logic 'bigger window = bigger sum' breaks: shrinking the window can INCREASE the sum, and the pattern loses the answer",
+        "The while becomes an infinite loop",
+        "It doesn't fail, it always works",
+      ],
+      answer: 1,
+      explanation:
+        "Shrink/expand depends on monotonicity: growing helps, shrinking corrects. Negatives break that. For 'largest subarray sum' with negatives, the right pattern is Kadane (lesson 6).",
+    },
+    {
+      question:
+        "In Best Time to Buy and Sell Stock, what is the 'state' the window carries and why does it update in O(1)?",
+      options: [
+        "All prices seen so far, re-sorted each day",
+        "The lowest price seen so far: minimum up to today = min(minimum up to yesterday, today's price)",
+        "The profit of all possible pairs",
+        "The average of the prices",
+      ],
+      answer: 1,
+      explanation:
+        "A prefix minimum is incremental — one comparison per day. Incremental state is what defines a good sliding window: if updating the state cost O(n), the pattern would gain nothing.",
+    },
+  ]}
+/>
+
+## Summary
+
+- Signals: **contiguous subarray/substring** + largest/smallest/condition.
+- The window is a **living state**: one element enters, one leaves, O(1) per step.
+- Variable window: `right` expands, `left` shrinks when the condition is violated —
+  O(n) because each element enters/leaves at most 1 time.
+- Negatives break the monotonicity of the sum → use prefix (lesson 5) or Kadane
+  (lesson 6).
+
+Next lesson: what about when the windows that matter are **not** neighbors?
+Precompute everything — **prefix and suffix**.

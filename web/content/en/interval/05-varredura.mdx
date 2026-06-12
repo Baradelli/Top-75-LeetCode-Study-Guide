@@ -1,0 +1,160 @@
+# Pattern 4: Event sweep (rooms)
+
+> "How many meeting rooms do I need?" is the model question for a powerful
+> technique: treat each **start** and each **end** as **events** on a timeline
+> and sweep them in order, counting how many intervals are active at the same
+> time.
+
+<Challenge id="min-meeting-rooms" />
+
+> Tried it? The number of rooms is how many meetings are happening **at the
+> same time** at the worst instant. The theory below shows how to measure this
+> "maximum overlap" without testing every instant.
+
+## The theory: starts and ends as events
+
+The key idea: the minimum number of rooms is the **maximum overlap** at any
+point in time. To measure it, forget the intervals as blocks and think in
+**events**: each meeting contributes a `+1` at its start (people arrive) and a
+`-1` at its end (people leave). Sort all events by time and sweep, keeping a
+counter of "rooms in use" — the **peak** is the answer.
+
+An elegant way (without building the list of events): sort the **starts** and
+the **ends** into two separate lists and use two pointers:
+
+```text
+sorted starts, sorted ends
+rooms = 0, max = 0, i = 0, j = 0
+while there are starts:
+    if start[i] < end[j]:      # one meeting started before another ended
+        rooms += 1             # needs one more room
+        i += 1
+        max = max(max, rooms)
+    else:                      # one meeting ended: frees a room
+        rooms -= 1
+        j += 1
+return max
+```
+
+Each time a start happens **before** the next end, there's a new overlapping
+meeting → +1 room. When an end comes first, a room is freed. The largest value
+of `rooms` during the sweep is the minimum needed.
+
+> Endpoint convention: here we use `start < end`, so a meeting that ends
+> exactly when another starts (`[1,5]` and `[5,10]`) **frees** the room in
+> time — it doesn't count as overlap. Always check this rule in the problem
+> statement.
+
+## The min-heap alternative
+
+There's a second classic approach, which you'll see again in the **Heap**
+section: sort the meetings by start and keep a **min-heap** of the **ends** of
+the ongoing meetings. For each new meeting, if the smallest end in the heap has
+already passed, reuse the room (remove that end); otherwise, open a new room.
+The size of the heap is the number of rooms. Both approaches are O(n log n) —
+remember that "maximum overlap" has these two faces.
+
+## Sibling example: Meeting Rooms I
+
+The simpler version asks only: *can you attend all the meetings?* (that is,
+does **any** of them overlap?). Just sort by start and check whether any
+meeting starts before the previous one ends:
+
+<CodeRunner
+  python={`def can_attend_all(meetings):
+    meetings.sort(key=lambda x: x[0])     # sort by start
+    for i in range(1, len(meetings)):
+        if meetings[i][0] < meetings[i - 1][1]:   # starts before the previous ends
+            return False
+    return True
+
+print(can_attend_all([[0, 30], [5, 10], [15, 20]]))  # False (0-30 collides)
+print(can_attend_all([[7, 10], [2, 4]]))             # True`}
+  javascript={`function canAttendAll(meetings) {
+  meetings.sort(function (a, b) { return a[0] - b[0]; }); // sort by start
+  for (var i = 1; i < meetings.length; i++) {
+    if (meetings[i][0] < meetings[i - 1][1]) {  // starts before the previous ends
+      return false;
+    }
+  }
+  return true;
+}
+
+console.log(canAttendAll([[0, 30], [5, 10], [15, 20]])); // false
+console.log(canAttendAll([[7, 10], [2, 4]]));            // true`}
+/>
+
+### Complexity
+
+Both the event sweep and the min-heap are **O(n log n)** (dominated by the
+sort), with O(n) space. Meeting Rooms I is O(n log n) from the sort + O(n) in
+the scan. In all of them, the bottleneck is sorting — the rest is one pass.
+
+<Quiz
+  title="Review quiz"
+  questions={[
+    {
+      question: "Why is the minimum number of rooms the 'maximum overlap' in time?",
+      options: [
+        "Because each meeting needs a different room",
+        "Because at the instant when k meetings are happening at the same time, k rooms are needed — the peak of that count is the minimum that covers every instant",
+        "Because rooms are expensive",
+        "Because the sort requires it",
+      ],
+      answer: 1,
+      explanation:
+        "Simultaneous meetings require distinct rooms. The largest number of simultaneous ones at any point is exactly how many rooms you need to have.",
+    },
+    {
+      question:
+        "In the sweep with sorted starts and ends, what does 'start[i] < end[j]' mean?",
+      options: [
+        "That the list is unsorted",
+        "That a meeting STARTED before the next one to end ends — that is, there's a new overlap: +1 room",
+        "That a room was freed",
+        "That the sweep is over",
+      ],
+      answer: 1,
+      explanation:
+        "If the next event is a start (before the next end), one more simultaneous meeting comes in → one more room. If the next is an end, a room is freed (-1).",
+    },
+    {
+      question:
+        "What is the second classic approach for the minimum number of rooms, which reappears in the Heap section?",
+      options: [
+        "Binary search",
+        "Sort by start and keep a min-heap of the ongoing ENDS: reuse the room if the smallest end has already passed, otherwise open a new one; the heap size is the number of rooms",
+        "Recursion",
+        "Converging two pointers",
+      ],
+      answer: 1,
+      explanation:
+        "The min-heap of ends lets you, for each new meeting, check in O(log n) whether a room has already opened up. It's the same answer via a different structure — and it sets up the Heap section.",
+    },
+    {
+      question:
+        "How is Meeting Rooms I ('can you attend all of them?') solved?",
+      options: [
+        "Event sweep with a counter",
+        "Sort by start and check whether ANY meeting starts before the previous one ends — if so, there's a conflict (False)",
+        "Min-heap of starts",
+        "Binary search",
+      ],
+      answer: 1,
+      explanation:
+        "You just need to detect any overlap: sorted by start, if meeting[i].start < meeting[i-1].end, they collide and you can't attend all of them.",
+    },
+  ]}
+/>
+
+## Summary
+
+- Minimum number of rooms = **maximum overlap** in time.
+- **Event sweep**: starts (+1) and ends (−1) sorted; the peak of the counter is
+  the answer. Alternative: **min-heap** of the ends (comes back in the Heap
+  section).
+- Meeting Rooms I: sort by start and detect any conflict.
+- Everything is **O(n log n)**, dominated by the sort.
+
+Last stop: the **synthesis** of the Intervals section and the quiz before the
+exam.

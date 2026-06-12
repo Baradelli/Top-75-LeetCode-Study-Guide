@@ -1,0 +1,123 @@
+# Pattern 2: Level-order BFS
+
+> Recursion (DFS) goes deep into a branch before coming back. But some questions
+> are about **levels** — "the values of each level", "the rightmost node of each
+> row", "the minimum depth". For those, breadth-first search (BFS), with a
+> **queue**, processes the tree layer by layer.
+
+<Challenge id="level-order" />
+
+> Did you try? You can do it with DFS (keeping the depth of each value), but
+> separating the levels gets awkward. The theory below shows the clean way:
+> processing the queue "one level at a time".
+
+## The theory: the queue and the level-size trick
+
+BFS uses a **queue** (FIFO): you enqueue the root and, repeatedly, take the
+front node and enqueue its children. This visits the nodes in level order
+(root, then level 1, then level 2...). Watch the queue advance level by level
+(amber is the node being processed, blue the ones already visited):
+
+<TraceDemo id="tree-bfs" />
+
+But how do you **separate** the levels into distinct lists? The trick is simple
+and elegant: at the start of each round, the queue contains **exactly one whole
+level**. So capture the **current queue size** and process only that many
+nodes — they are the current level; the children you enqueue will form the
+next:
+
+```text
+queue = [root]
+while the queue is not empty:
+    size = len(queue)            # ← freeze the current level
+    level = []
+    repeat `size` times:
+        node = dequeue
+        level.append(node.val)
+        enqueue node.left and node.right (if they exist)
+    result.append(level)
+```
+
+### Why is it O(n) time and O(n) space?
+
+Each node enters and leaves the queue **exactly once** → **O(n) time**. The
+space is the maximum queue size, which is the **width** of the tree — in the
+worst case (the last level of a full tree) it is ~n/2 nodes → **O(n) space**.
+Note the contrast with DFS: there the space was O(h) (height); here it is
+O(width).
+
+## DFS or BFS on a tree?
+
+| The question is about... | Use | Why |
+| --- | --- | --- |
+| a property that **combines** from the children (height, sum, validate) | **recursive DFS** | the recursion combines naturally |
+| **levels** (per level, deepest level, side view) | **BFS** | the queue processes layer by layer |
+| **minimum depth** / "fewest steps" to something | **BFS** | it finds the shallow level first |
+
+> A fun fact that connects to Matrix: this is the **same BFS** you used in the
+> grid for the shortest path. Trees and grids are graphs; level-by-level BFS is
+> the same algorithm. You are practicing graphs without realizing it.
+
+<Quiz
+  title="Review quiz"
+  questions={[
+    {
+      question: "What data structure does BFS use, and in what order does it visit the nodes?",
+      options: [
+        "A stack; it visits going deep first",
+        "A queue (FIFO); it visits in level order (root, level 1, level 2...)",
+        "A dictionary; random order",
+        "Recursion; postorder",
+      ],
+      answer: 1,
+      explanation:
+        "The FIFO queue guarantees that a node is only processed after all the previous (shallower) ones — hence the level order.",
+    },
+    {
+      question: "How do you separate the levels into distinct lists during BFS?",
+      options: [
+        "Mark each node with its depth in a dictionary",
+        "At the start of each round, capture the current SIZE of the queue and process only that many nodes — they are the current level",
+        "Necessarily use two alternating queues",
+        "It is not possible with BFS",
+      ],
+      answer: 1,
+      explanation:
+        "At the start of each round the queue contains exactly one level. Fixing the size before processing isolates that level; the enqueued children form the next.",
+    },
+    {
+      question: "What is the space complexity of BFS on a tree, and why?",
+      options: [
+        "O(h), the height",
+        "O(n) in the worst case — the queue size reaches the WIDTH of the tree, which can be ~n/2 at the last level of a full tree",
+        "O(1)",
+        "Always O(log n)",
+      ],
+      answer: 1,
+      explanation:
+        "BFS holds a whole level in the queue; the maximum width dominates the space. Contrast with DFS, whose space is O(h), the height.",
+    },
+    {
+      question:
+        "'Return the right-side view of the tree (the rightmost node of each level).' Which pattern?",
+      options: [
+        "Postorder DFS",
+        "Level-order BFS: for each level, the last node processed is the one visible from the right",
+        "In-order traversal",
+        "Trie",
+      ],
+      answer: 1,
+      explanation:
+        "It is a per-level question: processing each level with the size trick, the last node of each one is the answer. (It shows up in the final exam!)",
+    },
+  ]}
+/>
+
+## Summary
+
+- **BFS** uses a **queue** and visits the tree **level by level**.
+- Separate levels by capturing the **queue size** at the start of each round.
+- **O(n)** time; **O(n)** space (width) — contrast with O(h) for DFS.
+- Use BFS for **per-level** questions or ones about **minimum depth**.
+
+Next lesson: the tree with a golden rule that gives fast search — the **BST**.

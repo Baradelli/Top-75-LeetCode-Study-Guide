@@ -1,0 +1,191 @@
+# What Is Big-O Notation
+
+> This is the tool you'll use in **every** lesson of the course. Whenever we
+> say "this solution is O(n)", we'll justify why — and after this section,
+> you'll be able to justify it on your own.
+
+## Why don't we measure in seconds?
+
+Imagine you solved a problem and your code took 2 seconds. Is that fast or
+slow? It depends: on your computer, on the language, on what else was
+running... Seconds say nothing about the **algorithm** — they say something
+about the machine.
+
+That's why we measure something else: **how the number of steps grows as the
+input grows**. That's the question Big-O answers:
+
+> If I double the size of the input, what happens to the amount of work?
+
+- Stays the same? **O(1)** — constant.
+- Doubles along with it? **O(n)** — linear.
+- Quadruples? **O(n²)** — quadratic.
+- Grows just a little? **O(log n)** — logarithmic.
+
+## Why this matters so much on LeetCode
+
+Look at what happens to the number of steps when the array has 1 million
+elements (a common size at LeetCode's limits):
+
+| Complexity | Steps with n = 1,000,000 | In practice |
+| --- | --- | --- |
+| O(log n) | ~20 | instantaneous |
+| O(n) | 1 million | instantaneous |
+| O(n log n) | ~20 million | fast |
+| O(n²) | **1 trillion** | ⏰ Time Limit Exceeded |
+| O(2ⁿ) | a number with 300 thousand digits | impossible |
+
+This is why so many problems have an "obvious" two-loop solution that
+**works but doesn't pass**: it's O(n²). The right pattern brings it down to
+O(n) — and learning these patterns is exactly the goal of this course.
+
+## See the difference in practice
+
+The code below counts the steps of two strategies for the same problem:
+checking whether an array has duplicate elements. Run it and compare. Then
+increase `tamanho` and watch the difference explode.
+
+<CodeRunner
+  python={`def tem_duplicado_quadratico(nums):
+    passos = 0
+    for i in range(len(nums)):
+        for j in range(i + 1, len(nums)):
+            passos = passos + 1
+            if nums[i] == nums[j]:
+                return True, passos
+    return False, passos
+
+def tem_duplicado_linear(nums):
+    passos = 0
+    vistos = set()
+    for x in nums:
+        passos = passos + 1
+        if x in vistos:
+            return True, passos
+        vistos.add(x)
+    return False, passos
+
+tamanho = 200
+nums = list(range(tamanho))  # no duplicates: worst case
+
+_, passos_n2 = tem_duplicado_quadratico(nums)
+_, passos_n = tem_duplicado_linear(nums)
+print("O(n^2):", passos_n2, "steps")
+print("O(n):  ", passos_n, "steps")`}
+  javascript={`function temDuplicadoQuadratico(nums) {
+  var passos = 0;
+  for (var i = 0; i < nums.length; i++) {
+    for (var j = i + 1; j < nums.length; j++) {
+      passos = passos + 1;
+      if (nums[i] === nums[j]) return [true, passos];
+    }
+  }
+  return [false, passos];
+}
+
+function temDuplicadoLinear(nums) {
+  var passos = 0;
+  var vistos = {};
+  for (var i = 0; i < nums.length; i++) {
+    passos = passos + 1;
+    if (vistos[nums[i]]) return [true, passos];
+    vistos[nums[i]] = true;
+  }
+  return [false, passos];
+}
+
+var tamanho = 200;
+var nums = [];
+for (var k = 0; k < tamanho; k++) nums.push(k); // no duplicates: worst case
+
+console.log("O(n^2):", temDuplicadoQuadratico(nums)[1], "steps");
+console.log("O(n):  ", temDuplicadoLinear(nums)[1], "steps");`}
+/>
+
+With 200 elements: ~19,900 steps versus 200. With 1 million: 500 billion
+versus 1 million. **The algorithm matters more than the computer.**
+
+## Big-O's three simplifications
+
+Big-O is deliberately "lazy" — it ignores details that don't change the
+shape of the growth:
+
+1. **Constants drop.** O(2n) becomes O(n). Why? Because doubling the
+   computer's speed also "multiplies by 2", and that doesn't change the
+   algorithm. What matters is the *shape* of the curve, not its exact slope.
+2. **Smaller terms drop.** O(n² + n) becomes O(n²). Why? With n = 1,000,000,
+   the n² contributes 1 trillion and the n contributes 1 million — 0.0001% of
+   the total. The dominant term swallows the rest.
+3. **We think about the worst case.** If an algorithm can be fast when lucky
+   but slow without that luck, Big-O describes the "unlucky" case. It's the
+   guarantee you give: "never worse than this".
+
+## The classes you'll run into
+
+From fastest to slowest:
+
+| Class | Name | Typical example |
+| --- | --- | --- |
+| O(1) | constant | accessing `nums[i]`, inserting into a hash map |
+| O(log n) | logarithmic | binary search (halves the range each step) |
+| O(n) | linear | scanning the array once |
+| O(n log n) | linearithmic | sorting (efficient sort) |
+| O(n²) | quadratic | comparing every pair (two nested loops) |
+| O(2ⁿ) | exponential | trying every subset |
+| O(n!) | factorial | trying every possible ordering |
+
+Keep these three in mind especially, since they show up constantly across
+the course's sections: **O(n)** is "I scanned everything once", **O(n²)** is
+"I compared every pair", **O(log n)** is "I cut the problem in half each
+step".
+
+<Quiz
+  title="Practice quiz"
+  questions={[
+    {
+      question:
+        "An algorithm runs exactly 3n + 50 steps for an input of size n. What is its Big-O?",
+      options: ["O(3n + 50)", "O(n)", "O(n²)", "O(50)"],
+      answer: 1,
+      explanation:
+        "Constants (the 3 and the 50) drop: what matters is that the growth is linear — double the input, double the work. Hence O(n).",
+    },
+    {
+      question:
+        "You doubled the input size and the number of steps quadrupled. What is the likely complexity?",
+      options: ["O(n)", "O(log n)", "O(n²)", "O(2ⁿ)"],
+      answer: 2,
+      explanation:
+        "In O(n²), steps = n². Doubling n: (2n)² = 4n² — four times the work. That's the signature of the quadratic.",
+    },
+    {
+      question:
+        "Why does an O(n²) solution usually fail on LeetCode when n reaches 1 million?",
+      options: [
+        "Because it gives a wrong answer",
+        "Because 1 trillion steps blow past the time limit",
+        "Because it uses too much memory",
+        "Because LeetCode forbids two loops",
+      ],
+      answer: 1,
+      explanation:
+        "(10⁶)² = 10¹² steps — in the trillion range. Even a fast computer takes minutes, and the limit is usually 1-2 seconds. The answer would be correct, but it arrives far too late (Time Limit Exceeded).",
+    },
+    {
+      question: "An algorithm runs n² + 10n + 1000 steps. What is the Big-O?",
+      options: ["O(n² + 10n)", "O(n²)", "O(n³)", "O(10n)"],
+      answer: 1,
+      explanation:
+        "The dominant term is n²: for large n, it swallows the others. Smaller terms and constants drop — leaving O(n²).",
+    },
+  ]}
+/>
+
+## Summary
+
+- Big-O measures **how the work grows with the input**, not time in seconds.
+- Constants and smaller terms drop; we think about the worst case.
+- O(n²) with a large input = Time Limit Exceeded. The course's patterns exist
+  to bring O(n²) down to O(n) or O(n log n).
+
+In the next lesson: the **four practical rules** for looking at any code and
+telling its Big-O — with justification.

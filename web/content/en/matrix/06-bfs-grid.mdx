@@ -1,0 +1,136 @@
+# Pattern 5: BFS on a grid (shortest path)
+
+> DFS goes **deep** along a path before coming back. BFS does the opposite: it
+> explores in **layers**, like concentric waves from the starting point. That
+> order is exactly what answers "what is the **shortest** path?".
+
+<Challenge id="shortest-path-binary-matrix" />
+
+> Tried it? If you tried a DFS, you noticed it finds *a* path, not necessarily
+> the **shortest** one. The theory below shows why breadth-first search (BFS)
+> solves "the shortest" naturally.
+
+## The theory: exploring in layers with a queue
+
+BFS uses a **queue** (FIFO: first in is first out). You start at the initial
+cell (distance 1), and at each step you take the oldest one out of the queue
+and add its not-yet-visited neighbors (with distance + 1).
+
+```text
+queue = [(start, distance 1)];  mark start as visited
+while the queue is not empty:
+    (r, c, d) = take the oldest out of the queue
+    if (r,c) is the destination → return d   (first to arrive = shortest!)
+    for each free, unvisited neighbor:
+        mark as visited
+        add to the queue with distance d + 1
+```
+
+The magic: since the queue processes **all** the cells at distance `d` before
+any at distance `d+1`, the search advances in layers. The **first** moment the
+destination comes out of the queue, it arrived by the shortest path — there is
+no shorter route, otherwise it would have been processed earlier.
+
+Compare the two searches on the same open grid. **BFS** — notice how the
+current cell jumps in "rings" ever farther from the origin:
+
+<TraceDemo id="bfs-grid" />
+
+And the **DFS** from lesson 4, for contrast — it dives deep in one direction
+before coming back:
+
+<TraceDemo id="number-of-islands" />
+
+### Why is it O(m·n) and why does it give the shortest path?
+
+- **Time:** each cell enters the queue **at most once** (we mark visited when
+  enqueuing, not when dequeuing — a detail that avoids duplicates). For each
+  one, we look at a constant number of neighbors → **O(m·n)**. Space O(m·n)
+  (queue + visited).
+- **Shortest:** BFS expands by increasing distance. In an **unweighted** graph
+  (each step "costs 1"), the first time the destination is reached is,
+  necessarily, by the fewest steps.
+
+> A detail that causes bugs: **mark the neighbor as visited at the moment you
+> enqueue it**, not when it leaves the queue. Otherwise, the same cell can be
+> added several times (by different neighbors) before being processed, inflating
+> the queue and even breaking the count.
+
+## DFS or BFS? The question decides
+
+Both traverse everything that is connected and cost O(m·n). The choice depends
+on the **question**:
+
+| The question is... | Use | Why |
+| --- | --- | --- |
+| "does it exist? how many? cover the region" | **DFS** (simpler to write) | the order does not matter |
+| "what is the **shortest** path? fewest steps?" | **BFS** | expands by increasing distance |
+| "all paths / a specific path" | **backtracking** (DFS + undo) | needs to explore and come back |
+
+<Quiz
+  title="Review quiz"
+  questions={[
+    {
+      question: "Why does BFS find the shortest path in an unweighted grid?",
+      options: [
+        "Because it uses recursion",
+        "Because it explores in layers of increasing distance (FIFO queue): it processes everything at distance d before distance d+1, so the first arrival at the destination is the shortest",
+        "Because it sorts the cells",
+        "Because it goes deep first",
+      ],
+      answer: 1,
+      explanation:
+        "The queue guarantees order by distance. When the destination is reached, no shorter route was left behind — it would have been processed first.",
+    },
+    {
+      question:
+        "What is the behavioral difference between DFS and BFS in exploration?",
+      options: [
+        "None",
+        "DFS dives deep along a path before coming back; BFS expands in concentric rings (layers) from the origin",
+        "BFS is always faster",
+        "DFS does not visit all the cells",
+      ],
+      answer: 1,
+      explanation:
+        "DFS uses a stack (goes deep); BFS uses a queue (goes wide, layer by layer). That is why BFS is natural for 'shortest' and DFS for 'cover/exists'.",
+    },
+    {
+      question:
+        "Why mark the cell as visited when ENQUEUING it (and not when dequeuing)?",
+      options: [
+        "For style",
+        "So the same cell is not added to the queue several times by different neighbors before being processed — which inflates the queue and can break the distances",
+        "To save memory only",
+        "It makes no difference",
+      ],
+      answer: 1,
+      explanation:
+        "If you only marked on exit, several neighbors could enqueue the same cell before it is processed. Marking on entry guarantees each cell is in the queue exactly once.",
+    },
+    {
+      question:
+        "You need the FEWEST number of steps to get out of a grid maze. DFS or BFS?",
+      options: [
+        "DFS, because it finds a path",
+        "BFS, because it guarantees the path with the fewest steps in an unweighted graph",
+        "Either one",
+        "Backtracking",
+      ],
+      answer: 1,
+      explanation:
+        "'Fewest number of steps' = unweighted shortest path = BFS. DFS would find some path, not necessarily the shortest.",
+    },
+  ]}
+/>
+
+## Summary
+
+- **BFS** uses a **queue** and explores in **layers** of increasing distance.
+- In an unweighted graph, the first arrival at the destination is the
+  **shortest path**.
+- Mark visited **when enqueuing**; O(m·n) time and space.
+- DFS for "exists/cover", **BFS for "shortest"**, backtracking for "all paths".
+
+Last stop: the **synthesis** of the Matrix section and the quiz before the
+exam.

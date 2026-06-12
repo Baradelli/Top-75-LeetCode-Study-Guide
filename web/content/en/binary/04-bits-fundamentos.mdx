@@ -1,0 +1,131 @@
+# Pattern 3: Bit fundamentals
+
+> The section's second module begins. Here we stop thinking of numbers as
+> quantities and start seeing them as what they are inside: **sequences of
+> bits** (0s and 1s). Operating on these bits solves certain problems with
+> unbeatable elegance.
+
+<Challenge id="hamming-weight" />
+
+> Tried it? You may have converted the number to a binary string and counted
+> the '1's — that works! The theory below shows how to do it operating directly
+> on the bits, and introduces a trick worth gold: `n & (n-1)`.
+
+## The theory: thinking in binary
+
+An integer is stored as bits. `13` is `1101` in binary: `8 + 4 + 0 + 1`. Each
+position is a power of 2. The **bitwise** operations work on all positions at
+once:
+
+| Operator | Name | Does | Example (4 bits) |
+| --- | --- | --- | --- |
+| `a & b` | AND | 1 only where **both** are 1 | `1100 & 1010 = 1000` |
+| `a \| b` | OR | 1 where **either** is 1 | `1100 \| 1010 = 1110` |
+| `a ^ b` | XOR | 1 where they **differ** | `1100 ^ 1010 = 0110` |
+| `~a` | NOT | flips all the bits | `~1100 = ...0011` |
+| `a << k` | left shift | pushes k places (× 2ᵏ) | `0011 << 1 = 0110` |
+| `a >> k` | right shift | pulls k places (÷ 2ᵏ) | `0110 >> 1 = 0011` |
+
+See it in practice (edit and try other values):
+
+<CodeRunner
+  python={`a = 12   # 1100
+b = 10   # 1010
+print("a & b =", a & b)   # 8   -> 1000
+print("a | b =", a | b)   # 14  -> 1110
+print("a ^ b =", a ^ b)   # 6   -> 0110
+print("a << 1 =", a << 1) # 24  -> pushes: becomes 11000
+print("a >> 1 =", a >> 1) # 6   -> pulls: becomes 110`}
+  javascript={`var a = 12;  // 1100
+var b = 10;  // 1010
+console.log("a & b =", a & b);   // 8   -> 1000
+console.log("a | b =", a | b);   // 14  -> 1110
+console.log("a ^ b =", a ^ b);   // 6   -> 0110
+console.log("a << 1 =", a << 1); // 24  -> pushes: becomes 11000
+console.log("a >> 1 =", a >> 1); // 6   -> pulls: becomes 110`}
+/>
+
+### The three tricks you'll use the most
+
+From the operators, ready-made patterns are born:
+
+| I want to... | I do | Why |
+| --- | --- | --- |
+| **test** the last bit | `n & 1` | isolates bit 0; gives 1 if odd |
+| **look at** bit i | `(n >> i) & 1` | brings bit i to position 0 |
+| **turn on** bit i | `n \| (1 << i)` | OR with a one-bit mask |
+| **clear** the rightmost 1 bit | `n & (n - 1)` | the star of this lesson 👇 |
+
+## Example — Number of 1 Bits (with the `n & (n-1)` trick)
+
+*"How many 1 bits are there in `n`?"* The direct solution: look bit by bit
+(`n & 1`, then `n >>= 1`), 32 times — O(number of bits). It works. But there's
+something smarter.
+
+The trick: **`n & (n - 1)` clears exactly the rightmost 1 bit** of `n`. Why?
+Subtracting 1 turns that bit into 0 and all the 0s to its right into 1; the
+AND with `n` zeroes precisely that bit (and keeps the rest). So each
+`n = n & (n-1)` removes **one** 1 bit — just count how many times until `n`
+hits zero.
+
+Watch the bits of `n` disappear one by one:
+
+<TraceDemo id="hamming-weight" />
+
+### Why is this efficient?
+
+The bit-by-bit version always does 32 steps (the width of the integer). The
+`n & (n-1)` version does exactly **as many steps as there are 1 bits** — if
+`n` has only 3 bits set, that's 3 iterations, not 32. In both cases it's
+O(integer width) = O(1) for fixed-size integers, but the trick usually does
+much less work. O(1) space.
+
+<Quiz
+  title="Review quiz"
+  questions={[
+    {
+      question: "Which operator results in 1 only at positions where the two bits differ?",
+      options: ["AND (&)", "OR (|)", "XOR (^)", "NOT (~)"],
+      answer: 2,
+      explanation:
+        "XOR (^) = 1 when the bits differ, 0 when they're equal. That property is the basis of the next lesson's pattern.",
+    },
+    {
+      question: "How do you test whether the last bit of n is set (n is odd)?",
+      options: ["n | 1", "n & 1", "n << 1", "~n"],
+      answer: 1,
+      explanation:
+        "n & 1 isolates the least significant bit: it gives 1 if it's set (odd number), 0 otherwise.",
+    },
+    {
+      question: "What does n & (n - 1) do to n?",
+      options: [
+        "Flips all the bits of n",
+        "Clears the rightmost 1 bit of n",
+        "Turns on the last bit of n",
+        "Divides n by 2",
+      ],
+      answer: 1,
+      explanation:
+        "Subtracting 1 turns the rightmost 1 bit into 0 (and the 0s to its right into 1); the AND with n zeroes exactly that bit. Repeating until zero counts the 1 bits.",
+    },
+    {
+      question:
+        "Counting 1 bits with n & (n-1) does how many iterations for n = 11 (binary 1011)?",
+      options: ["32 (the width of the integer)", "11", "3 (the number of 1 bits)", "1"],
+      answer: 2,
+      explanation:
+        "Each iteration removes one 1 bit. Since 1011 has three 1 bits, that's exactly 3 iterations — fewer than the 32 of the bit-by-bit approach.",
+    },
+  ]}
+/>
+
+## Summary
+
+- Numbers are bits; `& | ^ ~ << >>` operate on all positions at once.
+- Essential tricks: `n & 1` (test the last bit), `(n>>i)&1` (look at bit i),
+  `n | (1<<i)` (turn on bit i), `n & (n-1)` (clear the rightmost 1 bit).
+- Counting 1 bits with `n & (n-1)` does only as many steps as there are set
+  bits.
+
+Next lesson: the operator that deserves a lesson all to itself — **XOR**.

@@ -1,0 +1,172 @@
+# Pattern 4: Prefix and Suffix
+
+> Pay O(n) **once** to precompute running totals — and then answer questions
+> about any slice of the array in O(1) each.
+
+<Challenge id="product-except-self" />
+
+> Did you try? Most people think of "total product ÷ nums[i]" — but the
+> statement forbids division (and it would break with zeros). The brute force
+> without division multiplies the other n−1 elements for each i: O(n²). The
+> theory below solves it in O(n) by decomposing "everything except i" into
+> left × right.
+
+## The theory: what problem does prefix solve?
+
+Think of an array of sums. How much does it cost to answer *"what is the sum of
+the slice between i and j?"*. The naive way, O(n) per question — and a problem
+that asks n questions becomes O(n²).
+
+The waste: each question re-sums elements that were already summed in
+previous questions. The solution is to **accumulate once and reuse forever**:
+
+```text
+prefix[i] = sum of ALL elements before position i
+prefix[0] = 0 (there's nothing before the start)
+
+sum of the slice [i..j] = prefix[j + 1] - prefix[i]
+```
+
+Why does the subtraction work? `prefix[j+1]` sums everything up to j;
+`prefix[i]` sums everything before i. The difference is exactly the core
+`[i..j]` — any slice, in one subtraction: **O(1) per question** after O(n) of
+preparation.
+
+### The signals in the statement
+
+- Repeated questions about **sums/products of slices** ("range sum").
+- **"For each position, consider all the rest"** — everything to the left ×
+  everything to the right.
+- "How many subarrays sum to exactly k?" — prefix combined with a hash map.
+- Contiguous subarrays **with negative numbers** (where sliding window broke,
+  remember?).
+
+### Prefix + hash map: the combo
+
+Here's the prettiest connection between the lessons. *"How many subarrays sum
+to k?"*: every subarray `[i..j]` with sum k satisfies `prefix[j+1] - prefix[i] = k`,
+that is: `prefix[i] = prefix[j+1] - k`.
+
+Walk through the array accumulating the sum and ask the hash map: *"how many
+times have I already seen the prefix `current_sum - k`?"* — it's the Two Sum
+template, applied to prefixes! Ask the past, record for the future. O(n) total
+for a problem whose brute force is O(n²). (Keep this combo in mind: it'll be
+useful soon... 😉)
+
+## Example — Product of Array Except Self
+
+*"Return an array where `answer[i]` is the product of all elements,
+EXCEPT `nums[i]` — without using division, in O(n)."*
+
+- **Brute force:** for each i, multiply the other n-1 elements —
+  O(n²).
+- **The temptation:** total product ÷ `nums[i]`. Besides being forbidden by the
+  statement, division **breaks with zeros** (division by zero, and with two
+  zeros everything is zero).
+- **The pattern:** "everything except i" = (everything to the **left** of i) ×
+  (everything to the **right** of i). They're exactly a prefix and a suffix of
+  products!
+
+```text
+pass 1 (left → right): answer[i] = product of everything before i
+pass 2 (right → left): answer[i] *= product of everything after i
+```
+
+Watch the two passes in the visualizer — notice the `prefix` accumulator
+filling `answer` on the way out, and `suffix` completing it on the way back:
+
+<TraceDemo id="product-except-self" />
+
+### Why is it O(n)? And why is the space O(1)?
+
+- **Time:** two passes in sequence — O(n) + O(n) = O(n) (rule 1:
+  sequences add, constants drop).
+- **Space:** the subtle trick — instead of creating arrays `prefix[]` and
+  `suffix[]` (O(n) each), we carry **a single scalar accumulator** in each
+  pass and write directly into `answer`. Since the answer array doesn't count
+  as extra space (it IS the answer), the extra is two variables:
+  **O(1)**.
+
+| Solution | Time | Extra space | Why |
+| --- | --- | --- | --- |
+| Brute force | O(n²) | O(1) | n products of n-1 factors |
+| Division | O(n) | O(1) | ❌ breaks with zeros (and is forbidden) |
+| Prefix + suffix arrays | O(n) | O(n) | two auxiliary arrays |
+| Accumulators across 2 passes | O(n) | **O(1)** | writes directly into the answer |
+
+## Generalize: prefix isn't only about sums
+
+The running total can be any operation that builds from left to
+right: sum, product, maximum ("largest element so far"), count
+("how many pairs so far"). You already used one without realizing: the
+`min_price` from the previous lesson was a **prefix minimum** carried as a
+scalar! And the `suffix` is the same movie back to front.
+
+<Quiz
+  title="Review quiz"
+  questions={[
+    {
+      question:
+        "With the prefix array ready, why does the sum of ANY slice [i..j] cost O(1)?",
+      options: [
+        "Because the prefix array is small",
+        "Because it becomes a subtraction: prefix[j+1] - prefix[i] — the work of summing was already paid in the preparation",
+        "Because the slice is always short",
+        "It doesn't cost O(1), it costs O(j - i)",
+      ],
+      answer: 1,
+      explanation:
+        "Pay O(n) once, answer infinitely many questions at O(1) each. n questions: O(n) total instead of O(n²). Precomputation trading preparation for lookup.",
+    },
+    {
+      question:
+        "In Product Except Self, why doesn't 'total product divided by nums[i]' work?",
+      options: [
+        "Because division is slow",
+        "Because the statement forbids it — and with zeros in the array the strategy breaks completely",
+        "Because it always overflows",
+        "It works perfectly",
+      ],
+      answer: 1,
+      explanation:
+        "A zero in the array: division by zero when computing answer at that index. The left × right decomposition solves it without division and without a special case.",
+    },
+    {
+      question:
+        "How does the final version of Product Except Self achieve O(1) extra space?",
+      options: [
+        "By compressing the auxiliary arrays",
+        "By carrying the running total as ONE scalar variable per pass and writing directly into the answer array (which doesn't count as extra)",
+        "By using recursion",
+        "It can't — it's O(n)",
+      ],
+      answer: 1,
+      explanation:
+        "The prefix doesn't need to exist whole in memory: in the left pass, just the running total UP TO HERE is enough. The answer array is required either way, so it doesn't count as extra space.",
+    },
+    {
+      question:
+        "'How many contiguous subarrays sum to exactly k?' (with negatives). What's the O(n) strategy?",
+      options: [
+        "Classic sliding window",
+        "Accumulate the sum and ask a hash map how many times the prefix (current_sum - k) has already appeared — Two Sum over prefixes",
+        "Sort and use two pointers",
+        "Kadane",
+      ],
+      answer: 1,
+      explanation:
+        "sum[i..j] = k is equivalent to prefix[i] = current_prefix - k. Counting occurrences of an already-seen value is the hash map from lesson 1. Negatives break sliding window, but prefix + hash map is unfazed.",
+    },
+  ]}
+/>
+
+## Summary
+
+- Prefix = **pay O(n) once, answer slices in O(1) forever**.
+- "Everything except i" = prefix(left) × suffix(right) — two passes.
+- Scalar accumulator + writing into the answer = O(1) extra space.
+- **Prefix + hash map** solves counting subarrays with sum k — including
+  with negatives.
+
+Next lesson: the section's last pattern and the most elegant — **Kadane**, the
+local decision that solves the maximum subarray in a single pass.

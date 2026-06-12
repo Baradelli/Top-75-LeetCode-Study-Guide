@@ -1,0 +1,197 @@
+# Pattern 3: Union-Find (disjoint sets)
+
+> How to quickly answer "are these two nodes in the same group?" while groups
+> keep merging? **Union-Find** (or DSU — disjoint set union) does exactly that:
+> grouping and querying connection in almost constant time.
+
+<Challenge id="graph-valid-tree" />
+
+> Tried it? To check whether it is a tree, you need two things: **connected**
+> and **without a cycle**. Union-Find detects the cycle elegantly — when an
+> edge links two nodes that were **already** in the same group.
+
+## The theory: each group has a "representative"
+
+The idea of Union-Find: each node points to a "parent", and following the
+parents you reach the **representative** (root) of the group. Two nodes are in
+the same group if they have the **same representative**. Two operations:
+
+- **find(x):** climbs through the parents up to the root — the representative of
+  `x`'s group.
+- **union(a, b):** links the root of one group to the root of the other,
+  merging them.
+
+```text
+parent = [0, 1, 2, 3, 4]   # at first, each node is its own group
+
+union(0,1): parent[0] = 1      groups: {0,1} {2} {3} {4}
+union(2,3): parent[2] = 3      groups: {0,1} {2,3} {4}
+find(0) == find(1)? yes → connected
+find(0) == find(2)? no → different groups
+```
+
+Two optimizations make each operation **almost O(1)** (amortized, O(α(n)) —
+practically constant):
+
+- **Path compression:** in `find`, point the nodes directly to the root.
+- **Union by size/height:** always link the smaller tree under the larger one.
+
+## Detecting a cycle with Union-Find
+
+Here is the trick for undirected graphs: when processing an edge `(a, b)`, if
+`a` and `b` **already have the same representative**, then there was already a
+path between them — this edge closes a **cycle**. If they have different
+representatives, merge them.
+
+```python
+class UnionFind:
+    def __init__(self, n):
+        self.parent = list(range(n))
+    def find(self, x):
+        while self.parent[x] != x:
+            self.parent[x] = self.parent[self.parent[x]]   # compression
+            x = self.parent[x]
+        return x
+    def union(self, a, b):
+        ra, rb = self.find(a), self.find(b)
+        if ra == rb:
+            return False        # already connected ⇒ cycle!
+        self.parent[ra] = rb
+        return True             # merged two groups
+```
+
+<CodeRunner
+  python={`class UnionFind:
+    def __init__(self, n):
+        self.parent = list(range(n))
+    def find(self, x):
+        while self.parent[x] != x:
+            self.parent[x] = self.parent[self.parent[x]]
+            x = self.parent[x]
+        return x
+    def union(self, a, b):
+        ra, rb = self.find(a), self.find(b)
+        if ra == rb:
+            return False
+        self.parent[ra] = rb
+        return True
+
+uf = UnionFind(5)
+print(uf.union(0, 1))   # True  (merged)
+print(uf.union(2, 3))   # True
+print(uf.union(0, 1))   # False (0 and 1 are already together ⇒ would be a cycle)
+print(uf.find(0) == uf.find(1))   # True  (same group)
+print(uf.find(0) == uf.find(2))   # False (different groups)`}
+  javascript={`function UnionFind(n) {
+  this.parent = [];
+  for (var i = 0; i < n; i++) this.parent.push(i);
+}
+UnionFind.prototype.find = function (x) {
+  while (this.parent[x] !== x) {
+    this.parent[x] = this.parent[this.parent[x]];
+    x = this.parent[x];
+  }
+  return x;
+};
+UnionFind.prototype.union = function (a, b) {
+  var ra = this.find(a), rb = this.find(b);
+  if (ra === rb) return false;   // already connected ⇒ cycle
+  this.parent[ra] = rb;
+  return true;
+};
+
+var uf = new UnionFind(5);
+console.log(uf.union(0, 1)); // true
+console.log(uf.union(2, 3)); // true
+console.log(uf.union(0, 1)); // false (already together ⇒ cycle)
+console.log(uf.find(0) === uf.find(1)); // true
+console.log(uf.find(0) === uf.find(2)); // false`}
+/>
+
+### Graph Valid Tree, in one sentence
+
+A tree with `n` nodes has **exactly `n-1` edges** and is **connected**. With
+Union-Find: if there are not `n-1` edges, it is not a tree already; otherwise,
+merge each edge — if any closes a cycle (`union` returns `False`), it is not a
+tree. With `n-1` edges and no cycle, the graph is necessarily connected.
+**Almost O(n + e).**
+
+## Union-Find or DFS/BFS?
+
+Both find connected components. When to prefer Union-Find?
+
+| Situation | Best |
+| --- | --- |
+| Components of a static graph | DFS/BFS or Union-Find (either way) |
+| Edges arriving **gradually** ("connected now?") | **Union-Find** (updates in ~O(1)) |
+| Detect a cycle in an **undirected** graph | **Union-Find** (edge within the same group) |
+| Need the **path** or the visit order | DFS/BFS |
+
+<Quiz
+  title="Review quiz"
+  questions={[
+    {
+      question: "How does Union-Find decide whether two nodes are in the same group?",
+      options: [
+        "It compares their values",
+        "It compares their REPRESENTATIVES (roots): find(a) == find(b) means the same group",
+        "It counts the edges between them",
+        "It checks whether they are direct neighbors",
+      ],
+      answer: 1,
+      explanation:
+        "Each group has a root/representative. Climbing through the parents (find), two nodes in the same group reach the same root.",
+    },
+    {
+      question:
+        "How does Union-Find detect a cycle in an undirected graph?",
+      options: [
+        "By counting vertices",
+        "When processing an edge (a,b), if a and b ALREADY have the same representative, there was already a path between them — this edge closes a cycle",
+        "By looking for duplicate edges",
+        "With BFS",
+      ],
+      answer: 1,
+      explanation:
+        "If union(a,b) finds a and b already in the same group, the new edge creates a second path between them — that is, a cycle.",
+    },
+    {
+      question:
+        "Why does a valid tree with n nodes need exactly n-1 edges?",
+      options: [
+        "It is a convention",
+        "Fewer than n-1 does not connect everything (disconnected); more than n-1 forces a cycle. Exactly n-1 + no cycle ⇒ connected and acyclic = tree",
+        "Because trees are binary",
+        "To fit in memory",
+      ],
+      answer: 1,
+      explanation:
+        "n-1 is the minimum number of edges to connect n nodes. With n-1 edges and no cycle, the graph is necessarily connected — the definition of a tree.",
+    },
+    {
+      question:
+        "When is Union-Find clearly preferable to DFS/BFS?",
+      options: [
+        "When you need the shortest path",
+        "When edges arrive gradually and you need to answer 'are they connected now?' repeatedly — Union-Find updates in ~O(1)",
+        "When the graph is a tree",
+        "Never",
+      ],
+      answer: 1,
+      explanation:
+        "DFS/BFS restart the search at every query. Union-Find maintains the groups incrementally: merging and querying connection cost almost O(1), ideal for dynamic connections.",
+    },
+  ]}
+/>
+
+## Summary
+
+- **Union-Find**: each group has a representative; `find` finds the root,
+  `union` merges groups. Almost **O(1)** per operation (with path compression).
+- Detects a **cycle** (undirected): an edge between nodes already in the same
+  group.
+- **Graph Valid Tree**: `n-1` edges + no cycle ⇒ tree.
+- Prefer Union-Find for **dynamic connections** and undirected cycle detection.
+
+Next lesson: remembering that **a grid is a graph** — and propagating from
+several sources at the same time.

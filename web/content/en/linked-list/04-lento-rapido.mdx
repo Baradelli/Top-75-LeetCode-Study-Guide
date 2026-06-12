@@ -1,0 +1,191 @@
+# Pattern 3: Slow and fast pointers
+
+> Two pointers walking through the list at **different speeds** reveal
+> surprising things: the middle of the list in a single pass, and whether a
+> **cycle** exists — without using any extra memory.
+
+<Challenge id="middle-of-list" />
+
+> Did you try? You can count the size and walk halfway — two passes. The theory
+> below does it in a single pass, with an idea that pays off far more than just
+> finding the middle.
+
+## The theory: different speeds
+
+The idea (also called "tortoise and hare"): two pointers start at the head, but
+`fast` moves **two** nodes at a time while `slow` moves **one**.
+
+```text
+slow: +1 per step
+fast: +2 per step
+```
+
+Since `fast` covers twice the distance, when it reaches the **end**, `slow` has
+covered exactly **half** — that is, it is at the **middle**. One pass, without
+counting anything first:
+
+<TraceDemo id="fast-slow-middle" />
+
+(With an even number of nodes, this code returns the **second** of the two
+middle nodes — adjust the loop condition depending on whether the prompt asks
+for the first or the second.)
+
+### Why is it O(n) time and O(1) space?
+
+`fast` traverses the list once (in steps of 2), so the loop runs ~n/2 times,
+each one O(1) → **O(n) time**. Two pointers, no extra structure → **O(1)
+space**. The "count and walk halfway" alternative is O(n) too, but makes
+**two** passes.
+
+## The big trick: cycle detection (Floyd)
+
+What if the list has a **cycle** (some `next` points back to an earlier node)? A
+`while curr` loop would run forever. How do you detect it without marking nodes
+or using a set (which would cost O(n) memory)?
+
+**Floyd's** insight: release the tortoise (`slow`, +1) and the hare (`fast`, +2)
+onto the track. If the track is **straight** (no cycle), the hare reaches the
+end (`None`) and that's that. If the track is **circular**, the hare keeps going
+around and, sooner or later, **catches up to the tortoise from behind** —
+because at each step the distance between them shrinks by 1. If `fast == slow`
+at some point, there is a cycle.
+
+<CodeRunner
+  python={`class ListNode:
+    def __init__(self, val=0, next=None):
+        self.val = val
+        self.next = next
+
+def has_cycle(head):
+    slow = head
+    fast = head
+    while fast and fast.next:
+        slow = slow.next        # +1
+        fast = fast.next.next   # +2
+        if slow is fast:        # the hare caught the tortoise
+            return True
+    return False                # fast reached the end: no cycle
+
+# builds 3 -> 2 -> 0 -> -4 -> (back to the node with value 2): has a cycle
+a = ListNode(3); b = ListNode(2); c = ListNode(0); d = ListNode(-4)
+a.next = b; b.next = c; c.next = d; d.next = b   # cycle!
+print(has_cycle(a))    # True
+
+# straight list 1 -> 2 -> 3: no cycle
+x = ListNode(1); y = ListNode(2); z = ListNode(3)
+x.next = y; y.next = z
+print(has_cycle(x))    # False`}
+  javascript={`function ListNode(val, next) {
+  this.val = val;
+  this.next = next || null;
+}
+function hasCycle(head) {
+  var slow = head;
+  var fast = head;
+  while (fast && fast.next) {
+    slow = slow.next;        // +1
+    fast = fast.next.next;   // +2
+    if (slow === fast) {     // the hare caught the tortoise
+      return true;
+    }
+  }
+  return false;              // fast reached the end: no cycle
+}
+
+// builds 3 -> 2 -> 0 -> -4 -> (back to the node with value 2): has a cycle
+var a = new ListNode(3), b = new ListNode(2), c = new ListNode(0), d = new ListNode(-4);
+a.next = b; b.next = c; c.next = d; d.next = b; // cycle!
+console.log(hasCycle(a)); // true
+
+// straight list 1 -> 2 -> 3: no cycle
+var x = new ListNode(1), y = new ListNode(2), z = new ListNode(3);
+x.next = y; y.next = z;
+console.log(hasCycle(x)); // false`}
+/>
+
+### Why Floyd works (and is O(1) space)
+
+If there is a cycle, once **both** are inside it, the hare gets 1 position
+closer to the tortoise at every step (it moves 2, the tortoise moves 1). The
+distance only shrinks, so within at most "cycle length" steps they meet. If
+there is **no** cycle, the hare reaches `None` and the loop ends. It costs
+**O(n) time** and **O(1) space** — the obvious alternative (storing seen nodes
+in a set) is also O(n) time, but spends O(n) memory. Floyd spends none.
+
+## Where slow/fast shows up
+
+- **Middle of the list** (and from there: splitting the list in half — the basis
+  of merge sort on lists and of reorder).
+- **Cycle detection** and, with one extra step, finding **where** the cycle
+  begins.
+- **N-th from the end** (the fixed gap from the previous lesson is a cousin of
+  this pattern).
+
+<Quiz
+  title="Quick-check quiz"
+  questions={[
+    {
+      question:
+        "Why, when fast (step 2) reaches the end, is slow (step 1) at the middle?",
+      options: [
+        "By chance",
+        "Because fast covers twice slow's distance in the same time; when fast covers the whole, slow has covered half",
+        "Because the list is sorted",
+        "Because slow counts the nodes",
+      ],
+      answer: 1,
+      explanation:
+        "It is proportional: twice the speed, twice the distance in the same number of steps. Fast at the end ⇒ slow at the middle.",
+    },
+    {
+      question:
+        "In Floyd's cycle detection, why do slow and fast end up meeting if there is a cycle?",
+      options: [
+        "Because they start in the same place",
+        "Because, inside the cycle, the hare gets 1 position closer to the tortoise at each step — the distance only shrinks until it reaches zero",
+        "Because the list is short",
+        "Because fast goes back to the start",
+      ],
+      answer: 1,
+      explanation:
+        "With fast +2 and slow +1, the distance between them drops by 1 at each step inside the cycle. So they collide within at most 'cycle length' steps.",
+    },
+    {
+      question:
+        "Why is Floyd preferable to storing the visited nodes in a set?",
+      options: [
+        "It is easier to write",
+        "Same O(n) time, but Floyd uses O(1) space, while the set uses O(n)",
+        "It is O(log n)",
+        "The set does not detect cycles",
+      ],
+      answer: 1,
+      explanation:
+        "Both detect the cycle in O(n) time. The difference is memory: two pointers (O(1)) versus a set that may hold every node (O(n)).",
+    },
+    {
+      question:
+        "How does detecting a cycle in a 'while fast and fast.next' loop guarantee termination when there is NO cycle?",
+      options: [
+        "It does not guarantee it, it can hang",
+        "Without a cycle, fast reaches the end of the list (None); the loop condition fails and it terminates",
+        "Because slow stops first",
+        "Because it counts the nodes",
+      ],
+      answer: 1,
+      explanation:
+        "In a straight list, fast (+2) quickly reaches None; 'fast and fast.next' becomes false and the loop ends returning False. A cycle is the only way for fast to never find None.",
+    },
+  ]}
+/>
+
+## Summary
+
+- **Slow/fast**: fast moves 2, slow moves 1 → slow stops at the **middle** when
+  fast runs out. One pass, O(n)/O(1).
+- **Floyd (cycle)**: if there is a cycle, the hare catches the tortoise; if not,
+  the hare finds the end. O(n)/O(1), no set.
+- The basis for splitting the list, finding the start of the cycle, and "n-th
+  from the end".
+
+Next lesson: merging two sorted lists — **merge**.

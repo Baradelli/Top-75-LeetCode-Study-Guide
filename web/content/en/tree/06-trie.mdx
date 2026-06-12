@@ -1,0 +1,210 @@
+# Pattern 5: Trie (prefix tree)
+
+> The Trie is a tree specialized in **text**: each edge is a character, and each
+> path from the root downward spells a prefix. It makes "does this word exist?"
+> and "does any word start with this prefix?" very efficient — and it is the
+> basis of autocomplete.
+
+<Challenge id="trie-operations" />
+
+> Did you try? Storing the words in a list and searching one by one is O(n·m)
+> per search. The theory below shows how the per-character tree structure makes
+> each search proportional only to the **length of the word**.
+
+## The theory: paths that spell words
+
+In a Trie, each node represents a prefix, and its children are the possible next
+characters. Words that **share a prefix share the same path** — hence the
+efficiency and the space savings.
+
+```text
+inserting "casa", "caso", "cair":
+
+        (root)
+          │ c
+          c
+          │ a
+          a
+         / \
+      s/   \i
+      s     i
+     / \     \
+    a   o     r
+   (casa)(caso)(cair)
+```
+
+Each node needs two things:
+
+- a **map of children** (`{character: next node}`);
+- an **end of word** flag, marking that some path **ends** there (to
+  distinguish a complete word from a mere prefix).
+
+The three operations all walk letter by letter the same way:
+
+```text
+insert(word):     walk, creating the missing nodes; mark the last as the end.
+search(word):     walk; does the whole path exist AND is the last one the end?
+startsWith(pref): walk; does the whole path exist? (it need not be an end)
+```
+
+The difference between `search` and `startsWith` is only the end flag — that
+flag is what separates "does the word `cas` exist?" from "is there a word that
+**starts** with `cas`?".
+
+<CodeRunner
+  python={`class Trie:
+    def __init__(self):
+        self.filhos = {}
+        self.fim = False
+
+    def insert(self, palavra):
+        no = self
+        for ch in palavra:
+            if ch not in no.filhos:
+                no.filhos[ch] = Trie()    # create the missing node
+            no = no.filhos[ch]
+        no.fim = True                     # mark end of word
+
+    def _caminhar(self, texto):
+        no = self
+        for ch in texto:
+            if ch not in no.filhos:
+                return None               # the path does not exist
+            no = no.filhos[ch]
+        return no
+
+    def search(self, palavra):
+        no = self._caminhar(palavra)
+        return no is not None and no.fim  # the path exists AND is an end
+
+    def startsWith(self, prefixo):
+        return self._caminhar(prefixo) is not None  # only needs to exist
+
+t = Trie()
+t.insert("casa")
+t.insert("caso")
+print(t.search("casa"))       # True
+print(t.search("cas"))        # False (it exists as a prefix, but is not a word)
+print(t.startsWith("cas"))    # True
+print(t.startsWith("cad"))    # False`}
+  javascript={`function Trie() {
+  this.filhos = {};
+  this.fim = false;
+}
+Trie.prototype.insert = function (palavra) {
+  var no = this;
+  for (var i = 0; i < palavra.length; i++) {
+    var ch = palavra[i];
+    if (!no.filhos[ch]) no.filhos[ch] = new Trie();  // create the missing one
+    no = no.filhos[ch];
+  }
+  no.fim = true;                                     // mark end of word
+};
+Trie.prototype.caminhar = function (texto) {
+  var no = this;
+  for (var i = 0; i < texto.length; i++) {
+    var ch = texto[i];
+    if (!no.filhos[ch]) return null;                 // the path does not exist
+    no = no.filhos[ch];
+  }
+  return no;
+};
+Trie.prototype.search = function (palavra) {
+  var no = this.caminhar(palavra);
+  return no !== null && no.fim;                      // exists AND is an end
+};
+Trie.prototype.startsWith = function (prefixo) {
+  return this.caminhar(prefixo) !== null;            // only needs to exist
+};
+
+var t = new Trie();
+t.insert("casa");
+t.insert("caso");
+console.log(t.search("casa"));    // true
+console.log(t.search("cas"));     // false
+console.log(t.startsWith("cas")); // true
+console.log(t.startsWith("cad")); // false`}
+/>
+
+### Why is the Trie efficient?
+
+Each operation (insert/search/startsWith) walks **one node per character** of
+the word/prefix → **O(L)**, where L is the length — **regardless of how many
+words** are already stored! Comparing against a list of words would be O(n·L)
+per search. The Trie's cost is space: nodes for each distinct character of the
+prefixes (mitigated by sharing common prefixes).
+
+## Where the Trie shines
+
+Autocomplete, spell checking, prefix search, and problems that match **many
+words at once** against a text/grid (like *Word Search II*, which combines Trie
++ DFS on the grid from the Matrix section — Trie to check many prefixes at the
+same time). Whenever the problem is about **prefixes** or **a dictionary of
+words**, think Trie.
+
+<Quiz
+  title="Review quiz"
+  questions={[
+    {
+      question: "What does each node of a Trie represent, and what does it store?",
+      options: [
+        "A complete word; it stores the word",
+        "A prefix; it stores a map of children (by character) and an 'end of word' flag",
+        "A number; it stores the value",
+        "A letter of the alphabet; it stores the count",
+      ],
+      answer: 1,
+      explanation:
+        "Each node is a prefix. The children index the next characters; the end flag marks where some word ends, distinguishing word from prefix.",
+    },
+    {
+      question: "What is the ONLY difference between search(word) and startsWith(prefix)?",
+      options: [
+        "search is recursive, startsWith is not",
+        "Both walk through the text; search also requires the last node to have the 'end of word' flag set, startsWith does not",
+        "startsWith is slower",
+        "search ignores case",
+      ],
+      answer: 1,
+      explanation:
+        "Both check whether the path exists. search needs it to be a COMPLETE word (end flag); startsWith accepts any existing path.",
+    },
+    {
+      question: "Why is each Trie operation O(L) (L = length of the word)?",
+      options: [
+        "Because the Trie is sorted",
+        "Because you walk one node per character of the word — the cost is independent of how many words have already been inserted",
+        "Because it uses binary search",
+        "Because it compares with all the words",
+      ],
+      answer: 1,
+      explanation:
+        "Inserting/searching follows the path letter by letter: L steps. Unlike a list of words (O(n·L) per search), the Trie does not depend on the number of stored words.",
+    },
+    {
+      question:
+        "Why do words that share a prefix save space in a Trie?",
+      options: [
+        "They do not save space",
+        "Because they share the same path of nodes up to where the prefixes diverge; only the differing part creates new nodes",
+        "Because the Trie compresses the data",
+        "Because it removes duplicates",
+      ],
+      answer: 1,
+      explanation:
+        "'casa' and 'caso' share the nodes c-a-s; only the last character differs. Sharing prefixes is what makes the Trie compact for real dictionaries.",
+    },
+  ]}
+/>
+
+## Summary
+
+- **Trie**: a tree where each edge is a character; a path spells a prefix.
+- Each node: **map of children** + **end of word** flag (separates word from
+  prefix).
+- insert/search/startsWith walk letter by letter: **O(L)**, regardless of the
+  number of words.
+- It shines at autocomplete, prefix search and matching many words (Word
+  Search II).
+
+Last stop: the **synthesis** of the Trees section and the quiz before the exam.

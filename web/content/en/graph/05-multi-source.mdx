@@ -1,0 +1,124 @@
+# Pattern 4: A grid is a graph and multi-source BFS
+
+> You already treated grids as graphs in the Matrix section. Here we close that
+> idea and add a powerful tool: **multi-source BFS**, which starts from
+> **several points at the same time** — perfect for "how long until everything
+> is reached?".
+
+<Challenge id="rotting-oranges" />
+
+> Tried it? If you ran a separate BFS from each rotten orange, it works but it
+> is confusing and slow. The theory below shows how to drop **all** the sources
+> into the queue at once.
+
+## The theory: grid as a graph (review) + several sources
+
+In a grid, each cell is a node and the neighboring cells (up/down/left/right)
+are connected by edges. That is why DFS/BFS on a grid are the same graph
+algorithms — with the "adjacency list" implicit in the 4 neighbors.
+
+The novelty is **multi-source BFS**. In ordinary BFS, the queue starts with
+**one** origin. In multi-source, you place **all the origins in the queue at
+time 0** and let the waves expand **simultaneously**. Each cell is reached by
+the nearest source, in the correct layer (= time/distance):
+
+```text
+queue ← ALL the sources (time 0); mark them
+while the queue is not empty:
+    (cell, time) = dequeue
+    for each valid neighbor not yet reached:
+        mark, enqueue with time + 1
+the largest time reached is the answer
+```
+
+In *Rotting Oranges*, the sources are **all** the initial rotten oranges; at
+each minute (BFS layer), they rot the fresh neighbors. The number of layers is
+the total time. And if, at the end, a fresh orange still remains (a region that
+no wave reached), the answer is **-1**.
+
+### Why is multi-source better than running a BFS from each source?
+
+Running a separate BFS from each of the `k` sources would cost O(k · (V+E)).
+Multi-source solves everything in a **single** BFS, O(V+E), because the waves
+advance together and each cell is processed once — reached automatically by the
+nearest source. For the grid, **O(m·n)**.
+
+## Another example: Pacific Atlantic Water Flow
+
+*"From which cells does water flow both to the Pacific Ocean (top/left edges)
+and to the Atlantic (bottom/right edges)?"* The trick is the same inversion as
+in the Matrix section: instead of testing each cell, run searches **from the
+edges** (the sources!) climbing toward cells of greater or equal height. The
+cells reachable by both oceans are the intersection. It is multi-source search
+again — starting from a whole set of edges.
+
+> The transferable lesson: when the problem has **many starting points** (all
+> the rotten ones, all the edges, all the exit doors), do not run a search for
+> each — drop **all** of them into the queue and let the waves meet.
+
+<Quiz
+  title="Review quiz"
+  questions={[
+    {
+      question: "Why can a grid be treated as a graph?",
+      options: [
+        "Because it is square",
+        "Because each cell is a node and the neighboring cells (4 directions) are connected by edges — graph DFS/BFS apply directly",
+        "Because it has numbers",
+        "Because it is sorted",
+      ],
+      answer: 1,
+      explanation:
+        "Neighborhood = edges. The grid's 'adjacency list' is implicit: the neighbors of (r,c) are (r±1,c) and (r,c±1) within the bounds.",
+    },
+    {
+      question: "What characterizes a MULTI-SOURCE BFS?",
+      options: [
+        "Running a BFS for each source, summing the times",
+        "Placing ALL the sources in the queue at time 0 and letting the waves expand together; each cell is reached by the nearest source",
+        "Using DFS instead of BFS",
+        "Starting from the center of the grid",
+      ],
+      answer: 1,
+      explanation:
+        "Initializing the queue with all the sources makes the fronts advance simultaneously. The layer in which a cell is reached is its distance to the nearest source.",
+    },
+    {
+      question:
+        "In Rotting Oranges, how do you know the answer is -1?",
+      options: [
+        "If the grid is empty",
+        "If, at the end of the BFS, some FRESH orange still remains — it is in a region that no wave of rot reached",
+        "If there is more than one rotten one",
+        "It is never -1",
+      ],
+      answer: 1,
+      explanation:
+        "The BFS reaches everything accessible. A leftover fresh one means it is unreachable from the rotten ones — impossible to rot them all, hence -1.",
+    },
+    {
+      question:
+        "Why is multi-source BFS better than running a separate BFS from each source?",
+      options: [
+        "It is not better",
+        "Because it solves everything in a single BFS O(V+E), instead of O(k·(V+E)) for k sources — the waves advance together and each cell is processed once",
+        "Because it always uses less memory",
+        "Because it avoids the visited set",
+      ],
+      answer: 1,
+      explanation:
+        "Dropping all the sources together processes each cell only once (by the nearest source). Separate searches would reprocess cells and multiply the cost by k.",
+    },
+  ]}
+/>
+
+## Summary
+
+- **A grid is a graph**: cells = nodes, neighbors = edges; DFS/BFS apply
+  directly.
+- **Multi-source BFS**: drop **all** the sources into the queue at time 0; the
+  waves expand together, each cell reached by the nearest source.
+- Rotting Oranges (time until everything rots; -1 if a fresh one remains),
+  Pacific Atlantic (searches from the edges) — both multi-source. **O(m·n)**.
+
+Last stop: the **synthesis** of the Graph section and the quiz before the exam.

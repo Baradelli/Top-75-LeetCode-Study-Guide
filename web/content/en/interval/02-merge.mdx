@@ -1,0 +1,118 @@
+# Pattern 1: Sort and merge
+
+> Merging overlapping intervals is the "hello, world" of the section. And it
+> shows, in its purest form, the method that works for almost everything here:
+> **sort by start, then scan once**.
+
+<Challenge id="merge-intervals" />
+
+> Tried it? Without sorting, you end up comparing each interval against all the
+> others (O(n²)) and still get lost with chained overlaps. The theory below
+> shows why sorting first makes everything simple.
+
+## The theory: sorting transforms the problem
+
+Why does sorting by **start** help so much? Because, after that, any interval
+that overlaps a previous one **can only overlap the last** one you processed
+(all the earlier ones already ended further to the left). This reduces "compare
+with all" to "compare with the last one in the result":
+
+```text
+sort by start
+result = []
+for each [start, end]:
+    if result not empty AND start <= end of last in result:
+        # overlaps → extend the end of the last
+        last.end = max(last.end, end)
+    else:
+        # no overlap → start a new block
+        result.append([start, end])
+```
+
+Note the `max` when extending: the current interval may be **contained** in
+the last one (e.g., `[1,6]` swallowing `[2,4]`), so the end must not shrink.
+Watch the scan — the top row is the input (current one highlighted), the
+bottom row is the result being built and extended:
+
+<TraceDemo id="merge-intervals" />
+
+### Why is it O(n log n) time and O(n) space?
+
+The **sort** costs O(n log n) and **dominates**. The scan is a single O(n)
+pass, comparing each interval only with the last one in the result. Space is
+O(n) for the output list (or O(log n)–O(n) for the sort itself). The brute
+force of comparing all pairs would be O(n²) — sorting is what knocks that down.
+
+## The reflex that defines the section
+
+This is the **mother template** of intervals: *sort by one endpoint + one scan
+comparing against the accumulated state*. Memorize the shape of the code — the
+next lessons are variations of it (insert changes "when to start merging," the
+greedy one changes the sorting criterion, the event sweep changes what you
+accumulate).
+
+<Quiz
+  title="Review quiz"
+  questions={[
+    {
+      question: "Why does sorting by start simplify merging intervals?",
+      options: [
+        "Because it makes the code look nice",
+        "Because after that an interval can only overlap the LAST one processed — reducing 'compare with all' (O(n²)) to 'compare with one' (O(n))",
+        "Because it removes duplicates",
+        "Because it sorts the ends too",
+      ],
+      answer: 1,
+      explanation:
+        "With the starts in order, all intervals before the last one already started (and ended) earlier — so the only possible overlap for the current one is with the last in the result.",
+    },
+    {
+      question:
+        "When merging an overlapping interval, why use max(last.end, current.end) instead of just current.end?",
+      options: [
+        "To avoid an index error",
+        "Because the current interval may be CONTAINED in the last one (e.g., [1,6] swallows [2,4]); the end must not shrink",
+        "Because the sort requires it",
+        "It makes no difference",
+      ],
+      answer: 1,
+      explanation:
+        "If the current one ends before the last (it's contained), taking the current end would shrink the block incorrectly. The max preserves the larger reach.",
+    },
+    {
+      question: "What is the complexity of merge and what dominates it?",
+      options: [
+        "O(n²), the two loops",
+        "O(n log n), dominated by the SORT; the scan itself is O(n)",
+        "Always O(n)",
+        "O(log n)",
+      ],
+      answer: 1,
+      explanation:
+        "Sorting is O(n log n) and dominates; the scan is a linear pass. Without sorting, it would be O(n²) comparing all pairs.",
+    },
+    {
+      question:
+        "What is the 'mother template' of interval problems, of which merge is the example?",
+      options: [
+        "Binary search",
+        "Sort by one endpoint + one scan comparing each interval against the accumulated state",
+        "Recursion with memoization",
+        "Converging two pointers",
+      ],
+      answer: 1,
+      explanation:
+        "Sort + scan-with-state is the common shape of the section. Insert, greedy, and event sweep are variations of this same skeleton.",
+    },
+  ]}
+/>
+
+## Summary
+
+- **Merge**: sort by start; scan, merging when `start <= end of the last`
+  (with `max` on the end).
+- **O(n log n)** (sort dominates), O(n) space; far better than the naive O(n²).
+- It's the **mother template** of the section: sort + scan with accumulated
+  state.
+
+Next lesson: insert an interval into a set that's **already sorted**.

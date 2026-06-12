@@ -1,0 +1,198 @@
+# Pattern 1: Recursive DFS
+
+> This is the pattern that solves **most** tree problems. The idea is
+> counterintuitive at first: you do not traverse the tree "by hand" — you
+> **trust the recursion** to solve the subtrees and only decide how to combine.
+
+<Challenge id="max-depth" />
+
+> Did you try? If you tried to traverse level by level counting, it works — but
+> there is a much simpler and more direct way to think about it. The theory
+> below shows the recursive "leap of faith".
+
+## The theory: the recursive leap of faith
+
+Faced with a tree, instead of imagining all the nodes, ask three questions:
+
+1. **Base case:** what is the answer for the empty tree (`None`)? (almost
+   always the trivial one: 0, `True`, `None`...)
+2. **Leap of faith:** *assume* the recursion has already given you the correct
+   answer for the left subtree and for the right one.
+3. **Combine:** how do you build the current node's answer from those two
+   answers?
+
+This is the **universal DFS template for trees**:
+
+```text
+def solve(node):
+    if node is None:         → return the base case
+    left = solve(node.left)  # leap of faith
+    right = solve(node.right) # leap of faith
+    return combine(node, left, right)
+```
+
+For *Maximum Depth*: base case `None → 0`; combination
+`1 + max(left, right)`. You never think about the whole tree — only about the
+current node, trusting the children. Watch the DFS go all the way down and come
+back combining (blue shows the nodes already visited, amber is where the
+recursion is now):
+
+<TraceDemo id="tree-traversal" />
+
+### Why is it O(n) time and O(h) space?
+
+The function is called **once per node** (each node is the "node" of exactly one
+call) and does O(1) work to combine → **O(n) time**. The space is the depth of
+the recursion stack, which goes down to the **height** h: **O(h)** — log n if
+balanced, n in the worst case (remember the previous lesson).
+
+## The same template, other problems
+
+By swapping only the combination and the base case, the template solves a whole
+family:
+
+| Problem | Base case | Combine |
+| --- | --- | --- |
+| Maximum depth | `None → 0` | `1 + max(left, right)` |
+| Invert the tree | `None → None` | swap: `node.left=right; node.right=left` |
+| Are they equal? (two trees) | both `None → True` | `a.val==b.val` AND left AND right |
+| Sum of all values | `None → 0` | `node.val + left + right` |
+
+See *invert* and *are they equal* — notice that **only the combine line changes**:
+
+<CodeRunner
+  python={`class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val; self.left = left; self.right = right
+
+def inverter(no):
+    if not no:
+        return None
+    esq = inverter(no.left)
+    dir = inverter(no.right)
+    no.left, no.right = dir, esq      # combine: swap the sides
+    return no
+
+def sao_iguais(a, b):
+    if not a and not b:
+        return True
+    if not a or not b or a.val != b.val:
+        return False
+    return sao_iguais(a.left, b.left) and sao_iguais(a.right, b.right)
+
+def em_ordem(no, saida):
+    if not no: return
+    em_ordem(no.left, saida); saida.append(no.val); em_ordem(no.right, saida)
+
+t = TreeNode(1, TreeNode(2), TreeNode(3))
+inverter(t)
+s = []; em_ordem(t, s); print("inverted (in-order):", s)   # [3,1,2]
+
+x = TreeNode(1, TreeNode(2), None)
+y = TreeNode(1, TreeNode(2), None)
+z = TreeNode(1, None, TreeNode(2))
+print("x == y?", sao_iguais(x, y))    # True
+print("x == z?", sao_iguais(x, z))    # False`}
+  javascript={`function TreeNode(val, left, right) {
+  this.val = val; this.left = left || null; this.right = right || null;
+}
+function inverter(no) {
+  if (!no) return null;
+  var esq = inverter(no.left);
+  var dir = inverter(no.right);
+  no.left = dir; no.right = esq;        // combine: swap the sides
+  return no;
+}
+function saoIguais(a, b) {
+  if (!a && !b) return true;
+  if (!a || !b || a.val !== b.val) return false;
+  return saoIguais(a.left, b.left) && saoIguais(a.right, b.right);
+}
+function emOrdem(no, saida) {
+  if (!no) return;
+  emOrdem(no.left, saida); saida.push(no.val); emOrdem(no.right, saida);
+}
+var t = new TreeNode(1, new TreeNode(2), new TreeNode(3));
+inverter(t);
+var s = []; emOrdem(t, s); console.log("inverted (in-order):", s); // [3,1,2]
+
+var x = new TreeNode(1, new TreeNode(2), null);
+var y = new TreeNode(1, new TreeNode(2), null);
+var z = new TreeNode(1, null, new TreeNode(2));
+console.log("x == y?", saoIguais(x, y)); // true
+console.log("x == z?", saoIguais(x, z)); // false`}
+/>
+
+## The key shift
+
+What separates those who struggle with trees from those who solve them: stop
+trying to "follow the pointers in your head" and start **trusting the
+recursion**. Define the base case, assume the children are solved, and focus
+only on the combination. That mental habit applies to trees, and later to
+graphs and DP.
+
+<Quiz
+  title="Review quiz"
+  questions={[
+    {
+      question: "What is the 'universal template' for recursive DFS on a tree?",
+      options: [
+        "Sort the nodes and traverse",
+        "Handle the base case (None), recursively solve left and right (leap of faith), and combine at the current node",
+        "Use a queue and process by levels",
+        "Visit only the leaves",
+      ],
+      answer: 1,
+      explanation:
+        "Base case → solve(left) → solve(right) → combine. Almost every tree problem is an instance of this, changing only the base case and the combination.",
+    },
+    {
+      question:
+        "For the maximum depth, what is the correct combination from the children's answers?",
+      options: [
+        "left + right",
+        "1 + max(left, right)",
+        "max(left, right)",
+        "1 + left + right",
+      ],
+      answer: 1,
+      explanation:
+        "The depth is the longest path: you take the greater depth of the two children and add 1 (the current node). The base case None → 0.",
+    },
+    {
+      question: "Why is recursive DFS on a tree O(n) time?",
+      options: [
+        "Because the tree is balanced",
+        "Because the function is called exactly once per node, with O(1) combination work in each",
+        "Because it uses a queue",
+        "Because it sorts the values",
+      ],
+      answer: 1,
+      explanation:
+        "Each node is the 'node' of a single call. n calls × O(1) to combine = O(n). The space is O(h) from the recursion stack.",
+    },
+    {
+      question:
+        "Inverting the tree and checking whether two trees are equal use the SAME template. What changes between them?",
+      options: [
+        "Everything — they are different algorithms",
+        "Only the base case and the line that COMBINES the children's results; the recursive structure is identical",
+        "One uses a queue, the other recursion",
+        "The complexity",
+      ],
+      answer: 1,
+      explanation:
+        "Both: base case + solve the children + combine. Inverting combines by swapping the sides; equality combines by comparing val and the corresponding children. Mastering the template solves both.",
+    },
+  ]}
+/>
+
+## Summary
+
+- Universal template: **base case (None) → solve(left) → solve(right) →
+  combine**.
+- "Leap of faith": trust that the recursion solves the children; focus on the combination.
+- **O(n)** time, **O(h)** space (recursion stack).
+- Depth, invert, equality, sum... all are the same template.
+
+Next lesson: when the question is **per level** — BFS.

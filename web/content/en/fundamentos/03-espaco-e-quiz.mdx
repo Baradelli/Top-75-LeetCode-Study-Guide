@@ -1,0 +1,162 @@
+# Space Complexity + Section Quiz
+
+> Time is only half the story. The other half — how much **extra memory**
+> your solution uses — decides between two equally fast solutions and shows up
+> in every interview: *"can you do it with O(1) space?"*
+
+## What counts as space
+
+Space complexity measures the **extra** memory the algorithm allocates,
+beyond the input it was given:
+
+- The input itself **doesn't count** (it already existed).
+- Loose variables (`i`, `total`, `best`) cost **O(1)** — they don't grow with n.
+- A copy of the array, a hash map that may hold all the elements, a result
+  list the size of the input: **O(n)**.
+- An n × n matrix: **O(n²)**.
+
+```python
+def soma(nums):           # space O(1):
+    total = 0             # one variable, whatever n is
+    for x in nums:
+        total += x
+    return total
+
+def dobrados(nums):       # space O(n):
+    resultado = []        # grows along with the input
+    for x in nums:
+        resultado.append(x * 2)
+    return resultado
+```
+
+## The time × space trade-off
+
+This is one of the most important ideas in the entire course: **you can often
+buy time by paying with memory.**
+
+Remember the example from lesson 1? Detecting duplicates in O(n²) uses O(1)
+space; the O(n) version uses a set that may hold all the elements — O(n)
+space. There's no free lunch: the fast version *pays* with memory.
+
+| Solution | Time | Space |
+| --- | --- | --- |
+| Compare every pair | O(n²) 🐢 | O(1) 💚 |
+| Set of seen items | O(n) 🚀 | O(n) 💸 |
+
+On LeetCode this trade is almost always worth it (memory limits are
+generous), and it's exactly what the **hash map** pattern does — the first
+lesson of the Array section.
+
+## Hidden space: the recursion stack
+
+When a function calls itself, each pending call takes up memory on the
+**call stack**. A recursion that goes n levels deep uses O(n) space even
+without creating any list! Keep this idea in mind — it comes back strongly in
+the Trees and Dynamic Programming sections.
+
+## Section quiz — Fundamentals
+
+This quiz wraps up the section. If you get 7 or more right, you're ready for
+the Array section. Any doubt, the three lessons are right here — rereading is
+part of the method.
+
+<Quiz
+  title="Section quiz: Big-O"
+  questions={[
+    {
+      question: "What does an algorithm's Big-O describe?",
+      options: [
+        "The time in seconds it takes",
+        "How the work grows as the input grows",
+        "How many lines of code it has",
+        "The number of loops in the code",
+      ],
+      answer: 1,
+      explanation:
+        "Big-O is about the shape of the growth: does doubling the input double the work (O(n))? Quadruple it (O(n²))? Barely change it (O(log n))?",
+    },
+    {
+      question: "Why is O(2n + 100) simplified to O(n)?",
+      options: [
+        "Because 2n + 100 is always smaller than n²",
+        "Because constants don't change the shape of the growth, only the slope",
+        "Because LeetCode rounds",
+        "It isn't — O(2n) is twice as slow as O(n)",
+      ],
+      answer: 1,
+      explanation:
+        "Multiplying by 2 or adding 100 doesn't change the shape of the curve — a computer 2× faster would have the same effect. The algorithm stays linear.",
+    },
+    {
+      question:
+        "for i in range(n):\n    for j in range(i + 1, n):\n        compare(i, j)\n\nWhat's the Big-O?",
+      options: ["O(n)", "O(n log n)", "O(n²)", "O(2n)"],
+      answer: 2,
+      explanation:
+        "The inner loop runs n-1, n-2, ..., 1 times. The sum is n(n-1)/2 ≈ n²/2 — the constant drops, leaving O(n²). It's the cost of 'comparing every pair'.",
+    },
+    {
+      question:
+        "Sorting the array and then making a single pass over it costs, in total:",
+      options: ["O(n)", "O(n log n)", "O(n²)", "O(log n)"],
+      answer: 1,
+      explanation:
+        "O(n log n) for the sort + O(n) for the pass, in sequence: the larger wins, O(n log n).",
+    },
+    {
+      question:
+        "Searching for a value with `x in my_list` (a list of n items, unsorted) costs:",
+      options: ["O(1)", "O(log n)", "O(n)", "O(n log n)"],
+      answer: 2,
+      explanation:
+        "The list has to be scanned item by item until found (or not). This is the hidden cost the hash map eliminates: in a set/dict, the same question costs O(1) on average.",
+    },
+    {
+      question:
+        "A solution uses only the variables `i`, `best`, and `current`, whatever the size of the array. The extra space is:",
+      options: ["O(n)", "O(1)", "O(log n)", "Depends on the size of the array"],
+      answer: 1,
+      explanation:
+        "Three variables are three variables, whether n = 10 or n = 10 million. Constant space: O(1).",
+    },
+    {
+      question:
+        "An O(n)-time solution uses a hash map that may hold all n elements. Another is O(n²) time with O(1) space. For n = 100,000 on LeetCode, which to choose and why?",
+      options: [
+        "The O(n²) one, because memory is more important",
+        "The O(n) one with the hash map: 100,000 steps pass with room to spare; 10 billion don't",
+        "Either, both pass",
+        "Neither, you need O(log n)",
+      ],
+      answer: 1,
+      explanation:
+        "(10⁵)² = 10¹⁰ steps = a sure Time Limit Exceeded. The hash map buys time by paying with memory — and memory limits are generous. This trade-off is the heart of the hash map pattern.",
+    },
+    {
+      question:
+        "A recursive function calls itself n times deep (each call waits for the next). Even without creating lists, the space is:",
+      options: [
+        "O(1), because it allocates nothing",
+        "O(n), because of the call stack",
+        "O(log n) always",
+        "O(n²)",
+      ],
+      answer: 1,
+      explanation:
+        "Each pending call sits on the call stack waiting. n stacked calls = O(n) of hidden space. Crucial in the Trees and DP sections.",
+    },
+  ]}
+/>
+
+## Section summary
+
+You now have the vocabulary the whole course uses:
+
+- **Big-O = the shape of the growth**, worst case, no constants.
+- **Sequence adds, nesting multiplies, halving becomes log.**
+- **Built-in operations have a hidden cost** (list `in` = O(n), sort = O(n log n)).
+- **Extra space counts** — and trading memory for time (hash map) is the most
+  profitable trade on LeetCode.
+
+Now for real: the **Array section**, where these fundamentals turn into
+solving patterns.

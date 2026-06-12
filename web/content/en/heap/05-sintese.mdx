@@ -1,0 +1,135 @@
+# Synthesis: which pattern to use?
+
+> Three heap patterns covered. The section is short, but the reflex it trains is
+> powerful: recognizing when the question is about **repeated extremes** and
+> reaching for the heap.
+
+## The section's decision tree
+
+```text
+Does the problem ask for the SMALLEST or LARGEST repeatedly, without needing everything sorted?
+   → think HEAP. From there:
+
+1. "The K largest / smallest / K-th / K most frequent"?
+   → HEAP OF SIZE K  (K largest → min-heap; K smallest → max-heap)
+
+2. "Merge / pick the next smallest among SEVERAL sorted sources"?
+   → K-WAY MERGE  (min-heap with the head of each source)
+
+3. "Median of a stream / balance two halves"?
+   → TWO HEAPS  (max-heap of the smaller half + min-heap of the larger one)
+```
+
+And the general reflex: **heap = "what is the extreme right now?" in O(log n)**.
+If you catch yourself wanting to re-sort at every step, or to compare repeatedly
+to find the minimum/maximum of a changing set, that is a sign for a heap.
+
+## The section's full map
+
+| Pattern | Key question | Structure | Time |
+| --- | --- | --- | --- |
+| Top-K | "the K largest/smallest" | heap of size K | O(n log k) |
+| k-way merge | "next smallest among K sources" | min-heap of K heads | O(N log k) |
+| Two heaps | "median of a stream" | max-heap + min-heap | O(log n)/insertion |
+
+The idea that ties it all together: the heap keeps the **extreme accessible in
+O(1)** and **readjusts in O(log n)** when the set changes. That is why it is the
+"priority" tool — and it reappears as a **priority queue** in Dijkstra (graphs)
+and in schedulers.
+
+## Section quiz
+
+Statements you **have not seen** in the lessons. Identify the pattern and the
+why. 6+ correct: ready for the exam.
+
+<Quiz
+  title="Section quiz: Heap"
+  questions={[
+    {
+      question:
+        "'Return the K closest points to the origin.' Which pattern and which heap?",
+      options: [
+        "Sort everything by distance",
+        "Heap of size K: a MAX-heap by distance, keeping the K closest (discards the farthest when it exceeds K)",
+        "k-way merge",
+        "Two heaps",
+      ],
+      answer: 1,
+      explanation:
+        "K SMALLEST distances → max-heap of size K (the top is the worst of the K kept, discarded when a better one arrives). O(n log k).",
+    },
+    {
+      question:
+        "'Connect all sticks with minimum cost (joining a and b costs a+b).' Which pattern?",
+      options: [
+        "Heap of size K",
+        "Greedy min-heap: always join the TWO SMALLEST, return the sum to the heap, repeat — the smallest ones are summed more often, so join them early (Huffman)",
+        "Two heaps",
+        "k-way merge",
+      ],
+      answer: 1,
+      explanation:
+        "It is Huffman's algorithm: the min-heap delivers the two smallest at each step. Joining the smallest ones first minimizes how many times they enter the total sum.",
+    },
+    {
+      question:
+        "'A stream of numbers; at any moment, return the current median.' Which pattern?",
+      options: [
+        "Heap of size K",
+        "Two heaps: max-heap of the smaller half + min-heap of the larger one, balanced; the median sits at the tops",
+        "k-way merge",
+        "Sort on every query",
+      ],
+      answer: 1,
+      explanation:
+        "A stream median is the classic two-heaps case: insert in O(log n), query in O(1) by looking at the tops.",
+    },
+    {
+      question:
+        "'Merge K sorted arrays into one.' Why does the heap beat concatenate+sort?",
+      options: [
+        "It does not beat it",
+        "Because it takes advantage of each array already being sorted: the next smallest is among the K heads (O(log K) per element) → O(N log K), better than O(N log N) when K ≪ N",
+        "Because the heap sorts faster",
+        "Because it always uses less memory",
+      ],
+      answer: 1,
+      explanation:
+        "Concatenate+sort ignores the existing order (O(N log N)). The heap exploits the K sorted heads, lowering the work per element to log K.",
+    },
+    {
+      question:
+        "For the K LARGEST elements, which kind of heap of size K and why?",
+      options: [
+        "Max-heap, to have the largest at the top",
+        "MIN-heap: the top is the smallest of the K largest kept — the 'gatekeeper' that gets evicted when something larger arrives",
+        "It does not matter",
+        "Two heaps",
+      ],
+      answer: 1,
+      explanation:
+        "Counterintuitive but essential: K largest → min-heap (discard the smallest); K smallest → max-heap (discard the largest). The top is always the candidate to leave.",
+    },
+    {
+      question: "What is the core idea that defines when to use a heap?",
+      options: [
+        "When the data is sorted",
+        "When you need the EXTREME (minimum/maximum) repeatedly, from a changing set, without needing everything sorted — a heap gives the top in O(1) and adjusts in O(log n)",
+        "When there is recursion",
+        "When the input is a tree",
+      ],
+      answer: 1,
+      explanation:
+        "A heap is the 'priority' structure: extreme accessible in O(1), readjustment in O(log n). Re-sorting at every step is the symptom that a heap would solve it better.",
+    },
+  ]}
+/>
+
+## Ready for the exam?
+
+The Heap section's final exam has **three brand-new problems** — easy, medium,
+and hard — with hidden cases. The hard one (k-th smallest in a sorted matrix) is
+a disguised k-way merge: start from the corner and expand neighbors with a
+min-heap. The three lessons cover everything you need.
+
+**Good luck on the exam!** Go back to the section page and click "Final exam".

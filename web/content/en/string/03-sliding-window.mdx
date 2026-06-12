@@ -1,0 +1,225 @@
+# Pattern 2: Sliding Window with frequency
+
+> The sliding window you learned in Array comes back here — except the window's
+> **state** stops being a number and becomes a **count map**.
+> With that, it solves the largest family of string problems on LeetCode.
+
+<Challenge id="longest-substring" />
+
+> Tried it? Generating all substrings and checking for repeats in each is O(n²)
+> or O(n³). The annoyance: when you move the start, you restart the check from
+> scratch. The theory below brings the sliding window back — now with a richer
+> state.
+
+## The theory: the window gets a richer state
+
+Recall the variable-window template (Array section): `right` expands, and a
+`while` shrinks `left` while the window violates the condition. The skeleton is
+identical here — what changes is **what the window carries** and **what counts
+as a violation**.
+
+```text
+left = 0
+contagem = {}            # ← the state is now a frequency map
+for right from 0 to n-1:
+    contagem[s[right]] += 1            # char enters from the right
+    while the window is INVALID:
+        contagem[s[left]] -= 1         # char leaves from the left
+        left += 1
+    record the best (window [left..right] is valid)
+```
+
+The definition of "invalid" changes per problem: *does it have a repeated
+char?*, *do we need to swap more than k chars?*, *is some letter of the target
+still uncovered?*. All of this is read from the count map.
+
+And the reason it's O(n) is the same as in the Array section: each character
+**enters the window once** (`right`) and **leaves at most once** (`left`) — at
+most 2n moves, each O(1). The inner `while` doesn't make this O(n²).
+
+### The signs in the prompt
+
+- "longest/shortest **substring** (contiguous!) that satisfies ..." .
+- A condition over the characters **inside** the window ("no repeats", "at most
+  k distinct", "contains all letters of t").
+- The crucial difference from the previous lesson: here **order and contiguity
+  matter** (it's a substring), not just the composition.
+
+## Example 1 — Longest Substring Without Repeating Characters
+
+*"Longest substring with no repeated characters."* The validity condition: no
+letter appears twice in the window.
+
+- **Brute force:** test all substrings and check for repeats — O(n²) or O(n³).
+- **The waste:** when we move the start, we restart the check from scratch.
+- **The pattern:** always expand `right`; if the new char is already in the
+  window, shrink `left` until you remove the repeat. The state is the set of
+  chars in the window.
+
+Watch the window `[left..right]` grow and shrink — notice that `left` only
+advances when `right` brings in a repeated character:
+
+<TraceDemo id="longest-substring" />
+
+The window always contains unique characters, and the answer is the largest
+size `right - left + 1` seen. **O(n)** time; O(min(n, alphabet)) space for the
+map.
+
+## Example 2 — Longest Repeating Character Replacement
+
+*"Longest substring that becomes a block of a single letter by swapping at most
+`k` characters."* The validity condition gets subtler:
+
+> window size − (count of its most frequent character) ≤ k
+
+In other words: the characters that are **not** the majority are the ones
+you'd have to swap; if there are ≤ k of them, the window is valid. The count
+map is what lets you know, in O(1), which is the window's most frequent
+character.
+
+<CodeRunner
+  python={`def character_replacement(s, k):
+    contagem = {}
+    left = 0
+    mais_freq = 0
+    melhor = 0
+    for right in range(len(s)):
+        c = s[right]
+        contagem[c] = contagem.get(c, 0) + 1
+        mais_freq = max(mais_freq, contagem[c])
+        # if we need to swap more than k chars, shrink
+        if (right - left + 1) - mais_freq > k:
+            contagem[s[left]] = contagem[s[left]] - 1
+            left = left + 1
+        melhor = max(melhor, right - left + 1)
+    return melhor
+
+print(character_replacement("AABABBA", 1))  # 4
+print(character_replacement("ABAB", 2))      # 4`}
+  javascript={`function characterReplacement(s, k) {
+  var contagem = {};
+  var left = 0;
+  var maisFreq = 0;
+  var melhor = 0;
+  for (var right = 0; right < s.length; right++) {
+    var c = s[right];
+    contagem[c] = (contagem[c] || 0) + 1;
+    maisFreq = Math.max(maisFreq, contagem[c]);
+    if ((right - left + 1) - maisFreq > k) {
+      contagem[s[left]] = contagem[s[left]] - 1;
+      left = left + 1;
+    }
+    melhor = Math.max(melhor, right - left + 1);
+  }
+  return melhor;
+}
+
+console.log(characterReplacement("AABABBA", 1)); // 4
+console.log(characterReplacement("ABAB", 2));    // 4`}
+/>
+
+### Why is it O(n)?
+
+A single pass of `right` (n times); `left` never goes backward. The map
+operations and the `max` are O(1). The same irreversible-progress argument from
+the Array section: each char enters and leaves at most once. **O(n)**, O(1)
+space (fixed alphabet).
+
+## Example 3 — Minimum Window Substring (the section's boss)
+
+*"Smallest substring of `s` that contains all the letters of `t` (with
+multiplicity)."* It's the sliding window with frequency at its peak:
+
+1. Build the **target** frequency (of `t`).
+2. Expand `right`, counting the window's characters.
+3. When the window **covers** the whole target, try to **shrink** `left` as
+   much as possible without losing coverage — recording the smallest valid
+   window.
+
+Here the window wants to be **minimal** (not maximal): the shrinking `while`
+runs while the window *stays valid*, unlike the previous examples. It's the
+same structure, with the direction of optimization reversed — a good sign that
+you understood the pattern rather than memorized a case.
+
+| Variant | Window grows until... | Window shrinks while... | Wants |
+| --- | --- | --- | --- |
+| No repeats | always | there's a repeat | maximal |
+| ≤ k swaps | always | it needs >k swaps | maximal |
+| Cover `t` | it covers the target | it keeps covering | minimal |
+
+## Sliding window or fixed counting? (lesson 2 vs lesson 3)
+
+- Does the composition of the **whole** string matter (anagram, group)? → fixed
+  counting (lesson 2).
+- Is the condition about a **contiguous substring** that grows/shrinks? →
+  sliding window (this lesson).
+
+<Quiz
+  title="Review quiz"
+  questions={[
+    {
+      question:
+        "What changes in the sliding window when we move from arrays to strings as in these problems?",
+      options: [
+        "Nothing changes",
+        "The window's state stops being a number and becomes a character count map; the expand/shrink skeleton is the same",
+        "It stops being O(n)",
+        "It starts requiring sorting",
+      ],
+      answer: 1,
+      explanation:
+        "The template is identical to the Array section's. What gets richer is the state (a frequency map) and the 'invalid window' criterion, read from that map.",
+    },
+    {
+      question:
+        "Even with an inner while shrinking the window, why are these algorithms O(n)?",
+      options: [
+        "Because the while almost never runs",
+        "Because each character enters the window once (right) and leaves at most once (left): at most 2n moves",
+        "Because the alphabet is small",
+        "They aren't — they're O(n²)",
+      ],
+      answer: 1,
+      explanation:
+        "Count pointer moves, not nested iterations: right advances n times, left advances ≤ n times. 2n × O(1) = O(n). It's the irreversible-progress argument.",
+    },
+    {
+      question:
+        "In Longest Repeating Character Replacement, why is the validity condition '(window size − most frequent char) ≤ k'?",
+      options: [
+        "Because k is the maximum window size",
+        "Because the characters that are NOT the majority are the ones that would need to be swapped; if there are ≤ k swaps, the window can be made uniform",
+        "Because we always swap the first character",
+        "It's an arbitrary formula",
+      ],
+      answer: 1,
+      explanation:
+        "To turn it into a single-letter block, you swap everything that isn't the majority. That number is size − count_of_majority; if ≤ k, the window is reachable.",
+    },
+    {
+      question:
+        "In Minimum Window Substring we want the SMALLEST window. How does that change the shrinking compared to the other examples?",
+      options: [
+        "It doesn't change",
+        "The while shrinks while the window STAYS valid (still covers the target), to find the minimum — the opposite of shrinking only when it becomes invalid",
+        "It doesn't use left",
+        "It starts using two maps",
+      ],
+      answer: 1,
+      explanation:
+        "When seeking the maximal window, you shrink upon violating the condition. When seeking the minimal one, you shrink while the condition holds, recording the smallest valid size at each step.",
+    },
+  ]}
+/>
+
+## Summary
+
+- A string sliding window = the Array template + **state = frequency map**.
+- The window's "validity" is read from the map: no repeats / ≤ k swaps / covers
+  the target.
+- **O(n)** always, by the same argument: each char enters and leaves at most
+  once.
+- A maximal window shrinks on violation; a minimal window shrinks while it
+  holds.
+
+Next lesson: back to two pointers — this time for **palindromes**.

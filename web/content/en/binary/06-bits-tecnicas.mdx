@@ -1,0 +1,196 @@
+# Pattern 5: Bit techniques
+
+> To close out the bits module, three techniques that combine what you've
+> learned with other ideas: **reusing counts** (counting bits), **reversing
+> bits** and **summing without the `+` operator**.
+
+<Challenge id="counting-bits" />
+
+> Tried it? Counting the bits of each number separately works, but it's
+> O(n · width). The theory below shows how to reuse already-computed answers
+> and drop to O(n) — it's DP meeting bits.
+
+## Technique 1 — Counting Bits (reusing answers)
+
+*"For each `i` from 0 to n, how many 1 bits does it have?"* Computing each one
+from scratch is wasteful: nearby numbers share bits. The insight (dynamic
+programming, which you'll see in depth in the last section):
+
+> The number `i` has the same bits as `i >> 1` (i without its last bit),
+> **plus** the last bit (`i & 1`).
+
+That is, `ans[i] = ans[i >> 1] + (i & 1)`. Since `i >> 1 < i`, the smaller
+answer has already been computed — just reuse it. Think of `i = 13` (`1101`):
+dropping the last bit gives `110` (which is `6`), and `6` has 2 bits; adding
+the last bit (`1`) gives 3.
+
+<CodeRunner
+  python={`def count_bits(n):
+    ans = [0] * (n + 1)
+    for i in range(1, n + 1):
+        ans[i] = ans[i >> 1] + (i & 1)   # reuses the answer for i>>1
+    return ans
+
+print(count_bits(5))    # [0, 1, 1, 2, 1, 2]
+print(count_bits(8))    # [0, 1, 1, 2, 1, 2, 2, 3, 1]`}
+  javascript={`function countBits(n) {
+  var ans = [0];
+  for (var i = 1; i <= n; i++) {
+    ans[i] = ans[i >> 1] + (i & 1); // reuses the answer for i>>1
+  }
+  return ans;
+}
+
+console.log(JSON.stringify(countBits(5))); // [0,1,1,2,1,2]
+console.log(JSON.stringify(countBits(8))); // [0,1,1,2,1,2,2,3,1]`}
+/>
+
+**Why O(n)?** There are `n` numbers and each answer comes out in O(1) (a
+shift, an AND, an addition — all reusing something already done). Counting
+each number bit by bit would be O(n · width); reusing drops it to **O(n)**.
+
+## Technique 2 — Reverse Bits (reverse the order of the bits)
+
+*"Reverse the 32 bits of a number."* The idea: build the result bit by bit —
+pull the last bit of `n` and push it into `res`, which keeps getting shifted to
+the left. After 32 times, `res` is the mirror of `n`.
+
+<CodeRunner
+  python={`def reverse_bits(n):
+    res = 0
+    for i in range(32):
+        res = (res << 1) | (n & 1)   # push res and stick on the last bit of n
+        n = n >> 1                    # discard the bit already used
+    return res
+
+print(reverse_bits(43261596))   # 964176192`}
+  javascript={`function reverseBits(n) {
+  var res = 0;
+  for (var i = 0; i < 32; i++) {
+    res = (res << 1) | (n & 1);  // push res and stick on the last bit of n
+    n = n >>> 1;                  // discard the bit already used (unsigned)
+  }
+  return res >>> 0;               // interpret as an unsigned integer
+}
+
+console.log(reverseBits(43261596)); // 964176192`}
+/>
+
+An important detail in JavaScript: use `>>>` (unsigned shift) and `>>> 0` at
+the end, because JS's bitwise operators work on **signed 32 bits** — without
+this, the highest bit would be read as negative.
+
+## Technique 3 — Sum of Two Integers (sum without `+`)
+
+*"Add `a` and `b` without using `+` or `-`."* It seems impossible, but binary
+addition **is** made of bits:
+
+- `a ^ b` sums the bits **ignoring the carry**.
+- `(a & b) << 1` is exactly the **carry**: where both bits are 1, one carries
+  over to the next place.
+
+Repeat "sum without carry, then add the carry" until no carry is left — just
+like adding by hand, only in binary.
+
+<CodeRunner
+  python={`def get_sum(a, b):
+    MASK = 0xFFFFFFFF        # 32 bits (Python has unbounded integers)
+    MAX_INT = 0x7FFFFFFF
+    while b != 0:
+        carry = ((a & b) << 1) & MASK
+        a = (a ^ b) & MASK    # sum without the carry
+        b = carry             # the carry becomes the next addend
+    return a if a <= MAX_INT else ~(a ^ MASK)   # adjusts negatives
+
+print(get_sum(1, 2))     # 3
+print(get_sum(-2, 3))    # 1
+print(get_sum(-1, -1))   # -2`}
+  javascript={`function getSum(a, b) {
+  while (b !== 0) {
+    var carry = (a & b) << 1;  // the carry
+    a = a ^ b;                  // sum without the carry
+    b = carry;                  // repeat until there's no more carry
+  }
+  return a;
+}
+
+console.log(getSum(1, 2));   // 3
+console.log(getSum(-2, 3));  // 1
+console.log(getSum(-1, -1)); // -2`}
+/>
+
+Notice the difference between the languages: JS operates natively on signed 32
+bits, so the sum "just works". Python has integers of **unbounded** size, so
+we need to **mask** to 32 bits (`& 0xFFFFFFFF`) and rebuild the sign at the end
+— otherwise the carry would never finish for negative numbers. It's a great
+reminder that "the same algorithm" can require different care depending on how
+the language represents numbers.
+
+<Quiz
+  title="Review quiz"
+  questions={[
+    {
+      question:
+        "In Counting Bits, why does ans[i] = ans[i >> 1] + (i & 1) work?",
+      options: [
+        "Because i >> 1 is always even",
+        "Because i has the same bits as i without its last one (i >> 1) plus the last bit (i & 1); and ans[i>>1] has already been computed",
+        "Because i & 1 counts all the bits",
+        "It's a numerical coincidence",
+      ],
+      answer: 1,
+      explanation:
+        "Dropping the last bit (i >> 1) gives a smaller number whose count already exists; just add the last bit. Reusing smaller answers is what makes the algorithm O(n).",
+    },
+    {
+      question: "Why is Counting Bits O(n) and not O(n · width)?",
+      options: [
+        "Because n is small",
+        "Because each of the n answers is obtained in O(1) by reusing an already-computed one (a shift, an AND, an addition)",
+        "Because it uses XOR",
+        "Because it has no loop",
+      ],
+      answer: 1,
+      explanation:
+        "Without reusing, we'd count the bits of each number (O(width) each) → O(n·width). The recurrence gives each answer in O(1) → O(n) overall.",
+    },
+    {
+      question:
+        "In JavaScript, why does Reverse Bits use >>> and end with >>> 0?",
+      options: [
+        "For style",
+        "Because JS's bitwise operators work on SIGNED 32 bits; >>> (unsigned) and >>> 0 prevent the highest bit from being read as a negative number",
+        "Because >>> is faster",
+        "To round the result",
+      ],
+      answer: 1,
+      explanation:
+        "Without the unsigned shift, a 1 in bit 31 would make the number be interpreted as negative. >>> and >>> 0 ensure it's read as an unsigned 32-bit integer.",
+    },
+    {
+      question:
+        "In 'sum without +', what does (a & b) << 1 represent?",
+      options: [
+        "The final sum",
+        "The carry: where both bits are 1, one carries over to the next place",
+        "The difference between a and b",
+        "Twice a",
+      ],
+      answer: 1,
+      explanation:
+        "a ^ b sums ignoring the carry; (a & b) << 1 is exactly the carry, shifted one place. Repeating until the carry hits zero reproduces binary addition.",
+    },
+  ]}
+/>
+
+## Summary
+
+- **Counting Bits**: `ans[i] = ans[i>>1] + (i&1)`, reusing answers → O(n).
+- **Reverse Bits**: build the mirror bit by bit; in JS, watch out for signed 32
+  bits (`>>>`, `>>> 0`).
+- **Sum without +**: `a^b` sums without carry, `(a&b)<<1` is the carry; repeat.
+  In Python, mask to 32 bits.
+- The same bit algorithm can require different care per language.
+
+Last stop: the **synthesis** of the Binary section and the quiz before the
+exam.

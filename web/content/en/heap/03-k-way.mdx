@@ -1,0 +1,127 @@
+# Pattern 2: Merging K sources (k-way merge)
+
+> In the Linked List section, you merged **two** sorted lists by comparing the
+> heads. And to merge **K** lists? Comparing K heads at every step would be
+> O(K) per element. The heap does it in O(log K) — and that is your right tool
+> for the famous *Merge k Sorted Lists*.
+
+<Challenge id="merge-k-sorted" />
+
+> Tried it? Concatenating everything and sorting works (O(N log N)), but it
+> throws away the fact that each list is **already sorted**. The theory below
+> uses the heap to take advantage of that.
+
+## The theory: the heap picks the next smallest
+
+The next element of the result is always the **smallest among the heads** of
+the K lists. Instead of looking at all K heads at every step, keep them in a
+**min-heap**: the top is the smallest, removed in O(log K).
+
+The key piece: when storing a head in the heap, also store **which list** it
+came from (and its position), so you can refill the next one from that list
+afterward:
+
+```text
+min-heap with the 1st head of each list (value, which list, index)
+while the heap is not empty:
+    (value, list, index) = remove the smallest
+    add value to the result
+    if there is a next one in that list:
+        push (next value, same list, index+1)
+```
+
+The heap has at most **K** elements (one head per list), and each of the **N**
+total elements enters and leaves once. That is why the cost is **O(N log K)** —
+much better than comparing K heads per element (O(N·K)) or concatenating and
+sorting (O(N log N), which is larger when K ≪ N).
+
+## Revisiting two problems with the right tool
+
+This section **revisits** problems you have already solved — now with the heap:
+
+- **Merge k Sorted Lists** (Linked List section): there you would merge pair by
+  pair (a tournament, O(N log K)); the heap gives the same O(N log K) in a
+  single pass, keeping the K heads.
+- **Meeting Rooms II** (Intervals section): there we used an event sweep; the
+  other classic solution is a **min-heap of the end times** of the meetings in
+  progress — the size of the heap is the number of rooms. Same answer, new
+  tool.
+
+> The lesson: the heap is the structure that answers *"what is the
+> next/smallest right now?"* as the set changes. Several problems you solved
+> with specific tricks have a clean, general solution with a heap.
+
+## Why not concatenate and sort?
+
+Concatenating the K lists and sorting is O(N log N) and **ignores** that each
+list is already sorted. The heap takes advantage of that order: since the next
+smallest can only come from one of the K heads, the work per element drops from
+log N to log K. When you have **many elements in few lists** (K ≪ N), the
+difference is real.
+
+<Quiz
+  title="Review quiz"
+  questions={[
+    {
+      question: "In the k-way merge, why is the next element of the result always among the K heads?",
+      options: [
+        "By chance",
+        "Because each list is sorted: the smallest not-yet-used element of each list is its current head, so the global smallest is among those K heads",
+        "Because the heap sorts everything",
+        "Because the lists have the same size",
+      ],
+      answer: 1,
+      explanation:
+        "In sorted lists, everything after the head is larger. So the next smallest of the result is the minimum of the K heads — exactly what the min-heap delivers.",
+    },
+    {
+      question: "Why store 'which list' each element came from in the heap?",
+      options: [
+        "To sort the lists",
+        "To know which is the NEXT head to refill into the heap after removing an element from that list",
+        "To count elements",
+        "It is not necessary",
+      ],
+      answer: 1,
+      explanation:
+        "When you remove the smallest (which came from list i), you need to push the next one from list i. Storing the origin (and the index) lets you refill the right head.",
+    },
+    {
+      question: "Why is the k-way merge with a heap O(N log K)?",
+      options: [
+        "Because the heap has N elements",
+        "Because the heap has at most K elements (one head per list); each of the N elements enters/leaves once, at O(log K)",
+        "Because it sorts everything at the end",
+        "Because K = N",
+      ],
+      answer: 1,
+      explanation:
+        "The heap never exceeds K. N insertions/removals at O(log K) each → O(N log K). Better than O(N·K) (comparing K heads) and than O(N log N) when K ≪ N.",
+    },
+    {
+      question:
+        "Meeting Rooms II (Intervals section) has a heap-based solution. Which one?",
+      options: [
+        "A heap of the meeting start times",
+        "A min-heap of the END times of the meetings in progress: for each new meeting, if the smallest end has already passed, reuse the room; the size of the heap is the number of rooms",
+        "Sort and count duplicates",
+        "There is no heap-based solution",
+      ],
+      answer: 1,
+      explanation:
+        "The heap of ends lets you check in O(log n) whether any room has freed up. It is the same answer as the event sweep, with this section's tool — the heap revisits old problems.",
+    },
+  ]}
+/>
+
+## Summary
+
+- **k-way merge**: the next smallest is the minimum of the K heads → **min-heap**
+  of size K, storing the origin of each element.
+- **O(N log K)** — takes advantage of each source already being sorted (better
+  than concatenate+sort when K ≪ N).
+- The heap **revisits** Merge k Lists and Meeting Rooms II with a clean
+  solution.
+
+Next lesson: balancing two halves to find the **median** of a stream — two
+heaps.

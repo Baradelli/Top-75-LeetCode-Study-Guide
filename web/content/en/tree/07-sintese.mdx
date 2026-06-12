@@ -1,0 +1,166 @@
+# Synthesis: which pattern to use?
+
+> Five tree patterns covered. Time to train the reflex: read a tree problem and
+> know which tool to reach for — with justification.
+
+## The section's decision tree
+
+```text
+1. Does the answer COMBINE from the subtrees (height, sum, validate, invert)?
+   → RECURSIVE DFS (base case None → solve left → solve right → combine)
+
+2. Is the question per LEVEL (values of each level, side view, minimum depth)?
+   → Level-order BFS (queue + level-size trick)
+
+3. Is it a BST (left < node < right)?
+   ├── search / LCA / insert   → descend only one side: O(h)
+   └── "k-th smallest" / sorted → IN-ORDER traversal (ascending)
+
+4. Do I need to REBUILD or SERIALIZE the tree?
+   → preorder gives the root; empty markers make the string reconstructible
+
+5. Is the problem about PREFIXES or a dictionary of words?
+   → TRIE (per-character path; O(L) per operation)
+```
+
+And the reflex that holds for the whole section: **think recursively**. Define
+the base case, trust that the recursion solves the children, and focus on the
+combination. Most trees yield to that habit.
+
+## The complete map of the section
+
+| Pattern | Key question | Time | Space |
+| --- | --- | --- | --- |
+| Recursive DFS | "combine the children's result" | O(n) | O(h) |
+| Level-order BFS | "per level / minimum depth" | O(n) | O(width) |
+| BST (search/LCA) | "left &lt; node &lt; right" | O(h) | O(h) |
+| BST in-order | "k-th / sorted" | O(n) | O(h) |
+| Construction/serialization | "rebuild without ambiguity" | O(n) | O(h) |
+| Trie | "prefixes / dictionary" | O(L) per op. | O(total chars) |
+
+Notice the recurring **O(h)**: the height governs the recursion's space and the
+time of the BST search. Balanced → log n; degenerate → n. This is the section's
+deep dive into Big-O — whenever you say O(h), know what h means.
+
+## Section quiz
+
+Statements you have **not seen** in the lessons. Identify the pattern and the
+why. 7+ correct: ready for the exam.
+
+<Quiz
+  title="Section quiz: Trees"
+  questions={[
+    {
+      question:
+        "'Sum all the tree's values.' Which pattern and what is the combination?",
+      options: [
+        "Level-order BFS",
+        "Recursive DFS: base case None → 0; combine = node.val + sum(left) + sum(right)",
+        "Trie",
+        "In-order traversal",
+      ],
+      answer: 1,
+      explanation:
+        "It is the recursive template: the sum of a tree is the node's value plus the sum of the two subtrees. Empty base case = 0.",
+    },
+    {
+      question:
+        "'What is the MINIMUM depth (to the shallowest leaf)?' Why is BFS a great choice?",
+      options: [
+        "Because DFS does not work on trees",
+        "Because BFS explores in increasing levels: the first leaf found is at the shallowest level — you can stop there",
+        "Because it sorts the tree",
+        "Because it uses recursion",
+      ],
+      answer: 1,
+      explanation:
+        "'Shallowest' = smallest level = BFS finds it first. It can return as soon as it sees the first leaf, without exploring the rest.",
+    },
+    {
+      question:
+        "'In a BST, find the in-order successor of a value.' Which property helps?",
+      options: [
+        "The height",
+        "The in-order traversal of the BST is ascending — the successor is the next one in that order; you can find it by descending through the structure in O(h)",
+        "The width",
+        "The end flag",
+      ],
+      answer: 1,
+      explanation:
+        "In-order = ascending. The successor is the next larger value; the BST rule lets you locate it by descending (without traversing everything), in O(h).",
+    },
+    {
+      question:
+        "'Check whether a tree is mirrored around its center (symmetric).' Which pattern?",
+      options: [
+        "BFS",
+        "Recursive DFS comparing TWO mirrored nodes at the same time: mirror(a,b) checks a.val==b.val, mirror(a.left,b.right) and mirror(a.right,b.left)",
+        "Trie",
+        "BST in-order",
+      ],
+      answer: 1,
+      explanation:
+        "It is the recursive template applied to a pair of mirrored nodes. Comparing (a.left,b.right) and (a.right,b.left) is what captures the symmetry. (It shows up in the exam!)",
+    },
+    {
+      question:
+        "'Autocomplete: given many words, answer quickly whether a prefix exists.' Which structure?",
+      options: [
+        "BST",
+        "Trie — each operation is O(L) in the size of the prefix, regardless of how many words there are",
+        "Queue (BFS)",
+        "Sorted list",
+      ],
+      answer: 1,
+      explanation:
+        "Prefix search in a dictionary is the classic use case of the Trie: walk letter by letter, O(L), without depending on the number of words.",
+    },
+    {
+      question:
+        "'Maximum path sum in the tree (it can turn at a node, negative values).' Why is it DFS done carefully?",
+      options: [
+        "Because it is BFS",
+        "Each node returns the gain from going down ONE side; but the best path may use BOTH sides at a node — update a global answer with val + left_gain + right_gain, using max(gain, 0)",
+        "Because it uses a Trie",
+        "Because the tree is a BST",
+      ],
+      answer: 1,
+      explanation:
+        "The return (one side, so the parent can extend) differs from the answer (it can turn using both sides). Discarding negative sides with max(·,0) is the subtlety. (It is the hard exam problem!)",
+    },
+    {
+      question:
+        "Why do so many tree algorithms have O(h) space instead of O(n)?",
+      options: [
+        "Because they visit few nodes",
+        "Because the extra cost is the recursion stack, which goes only as deep as the depth (height h) — it does not store all the nodes at the same time",
+        "Because they use a queue",
+        "Because the tree is always balanced",
+      ],
+      answer: 1,
+      explanation:
+        "The recursion stacks one call per level it is diving into — at most h. h is log n if balanced, n if degenerate. Hence 'O(h)'.",
+    },
+    {
+      question: "What is the master idea that unites almost the whole Trees section?",
+      options: [
+        "Sort the nodes",
+        "Think RECURSIVELY: define the base case, trust that the recursion solves the subtrees, and combine at the current node",
+        "Always use a queue",
+        "Convert the tree into an array",
+      ],
+      answer: 1,
+      explanation:
+        "The tree's recursive structure invites a recursive solution. Mastering 'base case + combine the children' solves most of them, and prepares your thinking for graphs and DP.",
+    },
+  ]}
+/>
+
+## Ready for the exam?
+
+The Trees section's final exam has **three brand-new problems** — easy, medium
+and hard — with hidden cases. The hard one (maximum path sum) is recursive DFS
+with the subtlety of separating "what I return to the parent" from "the best
+answer I can form here". The five lessons cover everything you need.
+
+**Good luck on the exam!** Go back to the section page and click "Final exam".

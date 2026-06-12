@@ -1,0 +1,177 @@
+# Pattern 1: DFS and BFS with visited
+
+> The two traversals you already saw in Matrix and Tree now appear in their
+> most general form. The only novelty compared to trees: since graphs have
+> cycles, the **visited set** stops being optional — it is what prevents
+> running forever.
+
+<Challenge id="connected-components" />
+
+> Tried it? The core idea: every time you find a node not yet visited, it
+> starts a **new group** — and a search (DFS/BFS) from it marks the entire
+> group. The theory below formalizes this.
+
+## The theory: traversing while marking visited
+
+**DFS (depth):** go as deep as possible along a path, backing up when stuck.
+Recursive and short:
+
+```text
+dfs(node):
+    mark node as visited
+    for each neighbor of node:
+        if not visited: dfs(neighbor)
+```
+
+**BFS (breadth):** explore in layers, with a queue:
+
+```text
+queue = [origin]; mark origin
+while the queue is not empty:
+    node = dequeue
+    for each neighbor of node:
+        if not visited: mark and enqueue
+```
+
+Both visit **all reachable nodes** from the origin, in O(V + E). The difference
+is the **order** (depth vs layers) — and the choice follows the same criterion
+as in Matrix: **BFS** for the shortest path; **DFS** for "reach / cover /
+exists". Compare the orders on the same graph:
+
+<TraceDemo id="graph-dfs" />
+
+<TraceDemo id="graph-bfs" />
+
+### Counting connected components
+
+A graph can have several disconnected "pieces". To count them: traverse all
+nodes; each node still **not visited** starts a **new component** (+1), and a
+search from it marks the whole piece. It is the same reasoning as "counting
+islands" (Matrix!), now on a general graph. **O(V + E)** time.
+
+## Example: Clone Graph (DFS with a map)
+
+*"Copy an entire graph (nodes and edges), creating new objects."* The
+challenge: when following the edges, you run into nodes already copied (because
+of cycles) — and you cannot copy them again. The solution: a map
+`original → copy`, and registering the copy **before** recursing into the
+neighbors (otherwise, a cycle causes infinite recursion):
+
+<CodeRunner
+  python={`def clonar(no, visto):
+    if no["val"] in visto:
+        return visto[no["val"]]        # already cloned: return the copy
+    copia = {"val": no["val"], "vizinhos": []}
+    visto[no["val"]] = copia           # register BEFORE recursing (cuts cycles)
+    for viz in no["vizinhos"]:
+        copia["vizinhos"].append(clonar(viz, visto))
+    return copia
+
+# graph with a cycle: 1 — 2 — 3 — 1
+n1 = {"val": 1, "vizinhos": []}
+n2 = {"val": 2, "vizinhos": []}
+n3 = {"val": 3, "vizinhos": []}
+n1["vizinhos"] = [n2, n3]
+n2["vizinhos"] = [n1, n3]
+n3["vizinhos"] = [n1, n2]
+
+copia = clonar(n1, {})
+print("copy val:", copia["val"])
+print("copy neighbors:", [v["val"] for v in copia["vizinhos"]])
+n1["val"] = 99                          # change the ORIGINAL
+print("copy intact?", copia["val"])     # 1 (the copy is independent)`}
+  javascript={`function clonar(no, visto) {
+  if (visto[no.val] !== undefined) return visto[no.val]; // already cloned
+  var copia = { val: no.val, vizinhos: [] };
+  visto[no.val] = copia;                 // register BEFORE recursing
+  for (var i = 0; i < no.vizinhos.length; i++) {
+    copia.vizinhos.push(clonar(no.vizinhos[i], visto));
+  }
+  return copia;
+}
+var n1 = { val: 1, vizinhos: [] };
+var n2 = { val: 2, vizinhos: [] };
+var n3 = { val: 3, vizinhos: [] };
+n1.vizinhos = [n2, n3];
+n2.vizinhos = [n1, n3];
+n3.vizinhos = [n1, n2];
+
+var copia = clonar(n1, {});
+console.log("copy val:", copia.val);
+console.log("copy neighbors:", copia.vizinhos.map(function (v) { return v.val; }));
+n1.val = 99;                             // change the ORIGINAL
+console.log("copy intact?", copia.val); // 1 (independent)`}
+/>
+
+The map serves two purposes at once: **memory of what was already cloned**
+(avoids duplicating) and **visited detector** (avoids the infinite cycle).
+Changing the original afterwards proves that the copy is truly independent.
+
+<Quiz
+  title="Review quiz"
+  questions={[
+    {
+      question:
+        "Why is the visited set MANDATORY in graphs, but was not in trees?",
+      options: [
+        "For performance only",
+        "Because graphs can have cycles: without marking visited, the traversal would follow the edges in a circle forever",
+        "Because graphs are larger",
+        "It is not mandatory",
+      ],
+      answer: 1,
+      explanation:
+        "Trees have no cycles, so the recursion always terminates. Graphs have cycles — without visited, the DFS/BFS would enter an infinite loop.",
+    },
+    {
+      question:
+        "To count connected components, what is the strategy?",
+      options: [
+        "Count all the edges",
+        "Traverse all nodes; each NOT visited node starts a new component (+1) and a search from it marks the whole piece",
+        "Sort the nodes",
+        "Use a heap",
+      ],
+      answer: 1,
+      explanation:
+        "It is the same reasoning as 'counting islands' in Matrix: each start of a search covers an entire component, so the number of searches started is the number of components.",
+    },
+    {
+      question:
+        "In Clone Graph, why register the copy in the map BEFORE recursing into the neighbors?",
+      options: [
+        "For style",
+        "Because the graph can have cycles: if a neighbor points back to a node being cloned, the map already has the copy and the recursion stops — avoiding an infinite loop",
+        "To save memory",
+        "The order does not matter",
+      ],
+      answer: 1,
+      explanation:
+        "Registering first guarantees that, when running into the node again through a cycle, you return the copy already created instead of cloning it again (which would recurse forever).",
+    },
+    {
+      question:
+        "DFS and BFS on a graph visit the same nodes. How to choose between them?",
+      options: [
+        "DFS is always better",
+        "BFS for the SHORTEST path / fewest number of steps; DFS for 'reach / cover / exists', where the order does not matter",
+        "BFS is always faster",
+        "It does not matter, they are identical",
+      ],
+      answer: 1,
+      explanation:
+        "Same rule as in Matrix: the BFS queue explores by increasing distance (optimal for shortest); the DFS goes deep (simpler when all that matters is to reach/cover).",
+    },
+  ]}
+/>
+
+## Summary
+
+- DFS (depth, recursion) and BFS (layers, queue) traverse what is reachable in
+  **O(V+E)**, always with **visited**.
+- **Connected components**: each not-visited node starts a search = +1
+  component.
+- **Clone Graph**: map `original → copy` registers before recursing (cuts
+  cycles and avoids duplicating).
+
+Next lesson: ordering tasks with dependencies — **topological sort**.

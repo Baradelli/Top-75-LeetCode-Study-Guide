@@ -1,0 +1,168 @@
+# Synthesis: which pattern to use?
+
+> Five matrix patterns covered. Time to train the reflex: read a grid problem
+> and know which tool to pull out — with justification.
+
+## The section's decision tree
+
+```text
+1. Do I need to TRAVERSE/PRODUCE the matrix in a special order (spiral, layers)?
+   → LAYER-BY-LAYER TRAVERSAL (four shrinking bounds)
+
+2. Do I need to TRANSFORM the matrix without extra memory (rotate, zero)?
+   → IN-PLACE: decompose (transpose + reverse) and/or use the 1st row/column
+     as markers
+
+3. Is the question about CONNECTED REGIONS (islands, areas, filling)?
+   → DFS / FLOOD FILL (permanent mark; covers the region)
+
+4. Do I need to find/count specific PATHS (a word, all paths)?
+   → BACKTRACKING (DFS with a temporary mark: mark → explore → unmark)
+
+5. Is the question "the SHORTEST path / fewest steps"?
+   → BFS (queue, layers of increasing distance)
+```
+
+And the reflexes for the whole section: **name both dimensions in the Big-O**
+(O(m·n), not O(n²)), **always check the bounds** before accessing a neighbor,
+and remember that **a grid is a graph** — DFS/BFS are the core tools.
+
+## The complete map of the section
+
+| Pattern | Key question | Structure | Time | Space |
+| --- | --- | --- | --- | --- |
+| Spiral traversal | "traverse in a spiral/layers" | 4 bounds | O(m·n) | O(1) |
+| In-place transformation | "rotate/zero without a copy" | indices + markers | O(m·n) | O(1) |
+| DFS / flood fill | "connected regions" | stack (recursion) | O(m·n) | O(m·n) |
+| Backtracking | "specific path / all" | DFS + undo | O(m·n·4ᴸ) | O(L) |
+| BFS | "shortest path" | queue | O(m·n) | O(m·n) |
+
+The idea that ties half the section together: **the grid is a graph**, and DFS
+(deep), backtracking (deep + undo) and BFS (wide) are three ways to traverse
+it, each for a kind of question. You leave here ready for the **Graphs**
+section, where these same algorithms appear without the "crutch" of the regular
+grid.
+
+## Section quiz
+
+Statements you **have not seen** in the lessons. Identify the pattern and the
+why. 7+ correct: ready for the exam.
+
+<Quiz
+  title="Section quiz: Matrix"
+  questions={[
+    {
+      question:
+        "'Compute the area of the largest island of 1s in a grid.' Which pattern?",
+      options: [
+        "BFS for shortest path",
+        "DFS / flood fill: each island is a connected region; the DFS counts the size of each one and you keep the maximum",
+        "Spiral traversal",
+        "Backtracking",
+      ],
+      answer: 1,
+      explanation:
+        "It is 'connected regions' with a measure (size). DFS sinks each island summing cells; the largest total is the answer. The mark is permanent (cover the region).",
+    },
+    {
+      question:
+        "'How many steps for a rotten orange to rot all its neighbors, in minutes?' (multi-source). Which pattern?",
+      options: [
+        "DFS",
+        "BFS — in layers of time, starting from ALL the rotten ones at once; the number of layers is the time to rot everything",
+        "Spiral traversal",
+        "In-place transformation",
+      ],
+      answer: 1,
+      explanation:
+        "'How many steps/minutes' = minimum distance in layers = BFS. Starting with all the sources in the queue (multi-source) propagates the waves simultaneously.",
+    },
+    {
+      question:
+        "'Generate an n×n matrix filled in a spiral with 1..n².' Which pattern?",
+      options: [
+        "DFS",
+        "Layer-by-layer traversal (the same four bounds), but WRITING an increasing counter instead of reading",
+        "BFS",
+        "Backtracking",
+      ],
+      answer: 1,
+      explanation:
+        "It is the spiral in reverse: the bound control is identical, only you fill each edge with a counter. Reading or writing, the navigation is the same.",
+    },
+    {
+      question:
+        "'Find whether there is a path that spells a word through adjacent cells (without reusing).' Which pattern?",
+      options: [
+        "BFS",
+        "Backtracking (DFS with a temporary mark): match letter by letter, mark the cell in the path and unmark on backtrack",
+        "Flood fill with a permanent mark",
+        "Spiral traversal",
+      ],
+      answer: 1,
+      explanation:
+        "It is a specific path that needs to be able to try alternative routes — a temporary mark. Flood fill (permanent mark) would block cells and lose paths.",
+    },
+    {
+      question:
+        "'Distance of each cell to the nearest 0 (01 Matrix).' Which pattern?",
+      options: [
+        "DFS from each cell",
+        "Multi-source BFS from all the 0s at once — each layer is a distance",
+        "Spiral traversal",
+        "Backtracking",
+      ],
+      answer: 1,
+      explanation:
+        "'Nearest' = minimum distance = BFS. Seeding the queue with all the 0s propagates increasing distances to the rest of the grid in O(m·n).",
+    },
+    {
+      question:
+        "Why is the complexity of visiting a 1000×3 matrix O(m·n) = 3000, and not O(n²) = 1,000,000?",
+      options: [
+        "Because the matrix is small",
+        "Because there are two DIFFERENT dimensions (m=1000, n=3); the work is m·n. Calling it n² only makes sense in a square matrix",
+        "Because it is O(m+n)",
+        "Because we ignore rows",
+      ],
+      answer: 1,
+      explanation:
+        "The number of cells is m·n. Naming both dimensions avoids grossly overestimating the cost when the matrix is very rectangular.",
+    },
+    {
+      question:
+        "What is the master idea connecting DFS, backtracking and BFS in this section?",
+      options: [
+        "Sorting the matrix",
+        "That the grid is a GRAPH: all three are ways to traverse connected cells — deep (DFS), deep-with-undo (backtracking) and wide (BFS)",
+        "That everything is O(1) space",
+        "That matrices are always square",
+      ],
+      answer: 1,
+      explanation:
+        "Neighborhood = edges. The three algorithms are ways to explore this graph, each suited to a kind of question. It is the direct bridge to the Graphs section.",
+    },
+    {
+      question:
+        "'Capture the regions of O surrounded by X (those that do not touch the edge).' What is the insight?",
+      options: [
+        "DFS from each inner O",
+        "Invert the problem: DFS/BFS from the EDGE O's to mark the 'safe' ones; whatever is left unmarked was surrounded",
+        "Spiral traversal",
+        "Sort the edges",
+      ],
+      answer: 1,
+      explanation:
+        "It is easier to find the NON-surrounded ones (connected to the edge) than the surrounded ones. Mark the safe ones from the edges; the remaining O's are the captured ones.",
+    },
+  ]}
+/>
+
+## Ready for the exam?
+
+The Matrix section's final exam has **three new problems** — easy, medium and
+hard — with hidden cases. The hard one (capturing surrounded regions) calls for
+the insight of **inverting the problem** and running DFS from the edges:
+exactly the kind of reasoning the decision tree above trains.
+
+**Good luck on the exam!** Go back to the section page and click "Final exam".

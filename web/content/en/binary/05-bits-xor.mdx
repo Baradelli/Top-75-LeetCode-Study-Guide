@@ -1,0 +1,161 @@
+# Pattern 4: The power of XOR
+
+> XOR (`^`) has an almost magical property that solves a whole family of "find
+> what's left" problems in O(n) time and O(1) space — no hash map, no sorting.
+
+<Challenge id="missing-number" />
+
+> Tried it? You probably used a set or the sum formula — both work! The theory
+> below shows a third way, with XOR, that uses no extra memory and runs no risk
+> of overflow.
+
+## The theory: the properties of XOR
+
+XOR compares bit by bit and gives 1 where the bits **differ**. From this come
+three properties that, together, are a powerful tool:
+
+```text
+1.  a ^ a = 0       (anything XOR'd with itself cancels out)
+2.  a ^ 0 = a       (XOR with zero changes nothing)
+3.  a ^ b = b ^ a   (order doesn't matter — commutative and associative)
+```
+
+Put it all together: if you XOR a bunch of numbers, **everything that appears
+in a pair cancels out** (property 1) and what's left is exactly what appeared
+an odd number of times. It's an "unpaired detector" that stores nothing in
+memory.
+
+### The signs of XOR in the statement
+
+- "Every element appears **twice**, except one" → the loner is left over.
+- "A number is **missing**" from a known sequence → pair up what exists with
+  what should exist; the missing one is left over.
+- "Swap two values without an auxiliary variable", "find the bit difference".
+- An **O(1) space** constraint on a problem that would seem to call for a hash
+  set.
+
+## Example 1 — Missing Number
+
+*"An array has `n` distinct numbers from `0..n`; one is missing."*
+
+- **Brute force / hash:** mark the present ones in a set and see which is
+  missing — O(n) time but O(n) space.
+- **Sum:** `sum(0..n) − sum(nums)` gives the missing one — O(1) space, but the
+  sum can overflow for huge integers.
+- **XOR (no overflow, no memory):** XOR **all the indices `0..n`** with **all
+  the values**. Each present number appears as an index *and* as a value → it
+  cancels. The only index with no matching value is the missing one — and it's
+  left over.
+
+Watch the accumulator `res` in binary while the pairs cancel out:
+
+<TraceDemo id="missing-number" />
+
+### Why is it O(n) time and O(1) space?
+
+A single pass over the `n` elements, with one XOR (O(1)) per step →
+**O(n) time**. The state is a single accumulator variable, regardless of the
+size of the input → **O(1) space**. And, unlike the sum, the XOR never "grows"
+beyond the width of the integer — no risk of overflow.
+
+| Solution | Time | Space | Note |
+| --- | --- | --- | --- |
+| Hash set | O(n) | O(n) | extra memory |
+| Gauss sum | O(n) | O(1) | can overflow integers |
+| XOR | O(n) | O(1) | no overflow, no memory |
+
+## Example 2 — Single Number
+
+*"Every element appears twice, except one. Find the loner."* It's XOR in its
+purest form — without even needing the indices:
+
+<CodeRunner
+  python={`def single_number(nums):
+    result = 0
+    for x in nums:
+        result = result ^ x   # pairs cancel out, the loner remains
+    return result
+
+print(single_number([2, 2, 1]))         # 1
+print(single_number([4, 1, 2, 1, 2]))   # 4
+print(single_number([7]))               # 7`}
+  javascript={`function singleNumber(nums) {
+  var result = 0;
+  for (var i = 0; i < nums.length; i++) {
+    result = result ^ nums[i]; // pairs cancel out, the loner remains
+  }
+  return result;
+}
+
+console.log(singleNumber([2, 2, 1]));       // 1
+console.log(singleNumber([4, 1, 2, 1, 2])); // 4
+console.log(singleNumber([7]));             // 7`}
+/>
+
+Start from `0` (property 2: it doesn't get in the way), XOR everything: each
+pair vanishes, the loner stays. One line, O(n)/O(1). Try solving this with any
+other approach in O(1) space — you'll understand why XOR is special.
+
+<Quiz
+  title="Review quiz"
+  questions={[
+    {
+      question: "What is the value of a ^ a, for any a?",
+      options: ["a", "0", "1", "2a"],
+      answer: 1,
+      explanation:
+        "XOR gives 1 where the bits differ. A number compared with itself has no differing bit → all bits 0 → result 0. It's the property that makes pairs cancel out.",
+    },
+    {
+      question:
+        "Why does XOR'ing all the elements of an array where everything appears in pairs (except one) reveal the loner?",
+      options: [
+        "Because XOR sorts the numbers",
+        "Because each pair cancels out (a^a=0) and XOR with 0 changes nothing (a^0=a), so exactly the unpaired one remains",
+        "Because XOR adds the numbers",
+        "By coincidence",
+      ],
+      answer: 1,
+      explanation:
+        "The properties a^a=0 and a^0=a, with commutativity, make all the pairs disappear. The only one without a pair stays.",
+    },
+    {
+      question:
+        "What advantage does XOR have over the 'Gauss sum' in Missing Number?",
+      options: [
+        "It's easier to write",
+        "It runs no risk of overflow — XOR never grows beyond the width of the integer, whereas the sum can overflow",
+        "It's O(log n)",
+        "It has no advantage",
+      ],
+      answer: 1,
+      explanation:
+        "Both are O(n)/O(1), but the sum of 0..n can exceed the integer limit on large inputs. XOR works bit by bit and stays at the same width.",
+    },
+    {
+      question:
+        "'Swap the values of two variables a and b without using an auxiliary variable.' Which tool from this lesson solves it?",
+      options: [
+        "Binary search",
+        "XOR: a^=b; b^=a; a^=b — the properties of XOR perform the swap without extra space",
+        "A hash map",
+        "It's not possible",
+      ],
+      answer: 1,
+      explanation:
+        "The 'XOR swap' is a classic application of the same properties (a^a=0, a^0=a). It's not the most readable, but it shows the power of the operator with no auxiliary memory.",
+    },
+  ]}
+/>
+
+## Summary
+
+- XOR: `a^a=0`, `a^0=a`, commutative. Pairs cancel out; the unpaired one
+  remains.
+- **Single Number**: XOR everything starting from 0 → the loner. O(n)/O(1).
+- **Missing Number**: XOR the indices `0..n` with the values → the missing one
+  is left over, with no overflow and no memory.
+- Signs: "appears twice except one", "is missing", O(1) space.
+
+Next lesson: techniques that combine bits with other ideas — **counting bits,
+reverse bits and summing without `+`**.

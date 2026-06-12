@@ -1,0 +1,93 @@
+# Recognizing linked list problems
+
+> So far, your data lived in **arrays** — all together, with instant access by
+> index. A linked list holds the same values in a different way: scattered
+> nodes, each one pointing to the next. That changes what is cheap and what is
+> expensive — and opens up a family of problems about **pointers**.
+
+> As in the previous sections, every pattern lesson opens with a **🎯 Try
+> first**. Solve it before reading the theory.
+
+## What a linked list is
+
+A linked list is a chain of **nodes**. Each node has two fields:
+
+- `val`: the stored value;
+- `next`: a reference (pointer) to the **next** node — or `None`/`null` on the
+  last one, marking the end.
+
+You only keep the reference to the first node, the **head** (`head`). To reach
+the others, you "walk" along the chain following the `next` pointers.
+
+```text
+head
+ │
+ ▼
+[1|•]──▶[2|•]──▶[3|•]──▶[4|∅]      (∅ = None/null)
+```
+
+In most languages this is a small class:
+
+```python
+class ListNode:
+    def __init__(self, val=0, next=None):
+        self.val = val
+        self.next = next
+```
+
+> **In the lesson editor you use a real `ListNode`** (`node.val`,
+> `node.next`), just like on LeetCode. **In the visualizations**, to be able to
+> draw the list at each step, we represent the same nodes as two arrays
+> (`values` and `next`, where `next[i]` is the index of the next node). It is
+> the same list — `next[i] = j` is exactly `node.next = other_node`.
+
+## Array vs linked list: what changes
+
+| Operation | Array | Linked list |
+| --- | --- | --- |
+| Access the i-th element | **O(1)** (direct index) | **O(n)** (walk to it) |
+| Insert/remove at the start | O(n) (shifts everything) | **O(1)** (repoint) |
+| Insert/remove in the middle (with the node in hand) | O(n) | **O(1)** |
+| Contiguous memory | yes | no (scattered nodes) |
+
+The big difference: in a linked list you **have no random access** — there is
+no "jump straight to index 5". In return, **relinking pointers is O(1)**:
+inserting or removing a node is just changing a `next`, without shifting
+anything. Almost every pattern in this section exploits that.
+
+## How to think about linked list problems
+
+The mental shift: you rarely work with "indices"; you work with **pointers that
+walk**. Three ideas guide almost everything:
+
+1. **Walk with one or more pointers** (`curr = curr.next`).
+2. **Relink `next`** to insert, remove, or reverse — being careful not to
+   "lose" the rest of the list (save the next one before overwriting!).
+3. **Edge cases**: empty list (`head` is None), a single node, and operations
+   on the **head** (which has no "previous node") — this is where the next
+   lesson's *dummy node* saves you.
+
+### The signs of "this is a linked list"
+
+- The prompt mentions `head`, `ListNode`, `.next`, or draws nodes with arrows.
+- It asks you to reverse, reorder, merge, detect a cycle, remove nodes.
+- Common constraint: **O(1) space** (no copying into an array) or **a single
+  pass**.
+
+## The problems in this section
+
+- Reverse Linked List → *in-place reversal*
+- Middle of the List, Linked List Cycle → *slow/fast pointers (Floyd)*
+- Remove Nth Node From End → *dummy node + two pointers*
+- Merge Two Sorted Lists → *merge with dummy*
+- Reorder List → *combining the patterns*
+
+## Summary
+
+- Linked list = nodes with `val` and `next`; you only keep the **head**.
+- No random access (O(n) to reach a node), but relinking pointers is **O(1)**.
+- Think in terms of **pointers that walk and relink**, with care at the edges.
+- In the visualizations, `next[i] = j` represents `node.next` — the same idea.
+
+Next lesson: the **dummy** node and the **two pointers**, which tame the edge
+cases.

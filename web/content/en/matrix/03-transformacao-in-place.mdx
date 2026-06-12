@@ -1,0 +1,214 @@
+# Pattern 2: In-place transformation
+
+> Transforming a matrix **without using another matrix** (O(1) extra space) is
+> a kind of problem that seems to require a copy — but index tricks solve it.
+> Two classics: **rotating the image** and **zeroing rows/columns**.
+
+<Challenge id="rotate-image" />
+
+> Tried it? Copying into a new rotated matrix works, but it costs O(n²) of
+> memory. The theory below rotates **in place** with two simple steps.
+
+## Theory 1: rotating = transpose + reverse
+
+Rotating 90° clockwise looks complicated to do in place — but it decomposes
+into two easy operations:
+
+1. **Transpose**: mirror across the main diagonal (swap `m[i][j]` with
+   `m[j][i]`). Rows become columns.
+2. **Reverse each row**: mirror horizontally.
+
+```text
+1 2 3      transpose    1 4 7    reverse rows     7 4 1
+4 5 6   ───────────▶   2 5 8   ──────────────▶   8 5 2
+7 8 9                   3 6 9                      9 6 3
+```
+
+Work it out with one cell to convince yourself: the `1` at `(0,0)` stays at
+`(0,0)` in the transpose and then goes to `(0,2)` when the row is reversed —
+exactly where the `1` should be after rotating 90°. The two steps compose the
+rotation.
+
+<CodeRunner
+  python={`def rotate(m):
+    n = len(m)
+    # 1) transpose: swap m[i][j] with m[j][i] (only the half above the diagonal)
+    for i in range(n):
+        for j in range(i + 1, n):
+            m[i][j], m[j][i] = m[j][i], m[i][j]
+    # 2) reverse each row
+    for row in m:
+        row.reverse()
+    return m
+
+print(rotate([[1, 2, 3], [4, 5, 6], [7, 8, 9]]))   # [[7,4,1],[8,5,2],[9,6,3]]
+print(rotate([[1, 2], [3, 4]]))                      # [[3,1],[4,2]]`}
+  javascript={`function rotate(m) {
+  var n = m.length;
+  // 1) transpose: swap m[i][j] with m[j][i] (only the half above the diagonal)
+  for (var i = 0; i < n; i++) {
+    for (var j = i + 1; j < n; j++) {
+      var tmp = m[i][j];
+      m[i][j] = m[j][i];
+      m[j][i] = tmp;
+    }
+  }
+  // 2) reverse each row
+  for (var r = 0; r < n; r++) m[r].reverse();
+  return m;
+}
+
+console.log(JSON.stringify(rotate([[1,2,3],[4,5,6],[7,8,9]]))); // [[7,4,1],[8,5,2],[9,6,3]]
+console.log(JSON.stringify(rotate([[1,2],[3,4]])));             // [[3,1],[4,2]]`}
+/>
+
+A detail that avoids a classic bug: in the transpose, `j` starts at `i + 1`. If
+you walked the whole matrix, you would swap each pair **twice** and go back to
+the original. Swapping only the half above the diagonal makes each swap happen
+once. **O(n²)** time (touches each cell once), **O(1)** space.
+
+## Theory 2: using the matrix itself as a scratchpad
+
+*Set Matrix Zeroes*: if a cell is 0, zero out its entire row and column. The
+danger is doing this "on the fly" — the first 0 would zero cells that, read
+later, would trigger false zeros in a cascade.
+
+The naive solution marks in an auxiliary matrix (O(m·n) space) which rows and
+columns to zero. The in-place trick: **use the matrix's own first row and first
+column as the markers** — they become the "scratchpad". That way the extra
+space drops to O(1).
+
+```text
+1. In one pass, for each 0 at (r,c): mark grid[r][0]=0 and grid[0][c]=0
+   (and remember separately whether the 1st row/column originally had any 0).
+2. In a second pass, zero grid[r][c] if grid[r][0]==0 or grid[0][c]==0.
+3. Finally, zero the 1st row/column if they needed it.
+```
+
+<CodeRunner
+  python={`def set_zeroes(m):
+    rows, cols = len(m), len(m[0])
+    first_row_zero = any(m[0][c] == 0 for c in range(cols))
+    first_col_zero = any(m[r][0] == 0 for r in range(rows))
+    # 1) mark on the borders
+    for r in range(1, rows):
+        for c in range(1, cols):
+            if m[r][c] == 0:
+                m[r][0] = 0
+                m[0][c] = 0
+    # 2) zero the interior according to the markers
+    for r in range(1, rows):
+        for c in range(1, cols):
+            if m[r][0] == 0 or m[0][c] == 0:
+                m[r][c] = 0
+    # 3) zero the 1st row/column if needed
+    if first_row_zero:
+        for c in range(cols):
+            m[0][c] = 0
+    if first_col_zero:
+        for r in range(rows):
+            m[r][0] = 0
+    return m
+
+print(set_zeroes([[1, 1, 1], [1, 0, 1], [1, 1, 1]]))   # [[1,0,1],[0,0,0],[1,0,1]]`}
+  javascript={`function setZeroes(m) {
+  var rows = m.length, cols = m[0].length;
+  var firstRowZero = false, firstColZero = false;
+  for (var c = 0; c < cols; c++) if (m[0][c] === 0) firstRowZero = true;
+  for (var r = 0; r < rows; r++) if (m[r][0] === 0) firstColZero = true;
+  // 1) mark on the borders
+  for (var r2 = 1; r2 < rows; r2++)
+    for (var c2 = 1; c2 < cols; c2++)
+      if (m[r2][c2] === 0) { m[r2][0] = 0; m[0][c2] = 0; }
+  // 2) zero the interior according to the markers
+  for (var r3 = 1; r3 < rows; r3++)
+    for (var c3 = 1; c3 < cols; c3++)
+      if (m[r3][0] === 0 || m[0][c3] === 0) m[r3][c3] = 0;
+  // 3) zero the 1st row/column if needed
+  if (firstRowZero) for (var c4 = 0; c4 < cols; c4++) m[0][c4] = 0;
+  if (firstColZero) for (var r4 = 0; r4 < rows; r4++) m[r4][0] = 0;
+  return m;
+}
+
+console.log(JSON.stringify(setZeroes([[1,1,1],[1,0,1],[1,1,1]]))); // [[1,0,1],[0,0,0],[1,0,1]]`}
+/>
+
+**O(m·n)** time (a few passes), **O(1)** space — because the markers live
+inside the matrix itself.
+
+## The lesson that generalizes
+
+In-place transformation almost always comes from **two ideas**: (1) decomposing
+the hard transformation into simple, reversible steps (transpose + reverse),
+and (2) **reusing the data's own space** as auxiliary memory (the 1st
+row/column as markers). When the statement asks for "O(1) space", ask: "what
+simple structure composes this?" and "can I take notes inside the input
+itself?".
+
+<Quiz
+  title="Review quiz"
+  questions={[
+    {
+      question: "How do you rotate a matrix 90° clockwise, in place?",
+      options: [
+        "Reverse the columns and then transpose",
+        "Transpose (mirror across the diagonal) and then reverse each row",
+        "Sort and copy",
+        "Reverse the whole matrix",
+      ],
+      answer: 1,
+      explanation:
+        "Transposing swaps rows for columns; reversing each row completes the 90° clockwise turn. Two simple steps, both O(1) space.",
+    },
+    {
+      question:
+        "In the in-place transpose, why does the inner loop start at j = i + 1?",
+      options: [
+        "For performance only",
+        "To swap each pair (i,j)/(j,i) exactly once; walking everything would swap twice and undo the transpose",
+        "To avoid the diagonal",
+        "It makes no difference",
+      ],
+      answer: 1,
+      explanation:
+        "Each off-diagonal pair appears twice (as (i,j) and (j,i)). Limiting j>i swaps once; otherwise the second swap returns to the original.",
+    },
+    {
+      question:
+        "In Set Matrix Zeroes, what is the trick to use O(1) extra space?",
+      options: [
+        "Create an auxiliary marker matrix",
+        "Use the matrix's own first row and first column as the markers of which rows/columns to zero",
+        "Sort the matrix",
+        "Zero everything at once",
+      ],
+      answer: 1,
+      explanation:
+        "Instead of an O(m·n) auxiliary matrix, the 1st row/column become the 'scratchpad'. Only whether they themselves needed zeroing is handled separately.",
+    },
+    {
+      question:
+        "Why can you NOT zero the row and column 'on the fly' when you find a 0?",
+      options: [
+        "Because it is slow",
+        "Because the freshly written zeros would be read as original zeros and trigger new zeroed rows/columns, in a cascade",
+        "Because it overflows memory",
+        "Because the matrix becomes unsorted",
+      ],
+      answer: 1,
+      explanation:
+        "Zeroing immediately contaminates the reads: a 0 you placed would be mistaken for a 0 from the statement. That is why you first mark, then zero in a separate pass.",
+    },
+  ]}
+/>
+
+## Summary
+
+- **Rotate the image**: transpose + reverse each row → 90° clockwise,
+  O(n²)/O(1).
+- **Set Matrix Zeroes**: mark in the 1st row/column themselves, then zero →
+  O(m·n)/O(1).
+- In-place comes from **decomposing** the transformation and **reusing the
+  data's own space**.
+
+Next lesson: treating the grid as a graph and **flooding** regions — DFS.

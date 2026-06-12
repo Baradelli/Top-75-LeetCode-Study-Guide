@@ -1,0 +1,146 @@
+# Pattern 2: Include or exclude
+
+> A huge family of DPs boils down to a repeated decision: at each item,
+> **take or skip?** The optimal answer is the better of the two choices — and
+> that is the essence of decision DP.
+
+<Challenge id="house-robber" />
+
+> Tried it? The rule "you can't rob adjacent houses" creates the decision: if I
+> rob house i, I can't have robbed i-1. The theory below turns this into a
+> simple recurrence.
+
+## The theory: the better of take and skip
+
+In House Robber, when you reach house `i`, there are two options:
+
+- **Skip** house `i`: the best stays whatever you had up to `i-1`.
+- **Rob** house `i`: you gain `nums[i]`, but the best allowed before is the one
+  at **`i-2`** (you can't take the adjacent `i-1`).
+
+The answer for `i` is the **maximum** of these two choices:
+
+```text
+dp[i] = max(dp[i-1],            # skip
+            nums[i] + dp[i-2])  # rob
+```
+
+It's the same 1D shape from the previous lesson, but now the recurrence expresses
+a **decision** (max between include and exclude). And, since it only depends on
+`i-1` and `i-2`, you can do it in **O(1) space** (two accumulators). Note the echo
+of **Kadane** (Array): "extend or restart" was also a local decision — DP
+has always been nearby.
+
+## House Robber II: the houses in a circle
+
+What if the houses form a **circle** (the first and the last are adjacent)?
+The trick is to reduce it to the problem you already solved: either you **don't
+rob the first house**, or **don't rob the last** — so run the linear House
+Robber **twice** (on `nums[0..n-2]` and on `nums[1..n-1]`) and take the larger.
+Reusing the linear solution as a building block is a powerful pattern.
+
+## Greedy vs DP: the boundary (Jump Game)
+
+Not every decision problem needs DP — sometimes a **greedy** suffices, and it's
+cheaper. *Jump Game* ("can you reach the end, given that each position tells the
+maximum jump?") has a natural DP, but a greedy O(n)/O(1) solves it:
+walk through, tracking **the farthest reachable position**; if it never falls
+behind the current position, you can make it.
+
+<CodeRunner
+  python={`def pode_pular(nums):
+    mais_longe = 0
+    for i in range(len(nums)):
+        if i > mais_longe:
+            return False                 # didn't reach this position
+        mais_longe = max(mais_longe, i + nums[i])
+    return True
+
+print(pode_pular([2, 3, 1, 1, 4]))   # True
+print(pode_pular([3, 2, 1, 0, 4]))   # False (stuck at index 3)`}
+  javascript={`function podePular(nums) {
+  var maisLonge = 0;
+  for (var i = 0; i < nums.length; i++) {
+    if (i > maisLonge) return false;     // didn't reach this position
+    maisLonge = Math.max(maisLonge, i + nums[i]);
+  }
+  return true;
+}
+
+console.log(podePular([2, 3, 1, 1, 4])); // true
+console.log(podePular([3, 2, 1, 0, 4])); // false`}
+/>
+
+> When should you prefer greedy over DP? When a **locally optimal choice leads
+> to the global one** (and you can prove it, like the exchange argument in the
+> Intervals section). When you can't — when you need to **compare several choices
+> and remember results** — it's DP. When in doubt, DP is the safety net: it
+> always works, even if it sometimes does more work than a greedy.
+
+<Quiz
+  title="Review quiz"
+  questions={[
+    {
+      question: "What is the House Robber recurrence and what does each part mean?",
+      options: [
+        "dp[i] = dp[i-1] + nums[i]",
+        "dp[i] = max(dp[i-1], nums[i] + dp[i-2]): skip house i (keep dp[i-1]) or rob it (nums[i] + the best up to i-2, skipping the adjacent one)",
+        "dp[i] = nums[i]",
+        "dp[i] = max(nums)",
+      ],
+      answer: 1,
+      explanation:
+        "It's the include/exclude decision: robbing i requires skipping i-1 (hence dp[i-2]); not robbing keeps dp[i-1]. The max of the two is the answer.",
+    },
+    {
+      question:
+        "In House Robber II (houses in a CIRCLE), how do you reuse the linear solution?",
+      options: [
+        "You can't reuse it",
+        "Run the linear House Robber twice — once without the first house, once without the last (since they're adjacent) — and take the larger",
+        "Double the array",
+        "Sort the houses",
+      ],
+      answer: 1,
+      explanation:
+        "The circle only forbids robbing the first AND the last together. By excluding one of them in each run and taking the maximum, it reduces to the already-solved linear problem.",
+    },
+    {
+      question:
+        "Jump Game has a greedy O(n) solution. When can a greedy replace DP?",
+      options: [
+        "Always",
+        "When a locally optimal choice provably leads to the global solution (no need to compare/remember many alternatives)",
+        "Never, DP is always needed",
+        "When the array is small",
+      ],
+      answer: 1,
+      explanation:
+        "If the best local decision guarantees the global optimum (like tracking the farthest reachable), the greedy suffices. When you need to compare several choices and reuse results, it's DP.",
+    },
+    {
+      question:
+        "Which pattern from an earlier section was actually a decision DP?",
+      options: [
+        "Binary search",
+        "Kadane (Array): 'extend the current subarray or restart' is exactly a local decision between two options, with the best answer accumulated",
+        "Sliding window",
+        "Union-Find",
+      ],
+      answer: 1,
+      explanation:
+        "Kadane decides at each position between 'extend' and 'restart' — a 1D decision DP with O(1) space. You were already doing DP without the name.",
+    },
+  ]}
+/>
+
+## Summary
+
+- Decision DP: at each item, **include or exclude** → `dp[i] = max(exclude,
+  include)`.
+- House Robber: `max(dp[i-1], nums[i] + dp[i-2])`, O(n)/O(1).
+- House Robber II: run the linear one twice (without the 1st / without the last).
+- **Greedy vs DP**: greedy when the local choice guarantees the optimum; DP when
+  you need to compare and remember.
+
+Next lesson: composing a target from reusable items — **knapsack**.

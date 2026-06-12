@@ -1,0 +1,222 @@
+# Pattern 4: Construction and serialization
+
+> Up to here we have consumed ready-made trees. Now the inverse problem:
+> **building** a tree (from traversals or from a string) without ambiguity. It
+> is recursion again — but the insight is in understanding what each traversal
+> reveals.
+
+<Challenge id="build-tree" />
+
+> Did you try? The challenge is to find out, at each step, **who is the root**
+> and **where the tree splits** into left and right. The theory below shows how
+> preorder and in-order, together, give that information.
+
+## Theory 1: rebuilding from traversals
+
+A single traversal is not enough to rebuild the tree (several different trees
+give the same preorder). But **preorder + in-order** together uniquely
+determine the tree. The key is two observations:
+
+- **Preorder** (node → left → right): the **first** element is always the
+  **root**.
+- **In-order** (left → node → right): the root **splits** the list —
+  everything to its left is the left subtree, everything to its right is the
+  right one.
+
+```text
+pre:  [3, 9, 20, 15, 7]   → root is 3
+in:   [9, 3, 15, 20, 7]   → 9 | 3 | 15,20,7
+                             ↑left ↑root  ↑right
+```
+
+So: take the root from the preorder, find it in the in-order to learn the size
+of each side, and **recursively** build left and right. Consume the preorder
+with a pointer that only advances (it is already in the right order: root, all
+of the left, all of the right). A map `value → position in the in-order` avoids
+searches and keeps it O(n).
+
+## Theory 2: serialize and deserialize
+
+*Serializing* is turning the tree into a string; *deserializing* is rebuilding
+it exactly. It is the same problem of **unambiguous representation** you saw in
+String (encoding) — now applied to the tree's structure.
+
+The cleanest way: **preorder with empty markers**. Write the node's value and,
+for each missing child, a marker (`#`). This records the complete structure, so
+the reconstruction is unique:
+
+```text
+      1
+     / \      →  serialize (preorder) →  "1,2,#,#,3,#,#"
+    2   3
+```
+
+On the way back, read the tokens in order: a value creates a node (and
+recursively reads its two children); a `#` is `None`. Since the preorder places
+each node **before** its children, reading in the same order rebuilds it
+perfectly.
+
+<CodeRunner
+  python={`class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val; self.left = left; self.right = right
+
+def serialize(root):
+    saida = []
+    def dfs(no):
+        if not no:
+            saida.append("#")           # empty marker
+            return
+        saida.append(str(no.val))
+        dfs(no.left)
+        dfs(no.right)
+    dfs(root)
+    return ",".join(saida)
+
+def deserialize(dados):
+    tokens = dados.split(",")
+    idx = [0]
+    def build():
+        t = tokens[idx[0]]
+        idx[0] += 1
+        if t == "#":
+            return None
+        no = TreeNode(int(t))
+        no.left = build()               # read the children in the same order
+        no.right = build()
+        return no
+    return build()
+
+def em_ordem(no, s):
+    if not no: return
+    em_ordem(no.left, s); s.append(no.val); em_ordem(no.right, s)
+
+raiz = TreeNode(1, TreeNode(2), TreeNode(3, TreeNode(4), TreeNode(5)))
+s = serialize(raiz)
+print("serialized:", s)
+volta = deserialize(s)
+ordem = []; em_ordem(volta, ordem)
+print("in-order of the rebuilt one:", ordem)`}
+  javascript={`function TreeNode(val, left, right) {
+  this.val = val; this.left = left || null; this.right = right || null;
+}
+function serialize(root) {
+  var saida = [];
+  function dfs(no) {
+    if (!no) { saida.push("#"); return; }   // empty marker
+    saida.push(String(no.val));
+    dfs(no.left);
+    dfs(no.right);
+  }
+  dfs(root);
+  return saida.join(",");
+}
+function deserialize(dados) {
+  var tokens = dados.split(",");
+  var idx = { v: 0 };
+  function build() {
+    var t = tokens[idx.v++];
+    if (t === "#") return null;
+    var no = new TreeNode(parseInt(t, 10));
+    no.left = build();                        // read the children in the same order
+    no.right = build();
+    return no;
+  }
+  return build();
+}
+function emOrdem(no, s) {
+  if (!no) return;
+  emOrdem(no.left, s); s.push(no.val); emOrdem(no.right, s);
+}
+var raiz = new TreeNode(1, new TreeNode(2), new TreeNode(3, new TreeNode(4), new TreeNode(5)));
+var s = serialize(raiz);
+console.log("serialized:", s);
+var volta = deserialize(s);
+var ordem = []; emOrdem(volta, ordem);
+console.log("in-order of the rebuilt one:", ordem);`}
+/>
+
+### Complexity
+
+Both directions visit each node (and each empty marker) once →
+**O(n)** time. Serialization produces an O(n) string; deserialization uses the
+O(h) recursion stack. The reading pointer **never goes back** — each token is
+consumed once.
+
+## The lesson that connects the sections
+
+Building from traversals and serializing are variations of one idea: **the
+order in which you write/read the nodes must carry the structure without
+ambiguity**. Preorder solves this because it places the root before the
+children. It is the same principle as the *length-prefix* from the String
+section — representing data in a reconstructible way. Patterns travel between
+sections.
+
+<Quiz
+  title="Review quiz"
+  questions={[
+    {
+      question:
+        "Why is a single traversal (just preorder, for example) not enough to rebuild the tree?",
+      options: [
+        "Because it is slow",
+        "Because several different trees can have the same preorder — it lacks the information about how the nodes split into left/right",
+        "Because preorder does not include the root",
+        "It is enough",
+      ],
+      answer: 1,
+      explanation:
+        "Preorder gives the order of the nodes, but not where each subtree ends. In-order provides that split; together, they determine the tree uniquely.",
+    },
+    {
+      question:
+        "In the reconstruction with pre + in-order, what does each traversal provide?",
+      options: [
+        "Both give the root",
+        "Preorder gives the ROOT (first element); in-order shows where the root SPLITS left and right",
+        "In-order gives the root; preorder splits",
+        "Neither is needed",
+      ],
+      answer: 1,
+      explanation:
+        "The 1st of the preorder is the root; locating it in the in-order, everything to the left is the left subtree and to the right is the right one. Recursion does the rest.",
+    },
+    {
+      question:
+        "Why does preorder serialization WITH empty markers (#) rebuild the tree without ambiguity?",
+      options: [
+        "Because it is shorter",
+        "Because it records the complete structure (including the missing children); reading in the same order — node before the children — the reconstruction is unique",
+        "Because it sorts the values",
+        "Because it uses BFS",
+      ],
+      answer: 1,
+      explanation:
+        "The '#' mark where the tree 'ends' on each branch. Without them, you cannot tell whether a node has children or not. With them, the preorder becomes reconstructible.",
+    },
+    {
+      question:
+        "What principle from another section does tree serialization reuse?",
+      options: [
+        "Binary search",
+        "Unambiguous representation (like the length-prefix from string encoding): writing the data so the reconstruction is unique",
+        "Sliding window",
+        "XOR",
+      ],
+      answer: 1,
+      explanation:
+        "It is the same design problem: choosing a reconstructible representation. There it was the length as a prefix; here it is the preorder with empty markers.",
+    },
+  ]}
+/>
+
+## Summary
+
+- **Rebuilding** from pre + in-order: pre gives the root; in-order splits
+  left/right; recursion builds it. O(n).
+- **Serializing**: preorder with **empty markers** (`#`) records the structure
+  without ambiguity; deserializing reads in the same order.
+- Same principle as the *length-prefix* from the String section:
+  reconstructible representation.
+
+Next lesson: a tree specialized in text — the **Trie**.

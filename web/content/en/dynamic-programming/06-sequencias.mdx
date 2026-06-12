@@ -1,0 +1,103 @@
+# Pattern 5: DP on sequences and strings
+
+> Comparing **two sequences** (two strings, two arrays) is a classic family of
+> DP: a 2D table `dp[i][j]` that relates a prefix of each one. It is the heart
+> of problems like common subsequence, edit distance, and file diffing.
+
+<Challenge id="longest-common-subsequence" />
+
+> Tried it? Comparing all the possible subsequences is exponential. The theory
+> below uses a 2D table that grows character by character, in O(m·n).
+
+## The theory: dp[i][j] over two prefixes
+
+Define `dp[i][j]` = the answer considering the **first `i` characters** of
+`text1` and the **first `j`** of `text2`. The recurrence looks at the last
+character of each prefix:
+
+```text
+if text1[i-1] == text2[j-1]:        # the last ones match
+    dp[i][j] = dp[i-1][j-1] + 1     # use this pair and solve the rest
+else:                               # don't match: discard one of the two
+    dp[i][j] = max(dp[i-1][j], dp[i][j-1])
+base cases: dp[0][*] = dp[*][0] = 0  (empty prefix)
+```
+
+The intuition: if the last characters are equal, they are part of the common
+subsequence (add 1 and solve the rest on the diagonal). If they differ, the best
+LCS ignores the last character of one of the strings — take the best of the two
+cases. The table is filled like a grid (the 2D DP from the previous lesson):
+
+```text
+        ""  a  c  e
+   ""    0  0  0  0
+   a     0  1  1  1
+   b     0  1  1  1
+   c     0  1  2  2
+   d     0  1  2  2
+   e     0  1  2  3   ← dp[5][3] = 3 = LCS("abcde","ace")
+```
+
+### Why is it O(m·n)?
+
+There are `(m+1) × (n+1)` states, each O(1) → **O(m·n)** time and space (the
+space drops to O(n) by keeping two rows). It's the 2D form of "states × cost".
+
+## The sequence-DP family
+
+Everything changes only the recurrence over `dp[i][j]`:
+
+| Problem | dp[i][j] | When they match / don't match |
+| --- | --- | --- |
+| Longest Common Subsequence | LCS of the prefixes | match: diagonal+1; else max(above, left) |
+| Edit Distance | min edits | match: diagonal; else 1 + min(3 neighbors) |
+| Longest Increasing Subsequence | (1D) longest increasing subseq. up to i | `max(dp[j])+1` for `j < i` with `nums[j] < nums[i]` |
+| Word Break | (1D) can we break s[0..i]? | some cut j with dp[j] and s[j..i] in the dictionary |
+
+Note that **LIS** and **Word Break** are **1D** DP over a single sequence (each
+position looks at previous positions), whereas LCS and Edit Distance are **2D**
+(they compare two sequences). The signal: **two sequences to relate → 2D
+table**; **one sequence with choices looking backward → 1D table**.
+
+<CodeRunner
+  python={`# Longest Increasing Subsequence (1D DP, O(n^2))
+def lis(nums):
+    if not nums:
+        return 0
+    dp = [1] * len(nums)            # every position is a subseq. of length >= 1
+    for i in range(len(nums)):
+        for j in range(i):
+            if nums[j] < nums[i]:
+                dp[i] = max(dp[i], dp[j] + 1)   # extend the best one that fits
+    return max(dp)
+
+print(lis([10, 9, 2, 5, 3, 7, 101, 18]))   # 4  (2,3,7,101 or 2,3,7,18)
+print(lis([0, 1, 0, 3, 2, 3]))              # 4`}
+  javascript={`// Longest Increasing Subsequence (1D DP, O(n^2))
+function lis(nums) {
+  if (nums.length === 0) return 0;
+  var dp = [];
+  for (var k = 0; k < nums.length; k++) dp.push(1);
+  for (var i = 0; i < nums.length; i++) {
+    for (var j = 0; j < i; j++) {
+      if (nums[j] < nums[i]) dp[i] = Math.max(dp[i], dp[j] + 1);
+    }
+  }
+  var melhor = 0;
+  for (var m = 0; m < dp.length; m++) melhor = Math.max(melhor, dp[m]);
+  return melhor;
+}
+
+console.log(lis([10, 9, 2, 5, 3, 7, 101, 18])); // 4
+console.log(lis([0, 1, 0, 3, 2, 3]));           // 4`}
+/>
+
+## Summary
+
+- **DP on two sequences**: a 2D table `dp[i][j]` over the prefixes; the
+  recurrence looks at the last characters (match → diagonal; else → neighbors).
+- LCS: match → `dp[i-1][j-1]+1`; else → `max(dp[i-1][j], dp[i][j-1])`. O(m·n).
+- **One** sequence with backward choices → **1D** DP (LIS, Word Break);
+  **two** sequences → **2D** DP (LCS, Edit Distance).
+
+Last stop: the section's **synthesis** — and the close of the entire course.

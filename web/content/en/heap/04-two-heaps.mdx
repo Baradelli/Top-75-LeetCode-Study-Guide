@@ -1,0 +1,141 @@
+# Pattern 3: Two heaps (median of a stream)
+
+> Finding the **median** seems to require the data sorted. But what if it
+> arrives one at a time, in an endless stream, and you need the median **after
+> every insertion**? Sorting everything every time would be very expensive. The
+> elegant solution: **two heaps**.
+
+<Challenge id="running-median" />
+
+> Tried it? Re-sorting the list at every number is O(n log n) per insertion. The
+> theory below keeps the median accessible in O(1), with O(log n) insertions.
+
+## The theory: split into two balanced halves
+
+The median is the "middle" of the sorted data. The clever idea: you do not need
+*everything* sorted — you only need to know **where the middle splits**. So keep
+the numbers in **two halves**:
+
+- **`baixo`**: the **smaller** half, in a **max-heap** (its largest at the top
+  — the largest of the small ones).
+- **`alto`**: the **larger** half, in a **min-heap** (its smallest at the top
+  — the smallest of the large ones).
+
+If the two halves are **balanced in size**, the median sits right on the border
+between them — at the tops of the two heaps:
+
+```text
+... 1  3  5 | 8  9 12 ...
+   (max-heap baixo)  (min-heap alto)
+        top=5         top=8
+
+median = top of baixo            (if baixo has 1 more → odd)
+       = (top baixo + top alto)/2   (if equal sizes → even)
+```
+
+For each new number, you insert it and **rebalance** the sizes (moving the top
+of one heap to the other if needed), keeping the size difference at most 1. The
+tops always give the median.
+
+```text
+on inserting x:
+    push x onto `baixo` (max-heap)
+    move the top of `baixo` to `alto`   (ensures baixo <= alto)
+    if `alto` became larger than `baixo`:
+        move the top of `alto` back      (rebalances the sizes)
+median: top of baixo (odd) or the average of the two tops (even)
+```
+
+### Why is it O(log n) per insertion and O(1) on query?
+
+Each insertion does a few push/pop on the heaps — **O(log n)** each. The median
+is just **looking at the tops** — **O(1)**. Compared to "sorting every time"
+(O(n log n) per insertion) or maintaining a sorted list with insertion (O(n)),
+two heaps are unbeatable for a stream.
+
+| Approach | Insert | Query the median |
+| --- | --- | --- |
+| Re-sort everything | O(n log n) | O(1) |
+| Sorted list (insert in place) | O(n) | O(1) |
+| **Two heaps** | **O(log n)** | **O(1)** |
+
+## The lesson: balance between two structures
+
+The "two heaps" pattern is a case of a more general idea: **keeping two extremes
+balanced** so that the information you want (here, the median) is always
+accessible at the border. The max-heap holds the top of the lower half; the
+min-heap, the bottom of the upper half. Balancing the sizes keeps the median
+"trapped" between the two tops.
+
+> In Python, there is no max-heap: the trick is to store the **negated** values
+> in `heapq` (so the smallest negated is the largest real one). In JS, just
+> invert the comparator (`(a, b) => b - a`).
+
+<Quiz
+  title="Review quiz"
+  questions={[
+    {
+      question: "Why do two heaps allow finding the median without sorting everything?",
+      options: [
+        "Because they sort internally",
+        "Because they keep the data in two halves (the smaller in a max-heap, the larger in a min-heap); when balanced, the median sits at the tops — the border between the halves",
+        "Because they keep only the median",
+        "Because they use binary search",
+      ],
+      answer: 1,
+      explanation:
+        "You do not need everything sorted, only where the middle is. The border between the lower half (max-heap) and the upper one (min-heap) is exactly the median.",
+    },
+    {
+      question:
+        "Which heap holds the SMALLER half of the numbers, and what sits at its top?",
+      options: [
+        "A min-heap; the smallest of all",
+        "A MAX-heap; at the top sits the LARGEST of the smaller half — that is, the element just to the left of the median",
+        "A max-heap; the smallest of all",
+        "It does not matter",
+      ],
+      answer: 1,
+      explanation:
+        "The smaller half in a max-heap keeps its largest at the top — the value that touches the median from the left. The larger half in a min-heap keeps its smallest at the top (touches it from the right).",
+    },
+    {
+      question:
+        "Why is it necessary to rebalance the sizes of the two heaps on each insertion?",
+      options: [
+        "To save memory",
+        "Because the median only sits at the tops if the halves have nearly equal sizes (difference ≤ 1); otherwise the border shifts",
+        "To sort the heaps",
+        "It is not necessary",
+      ],
+      answer: 1,
+      explanation:
+        "If one heap becomes much larger, the real 'middle' will no longer be at the border between the tops. By keeping |sizes| ≤ 1, the median is always the top (odd) or the average of the tops (even).",
+    },
+    {
+      question:
+        "What are the complexities of inserting and of querying the median with two heaps?",
+      options: [
+        "Insert O(n), query O(n)",
+        "Insert O(log n) (push/pop on the heaps), query O(1) (look at the tops)",
+        "Insert O(1), query O(log n)",
+        "Both O(n log n)",
+      ],
+      answer: 1,
+      explanation:
+        "Each insertion moves elements between the heaps at O(log n); the median is just reading the tops, O(1). Much better than re-sorting (O(n log n)) on every insertion.",
+    },
+  ]}
+/>
+
+## Summary
+
+- **Two heaps**: max-heap of the smaller half + min-heap of the larger half,
+  balanced in size.
+- The **median** sits at the tops: top of the max-heap (odd) or the average of
+  the two tops (even).
+- **Insert O(log n)**, **query O(1)** — ideal for streams.
+- In Python, simulate a max-heap with negated values; in JS, invert the
+  comparator.
+
+Last stop: the **synthesis** of the Heap section and the quiz before the exam.

@@ -1,0 +1,97 @@
+# How to read a problem and use this course
+
+> Half the difficulty of LeetCode is **understanding what the problem is
+> asking**. This lesson gives you a roadmap to read any prompt without panic —
+> and shows how to get the most out of each lesson.
+
+## The anatomy of a prompt
+
+Every LeetCode problem has the same parts. Learn to look for them:
+
+| Part | What it is | Why it matters |
+| --- | --- | --- |
+| **Description** | what you need to compute/return | the goal |
+| **Examples** | inputs with the expected output | this is where the problem gets concrete |
+| **Constraints** | maximum input size, range of values | **dictates the complexity you need** |
+| **Signature** | the function's name and parameters | what you implement |
+
+The golden tip: **start with the examples, not the description.** Take the
+example input and solve it **by hand**, on paper. If you can't solve it
+manually, no code will come out. Solving by hand also reveals the weird cases:
+what if the list is empty? what if there's only one element? what about
+negative numbers?
+
+## What "test cases" are
+
+When you submit a solution, the site runs your function with various inputs
+and compares the result against the expected answer. There are two kinds:
+
+- **Visible:** the ones you see (usually the examples in the prompt).
+- **Hidden:** inputs you **don't** see — including edge cases and huge inputs
+  to test speed.
+
+That's why a solution can "work on the examples" but still fail: it breaks on
+a hidden case (an empty list, a negative number) or is **too slow** for a
+large input. In this course, the final exams also have hidden cases — just
+like real LeetCode.
+
+## Constraints dictate the solution
+
+This is the part nobody tells you at the start. The prompt almost always
+states the maximum input size (`n`), and that **decides** what kind of
+solution you need:
+
+| If n goes up to... | You need something around... |
+| --- | --- |
+| ~500 | O(n²) or even O(n³) passes |
+| ~100,000 | O(n log n) |
+| ~1,000,000 or more | O(n) or O(n log n) |
+
+Don't get the "O(n²)" part? No problem — it's **Big-O notation**, and the next
+section (Fundamentals) is dedicated to exactly that. For now, keep the idea:
+*the input size tells you, in advance, whether your idea will be fast enough.*
+
+## This course's method: try → learn
+
+Every pattern lesson always follows the same arc:
+
+1. **🎯 Try first.** You get a problem in an editor and try to solve it — in
+   Python or JavaScript, your own way. You can run the tests, get it wrong, use
+   the hint. **Don't skip this part.** Even if you don't solve it, the effort
+   primes your brain for the explanation.
+2. **Why you got stuck.** We name the "obvious" solution (the brute force) and
+   show exactly where it wastes work.
+3. **The idea that unlocks it.** The pattern — presented as the answer to the
+   frustration you just felt.
+4. **Guided solution + visualization.** The algorithm running step by step,
+   line by line, with the data structure drawn on screen.
+5. **Complexity, with the why.** Never just "it's O(n)" — always *why* it's
+   O(n).
+6. **Quiz** quick recap to lock it in.
+
+And one powerful tool throughout the course: the **visualizer**. You watch the
+code actually execute, one line at a time, with the variables and data
+structure changing on screen. Use the step forward/back controls freely —
+seeing the algorithm "move" is worth a thousand explanations.
+
+## How to really make the most of it
+
+- **Try before you see the solution.** The temptation to jump straight to the
+  answer is strong; resist it. Getting stuck is part of learning.
+- **Use the visualizer slowly.** Step forward one at a time until you can
+  *predict* the next step before clicking.
+- **Redo the quizzes** if you get them wrong — they point to what to reread.
+- **Take on the final exams.** Solving a brand-new problem on your own is proof
+  that the pattern has become yours.
+
+## Summary
+
+- Read through the **examples** and solve **by hand** first.
+- **Test cases** (visible and hidden) check correctness and speed.
+- The **constraints** tell you which complexity you need (more on that in
+  Fundamentals).
+- The method is **try → learn**: don't skip the opening challenge of each
+  lesson.
+
+That's it. Now head to **Fundamentals: Big-O** — the language we use to talk
+about "fast enough" — and then to the first section of patterns.

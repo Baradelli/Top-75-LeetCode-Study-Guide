@@ -1,0 +1,192 @@
+# Pattern 4: Merging sorted lists
+
+> Merging two **sorted** lists into a single sorted one is a fundamental
+> operation — and the centerpiece of merge sort. In linked lists it is
+> especially elegant: you copy nothing, you just **stitch the pointers**.
+
+<Challenge id="merge-two-lists" />
+
+> Did you try? You can dump everything into an array, sort it, and rebuild — but
+> that ignores the fact that the lists **are already sorted** and wastes memory.
+> The theory below stitches the two into one in a single pass, with O(1) space.
+
+## The theory: stitching with a dummy as guide
+
+Since the two lists are already sorted, the next smallest element of the result
+is always the **head of one of the two**. So the algorithm is: compare the
+heads, take the smaller one, advance that list, repeat.
+
+The delicate part is building the result without special cases for the first
+node — and this is where the **dummy node** (lesson 2) shines again:
+
+```text
+dummy → (empty)
+tail = dummy
+while l1 and l2 exist:
+    if l1.val <= l2.val: tail.next = l1; advance l1
+    else:                tail.next = l2; advance l2
+    advance tail
+tail.next = whatever is left (l1 or l2)   ← one of the lists ends first
+return dummy.next
+```
+
+The `dummy` holds the start; the `tail` is where you "hang" the next smallest
+node. At the end, one of the lists empties and the other (whose remainder **is
+already sorted**) is appended all at once.
+
+<CodeRunner
+  python={`class ListNode:
+    def __init__(self, val=0, next=None):
+        self.val = val
+        self.next = next
+
+def merge_two_lists(l1, l2):
+    dummy = ListNode(0)
+    cauda = dummy
+    while l1 and l2:
+        if l1.val <= l2.val:
+            cauda.next = l1
+            l1 = l1.next
+        else:
+            cauda.next = l2
+            l2 = l2.next
+        cauda = cauda.next
+    cauda.next = l1 if l1 else l2   # append the rest (already sorted)
+    return dummy.next
+
+def build(arr):
+    d = ListNode(0); c = d
+    for x in arr:
+        c.next = ListNode(x); c = c.next
+    return d.next
+def to_list(h):
+    r = []
+    while h: r.append(h.val); h = h.next
+    return r
+
+print(to_list(merge_two_lists(build([1,2,4]), build([1,3,4]))))  # [1,1,2,3,4,4]
+print(to_list(merge_two_lists(build([]), build([0]))))           # [0]`}
+  javascript={`function ListNode(val, next) {
+  this.val = val;
+  this.next = next || null;
+}
+function mergeTwoLists(l1, l2) {
+  var dummy = new ListNode(0);
+  var cauda = dummy;
+  while (l1 && l2) {
+    if (l1.val <= l2.val) {
+      cauda.next = l1;
+      l1 = l1.next;
+    } else {
+      cauda.next = l2;
+      l2 = l2.next;
+    }
+    cauda = cauda.next;
+  }
+  cauda.next = l1 ? l1 : l2;   // append the rest (already sorted)
+  return dummy.next;
+}
+
+function build(arr) {
+  var d = new ListNode(0), c = d;
+  for (var i = 0; i < arr.length; i++) { c.next = new ListNode(arr[i]); c = c.next; }
+  return d.next;
+}
+function toList(h) {
+  var r = [];
+  while (h) { r.push(h.val); h = h.next; }
+  return r;
+}
+
+console.log(toList(mergeTwoLists(build([1,2,4]), build([1,3,4])))); // [1,1,2,3,4,4]
+console.log(toList(mergeTwoLists(build([]), build([0]))));          // [0]`}
+/>
+
+### Why is it O(n + m) time and O(1) space?
+
+Each node of the two lists is visited **once** as it is stitched into the
+result — O(n + m) total, where n and m are the sizes. We create no new nodes or
+arrays: we just relink the `next` pointers of the nodes that already exist, with
+a dummy and a tail pointer → **O(1) space**. (Note that `<=`, rather than `<`,
+keeps the relative order of equal values — a "stable" property, useful when it
+matters.)
+
+## Leveling up: Merge k Sorted Lists
+
+What if there are **k** sorted lists to merge? Two famous strategies, both using
+the two-list merge as a building block:
+
+- **Pairwise merge, tournament-style:** merge the lists two at a time, then the
+  results two at a time, and so on (like a knockout tournament). That is log k
+  "rounds", each processing all N elements → **O(N log k)**.
+- **Min-heap:** keep the k heads in a heap and always remove the smallest — you
+  will see this in the **Heap** section, where this problem reappears.
+
+The takeaway: merging two lists is not just an exercise — it is a **building
+block** that scales to much bigger problems.
+
+<Quiz
+  title="Quick-check quiz"
+  questions={[
+    {
+      question:
+        "Why does merging two sorted lists not need a sorting step?",
+      options: [
+        "Because it sorts at the end",
+        "Because, since both are already sorted, the next smallest element is always the head of one of the two — you just compare the heads",
+        "Because it uses a heap",
+        "Because it copies into an array",
+      ],
+      answer: 1,
+      explanation:
+        "The prior sorting is the assumption that makes everything O(n+m): you never need to look beyond the two heads to know which is the next smallest.",
+    },
+    {
+      question: "What is the role of the dummy node in the merge?",
+      options: [
+        "Counting the elements",
+        "Serving as a fixed start for the result, avoiding special cases for the first node; you return dummy.next",
+        "Detecting cycles",
+        "Sorting the lists",
+      ],
+      answer: 1,
+      explanation:
+        "Without the dummy, you would need a special if to pick the first head. With it, the 'tail' always has somewhere to hang the next node, and dummy.next is the result.",
+    },
+    {
+      question:
+        "After one of the lists empties, why is it enough to do tail.next = (the other one)?",
+      options: [
+        "Because the other one is empty too",
+        "Because the rest of the non-emptied list is already sorted and is greater than or equal to everything already stitched — it can be appended whole",
+        "Because it needs to re-sort",
+        "Because the dummy requires it",
+      ],
+      answer: 1,
+      explanation:
+        "Each list is internally sorted. When one ends, what remains in the other is the largest remaining stretch and is already in order — appending it all at once keeps the result sorted.",
+    },
+    {
+      question: "What is the complexity of merging k lists with the tournament (pairwise) strategy?",
+      options: [
+        "O(N · k)",
+        "O(N log k), where N is the total number of elements — log k rounds, each processing N elements",
+        "O(k²)",
+        "O(N)",
+      ],
+      answer: 1,
+      explanation:
+        "Merging pairwise halves the number of lists at each round (log k rounds); each round touches all N elements. Hence O(N log k) — much better than merging one by one (O(N·k)).",
+    },
+  ]}
+/>
+
+## Summary
+
+- **Merging two sorted lists**: compare the heads, stitch the smaller one,
+  advance; a **dummy** guides and the rest is appended at the end.
+- O(n + m) time, **O(1) space** — it only relinks pointers, it does not copy.
+- It is a building block of **merging k lists** (tournament O(N log k) or heap).
+
+Next lesson: putting it all together — hard problems that **combine** the
+middle, reversal, and merge.

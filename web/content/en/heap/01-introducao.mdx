@@ -1,0 +1,120 @@
+# Recognizing heap problems
+
+> A heap is a binary tree with one simple rule that makes it the perfect tool
+> for a recurring question: *"what is the smallest (or largest) right now?"*
+> — answered in O(1), with insertion and removal in O(log n).
+
+> As always, every pattern lesson opens with a **🎯 Try it first**.
+
+## The heap property
+
+A **min-heap** is a **complete** binary tree (filled from top to bottom, left
+to right) where **every parent is ≤ its children**. So the **smallest element
+is always at the root** (the top). A **max-heap** is the mirror image: every
+parent ≥ its children, and the largest one sits at the top.
+
+The implementation secret: a heap is stored in an **array**, with no pointers.
+The children of index `i` are `2i+1` and `2i+2`; the parent of `i` is
+`(i-1)//2`. That is why the heap-tree and the array are the same thing.
+
+## The operations: O(log n) and O(1)
+
+| Operation | What it does | Cost |
+| --- | --- | --- |
+| **peek** | look at the top (smallest/largest) | **O(1)** |
+| **push** | insert an element | **O(log n)** |
+| **pop** | remove the top | **O(log n)** |
+| **heapify** | build a heap from an array | **O(n)** |
+
+**Push (sift-up):** place the new element in the last position and let it
+**rise**, swapping with the parent while it is smaller than it. Since the tree
+has height log n, that is at most log n swaps. Watch the elements bubble up:
+
+<TraceDemo id="heap-push" />
+
+**Pop (sift-down):** the top leaves; the last element goes to the root and
+**descends**, swapping with the smaller child until the property is restored.
+Again, at most log n steps (the height). Watch the top leave and the heap
+reorganize itself — notice that the values come out in **increasing order**:
+
+<TraceDemo id="heap-pop" />
+
+## When the heap is the right tool
+
+The heap shines when you need the **extreme (minimum/maximum) repeatedly**, but
+do **not** need everything sorted:
+
+- "The **K largest/smallest**" — a heap of size K (next lesson).
+- "The **next smallest** among several sources" — k-way merge.
+- "The **median** of a stream" — two heaps.
+- Priority queues: schedulers, Dijkstra (graphs), Huffman.
+
+> Why not simply **sort**? Sorting is O(n log n) and gives you *everything* in
+> order — overkill if you only want the K largest or the current minimum. For a
+> changing stream, re-sorting at every step would be very expensive; the heap
+> adjusts in O(log n). And `n & (n-1)`... oops, that one was about bits. 😄
+
+## Heap in practice: Python has one, JavaScript does not
+
+In **Python**, use the `heapq` module (a ready-made min-heap). In
+**JavaScript**, there is no native heap — you implement a small class (or use
+the indices `2i+1`/`2i+2` directly on an array). Watch both extract in
+increasing order:
+
+<CodeRunner
+  python={`import heapq
+
+h = []
+for x in [5, 3, 8, 1, 4]:
+    heapq.heappush(h, x)     # O(log n) each
+
+print("top (smallest):", h[0])  # O(1)
+
+saida = []
+while h:
+    saida.append(heapq.heappop(h))   # removes the smallest each time
+print("in order:", saida)`}
+  javascript={`function Heap(cmp) { this.a = []; this.cmp = cmp; }
+Heap.prototype.size = function () { return this.a.length; };
+Heap.prototype.peek = function () { return this.a[0]; };
+Heap.prototype.push = function (x) {
+  var a = this.a, c = this.cmp; a.push(x); var i = a.length - 1;
+  while (i > 0) { var p = (i - 1) >> 1; if (c(a[p], a[i]) <= 0) break; var t = a[p]; a[p] = a[i]; a[i] = t; i = p; }
+};
+Heap.prototype.pop = function () {
+  var a = this.a, c = this.cmp, top = a[0], last = a.pop();
+  if (a.length) { a[0] = last; var i = 0, n = a.length;
+    for (;;) { var l = 2*i+1, r = 2*i+2, s = i;
+      if (l < n && c(a[l], a[s]) < 0) s = l; if (r < n && c(a[r], a[s]) < 0) s = r;
+      if (s === i) break; var t = a[s]; a[s] = a[i]; a[i] = t; i = s; } }
+  return top;
+};
+
+var h = new Heap(function (a, b) { return a - b; }); // min-heap
+var vals = [5, 3, 8, 1, 4];
+for (var i = 0; i < vals.length; i++) h.push(vals[i]);
+console.log("top (smallest):", h.peek());
+var saida = [];
+while (h.size() > 0) saida.push(h.pop());
+console.log("in order:", saida);`}
+/>
+
+(For a **max-heap** in Python, push the **negated** values; in JS, switch the
+comparator to `(a, b) => b - a`.)
+
+## The section's problems
+
+- Kth Largest, Top K Frequent → *heap of size K*
+- Merge k Sorted Lists → *k-way merge* (revisits the Linked List section!)
+- Find Median from Data Stream → *two heaps*
+
+## Summary
+
+- Heap = complete binary tree in an array; **min at the top** (min-heap) or max
+  at the top (max-heap).
+- **peek O(1)**, **push/pop O(log n)** (sift-up/down rise/descend the height
+  log n), heapify O(n).
+- Use it when you need the **extreme repeatedly** without sorting everything.
+- Python: `heapq`. JavaScript: implement it (indices `2i+1`/`2i+2`).
+
+Next lesson: grabbing the **K largest** without sorting everything.

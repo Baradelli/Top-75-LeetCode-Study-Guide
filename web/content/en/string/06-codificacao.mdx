@@ -1,0 +1,198 @@
+# Pattern 5: Encoding and design
+
+> Not every string problem is about searching for a pattern — some are about
+> **representing data**. How do you turn a list of strings into a single string
+> and then recover it *exactly*? The answer teaches a principle that goes well
+> beyond strings.
+
+<Challenge id="encode-decode" />
+
+> Tried it? The first idea is almost always to join with a separator (comma,
+> `#`) — and it breaks the moment a piece of data contains that separator (see
+> the `"a#2#b"` case). The theory below shows why separators are ambiguous and
+> what the robust solution is.
+
+## The theory: the ambiguity problem
+
+I want to join `["abc", "de"]` into a single string to transmit, then split it
+back apart. The naive idea: join with a comma → `"abc,de"`. Seems to work...
+until one of the pieces **contains the separator**:
+
+```text
+["a,b", "c"]  →  "a,b,c"  →  splitting on ","  →  ["a", "b", "c"]  ✗
+```
+
+We recover 3 strings instead of 2. Any separator you choose can appear in the
+data — that's the fundamental problem with **delimiters**. Swapping the comma
+for another character just kicks the can down the road: what if the data
+contains *that* character too?
+
+### The solution: length as a prefix (length-prefix)
+
+Instead of marking where each piece **ends** (a separator, which can collide),
+mark how long each piece **is** before it:
+
+```text
+format:  <length>#<content><length>#<content>...
+
+["abc", "de"]  →  "3#abc2#de"
+```
+
+To decode: read the number up to the `#`, then **take exactly that many**
+characters as the content — never interpreting what's inside. The `#` is never
+ambiguous because you only look for it at the length position; the content
+characters are read by count, not by search. This works even if a piece of data
+contains `#`, numbers, or another whole encoded string.
+
+### The signs (the design pattern)
+
+- "**Serialize / deserialize**", "encode / decode", "transmit and reconstruct".
+- The data can contain **any character** (there's no safe separator).
+- Shows up strongly in the **Trees** section (serializing a binary tree is the
+  same principle: recording structure without ambiguity).
+
+## Example — Encode and Decode Strings
+
+*"Write `encode(list) → string` and `decode(string) → list` that work for any
+content."*
+
+<CodeRunner
+  python={`def encode(strs):
+    resultado = []
+    for s in strs:
+        resultado.append(str(len(s)) + "#" + s)
+    return "".join(resultado)
+
+def decode(s):
+    resultado = []
+    i = 0
+    while i < len(s):
+        j = i
+        while s[j] != "#":      # find the end of the number
+            j = j + 1
+        tamanho = int(s[i:j])   # length of the next piece
+        inicio = j + 1
+        resultado.append(s[inicio:inicio + tamanho])
+        i = inicio + tamanho    # jump straight to the next piece
+    return resultado
+
+codificado = encode(["abc", "de", "a#2#b"])
+print(codificado)
+print(decode(codificado))     # ['abc', 'de', 'a#2#b']`}
+  javascript={`function encode(strs) {
+  var resultado = "";
+  for (var i = 0; i < strs.length; i++) {
+    resultado = resultado + strs[i].length + "#" + strs[i];
+  }
+  return resultado;
+}
+
+function decode(s) {
+  var resultado = [];
+  var i = 0;
+  while (i < s.length) {
+    var j = i;
+    while (s[j] !== "#") {        // find the end of the number
+      j = j + 1;
+    }
+    var tamanho = parseInt(s.slice(i, j), 10); // length of the piece
+    var inicio = j + 1;
+    resultado.push(s.slice(inicio, inicio + tamanho));
+    i = inicio + tamanho;         // jump straight to the next piece
+  }
+  return resultado;
+}
+
+var codificado = encode(["abc", "de", "a#2#b"]);
+console.log(codificado);
+console.log(JSON.stringify(decode(codificado))); // ["abc","de","a#2#b"]`}
+/>
+
+Notice the third piece: `"a#2#b"` contains `#` and digits — exactly what would
+break a separator. With length-prefix, it comes back intact, because the
+decoder **counts** characters instead of searching for separators.
+
+### Why is it O(n)?
+
+- **encode:** traverses each string once to build the output — O(n) over the
+  total number of characters.
+- **decode:** the pointer `i` advances through the encoded string without ever
+  going back (reads the number, skips the content) — O(n). Each character is
+  visited once.
+- O(n) space for the output, which is unavoidable (it's the result).
+
+## Why this lesson matters beyond strings
+
+This is your first **design** problem: the question isn't "what's the clever
+trick?", but "what representation avoids ambiguity?". The length-prefix
+principle — *store the length so you don't depend on delimiters* — is used in
+real network protocols and comes back in tree serialization (Trees section).
+Recognizing "this is a representation problem" is already half the battle.
+
+<Quiz
+  title="Review quiz"
+  questions={[
+    {
+      question:
+        "Why is joining strings with a separator (like a comma) not a reliable encoding?",
+      options: [
+        "Because commas are slow to process",
+        "Because some piece of data may contain the separator itself, making the split ambiguous",
+        "Because the result gets too large",
+        "Because commas aren't valid characters",
+      ],
+      answer: 1,
+      explanation:
+        "Any character chosen as a separator may appear in the data. '[\"a,b\",\"c\"]' joined by a comma becomes 'a,b,c' — indistinguishable from three strings.",
+    },
+    {
+      question:
+        "How does the '<length>#<content>' scheme avoid ambiguity even when the content contains '#'?",
+      options: [
+        "By forbidding '#' in the data",
+        "Because the decoder reads the number and then takes EXACTLY that many characters as the content, without interpreting what's inside",
+        "By escaping all the '#'",
+        "By compressing the data first",
+      ],
+      answer: 1,
+      explanation:
+        "The content is read by count, not by searching for a separator. The '#' is only looked for at the length position; after that, 'length' characters are copied literally, '#' included.",
+    },
+    {
+      question: "Why is decode O(n) even with a while inside a while?",
+      options: [
+        "Because the inner while is rare",
+        "Because the pointer i traverses the encoded string a single time, without going back — it reads the number and jumps straight over the content",
+        "Because parseInt is O(1)",
+        "It isn't O(n), it's O(n²)",
+      ],
+      answer: 1,
+      explanation:
+        "Add up the work: each character of the encoded string is read exactly once (either in the number or in the content jump). The total is O(n), despite the loops being nested in form.",
+    },
+    {
+      question:
+        "Where else does the 'length-prefix / recording structure without ambiguity' principle reappear in the course?",
+      options: [
+        "Nowhere else",
+        "In binary tree serialization (Trees section), which also needs to encode structure to reconstruct it without ambiguity",
+        "In binary search",
+        "In Kadane",
+      ],
+      answer: 1,
+      explanation:
+        "Serializing/deserializing a tree is the same representation problem: recording the structure (including null nodes) so that reconstruction is unique. It's design, not a trick.",
+    },
+  ]}
+/>
+
+## Summary
+
+- Encoding is a **design/representation** problem, not a trick.
+- Separators are ambiguous (the data may contain them); **length-prefix**
+  solves it: count the characters instead of searching for delimiters.
+- encode/decode in O(n); the decode pointer never goes back.
+- The principle reappears in tree serialization.
+
+Last stop: the **synthesis** of the String section and the quiz before the
+final exam.

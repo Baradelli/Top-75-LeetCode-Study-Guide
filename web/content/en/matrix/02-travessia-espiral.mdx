@@ -1,0 +1,118 @@
+# Pattern 1: Layer-by-layer traversal (spiral)
+
+> Traversing a matrix in a spiral seems to require logic full of exceptions.
+> The secret is not to think cell by cell, but in terms of **four bounds** that
+> enclose the not-yet-visited part and **shrink** with each edge traversed.
+
+<Challenge id="spiral-order" />
+
+> Tried it? Without a structure, it turns into a tangle of `if`s and
+> directions. The theory below organizes everything with four bound variables.
+
+## The theory: four shrinking bounds
+
+Picture four walls enclosing the unvisited region: `top`, `bottom`, `left`,
+`right`. The spiral is always the **same sequence of four moves**, and after
+each one you push the corresponding wall inward:
+
+```text
+1. top:     left → right    on row `top`        →  top++
+2. right:   top → bottom    on column `right`   →  right--
+3. bottom:  right → left    on row `bottom`     →  bottom--
+4. left:    bottom → top    on column `left`    →  left++
+repeat while top <= bottom and left <= right
+```
+
+The two extra checks (before the bottom and the left edges) cover non-square
+matrices, where a "loop" can finish in the middle. Watch the bounds shrink and
+the current cell follow the spiral — the light region is what is still left to
+visit:
+
+<TraceDemo id="spiral-matrix" />
+
+### Why is it O(m·n) and O(1) (extra) space?
+
+Each cell is visited **exactly once** along the spiral — that's `m × n` cells,
+so **O(m·n) time**. Apart from the output list (which is the answer, not
+counted as extra), we use only four bound integers → **O(1) extra space**.
+There is no way to be faster: you have to look at each cell at least once to
+list it.
+
+## The big idea: "layer by layer"
+
+The spiral is a case of the **layer-by-layer** (or "shell by shell") strategy:
+solve the outer ring, shrink to the inner ring, repeat. The same idea reappears
+in **rotating the image** (next lesson, where you rotate ring by ring) and in
+several matrix problems. When a grid problem "wraps the edges and funnels
+inward", think of shrinking bounds.
+
+> A common interview variation is the inverse: **generate** a matrix in a
+> spiral (fill `1..n²` in spiral order) instead of reading. It is the same
+> bound control — only writing instead of collecting. (It shows up in the final
+> exam!)
+
+<Quiz
+  title="Review quiz"
+  questions={[
+    {
+      question: "What is the core idea of the spiral traversal?",
+      options: [
+        "Visiting the cells in random order",
+        "Keeping four bounds (top/bottom/left/right) that enclose the unvisited region and shrink after each edge traversed",
+        "Sorting the matrix first",
+        "Using recursion on each cell",
+      ],
+      answer: 1,
+      explanation:
+        "The spiral is always the same sequence (top→right→bottom→left); what changes is the size of the region, controlled by the four bounds that close inward.",
+    },
+    {
+      question:
+        "Why check 'if top <= bottom' before traversing the bottom (and 'if left <= right' before the left)?",
+      options: [
+        "For style",
+        "For non-square matrices: after shrinking top and right, the region may be done, and without the check you would traverse a non-existent or repeated row/column",
+        "To speed it up",
+        "To avoid overflow",
+      ],
+      answer: 1,
+      explanation:
+        "In m×n matrices with m≠n, a loop may finish in the middle. The checks avoid revisiting or overrunning once the bounds have already crossed.",
+    },
+    {
+      question: "What is the complexity of the spiral traversal of an m×n matrix?",
+      options: [
+        "O(n²) always",
+        "O(m·n) time (each cell once) and O(1) extra space",
+        "O(m·n) time and O(m·n) space",
+        "O(m+n)",
+      ],
+      answer: 1,
+      explanation:
+        "Each of the m·n cells is visited once; the only extras are four bound integers. Note that it is O(m·n), not O(n²), unless the matrix is square.",
+    },
+    {
+      question:
+        "The 'shrinking bounds' / 'layer by layer' idea reappears in which other problem of the section?",
+      options: [
+        "In none",
+        "Rotating the image (rotates ring by ring) and generating a matrix in a spiral",
+        "In binary search",
+        "In XOR",
+      ],
+      answer: 1,
+      explanation:
+        "Processing the matrix in concentric shells is a pattern: the in-place rotation rotates each ring, and the spiral generation fills layer by layer with the same bound logic.",
+    },
+  ]}
+/>
+
+## Summary
+
+- Spiral = four bounds (top/bottom/left/right) that **shrink** after each edge.
+- Always the same sequence of 4 moves; extra checks cover non-square matrices.
+- **O(m·n)** time, **O(1)** extra space.
+- "Layer by layer" reappears in rotating the image and generating a spiral.
+
+Next lesson: transforming the matrix **in place** — rotating and zeroing
+without a copy.

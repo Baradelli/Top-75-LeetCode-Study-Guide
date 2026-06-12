@@ -1,0 +1,114 @@
+# Pattern 2: Insert into a sorted set
+
+> What if the list is **already sorted and non-overlapping**, and you need to
+> fit in a new interval? Taking advantage of the fact that it's already
+> organized lets you solve it in **one pass**, without re-sorting — by dividing
+> the list into three phases.
+
+<Challenge id="insert-interval" />
+
+> Tried it? You could add the new one, re-sort, and merge everything (the
+> previous lesson) — but that throws away the information that the list **was
+> already sorted**. The theory below does it in O(n), without sorting.
+
+## The theory: three phases on the line
+
+Since the list is already sorted and non-overlapping, the intervals split
+naturally into **three groups** relative to the new interval:
+
+```text
+1. BEFORE:    end before the new one starts   (end < new.start)
+              → copy them unchanged
+2. OVERLAP:   touch the new one               (start <= new.end)
+              → merge them all into the new one (min of starts, max of ends)
+3. AFTER:     start after the new one ends
+              → copy them unchanged
+```
+
+You scan the list once, going through these three phases in order. Phase 2 is
+the heart: while the current interval touches the new one, it gets absorbed —
+`new = [min(starts), max(ends)]`. At the end of phase 2, the new (now merged)
+one enters the result, and phase 3 just copies the rest.
+
+See the three phases — note `new` (a scalar) growing as it absorbs the phase-2
+intervals:
+
+<TraceDemo id="insert-interval" />
+
+### Why is it O(n) time (no sort!)?
+
+The list **already comes sorted**, so we don't pay the O(n log n) of merge: a
+single linear pass classifies each interval into one of the three phases →
+**O(n) time**, O(n) space for the output. That's the advantage of exploiting
+the given structure (sorted) instead of re-sorting from scratch.
+
+## The lesson
+
+When the problem statement guarantees that the input **already has an order**,
+don't waste it. Here, "already sorted" turns a merge problem (O(n log n)) into
+a three-phase linear one (O(n)). Always ask: *what does the input already give
+me for free?*
+
+<Quiz
+  title="Review quiz"
+  questions={[
+    {
+      question:
+        "Why can you insert in O(n) (without sorting), while the general merge is O(n log n)?",
+      options: [
+        "Because the list is smaller",
+        "Because the input list is ALREADY sorted and non-overlapping — one linear pass is enough, without paying the cost of the sort",
+        "Because inserting doesn't merge anything",
+        "Because it uses binary search",
+      ],
+      answer: 1,
+      explanation:
+        "The O(n log n) cost of merge comes from the sort. Since the input already comes sorted here, we skip the sort and solve with an O(n) scan.",
+    },
+    {
+      question: "What are the three phases of the insertion?",
+      options: [
+        "Sort, merge, return",
+        "Before (end before the new one starts, copy), overlap (merge into the new one), after (copy the rest)",
+        "Left, middle, right by binary search",
+        "Insert, remove, repeat",
+      ],
+      answer: 1,
+      explanation:
+        "Since everything is sorted, the intervals group into before / overlap / after relative to the new one. The middle phase absorbs the ones that touch the new one.",
+    },
+    {
+      question: "In the overlap phase, how is the new interval updated?",
+      options: [
+        "new = current interval",
+        "new = [min(new.start, current.start), max(new.end, current.end)] — it spans both",
+        "new = [current.start, new.end]",
+        "new doesn't change",
+      ],
+      answer: 1,
+      explanation:
+        "Each interval that touches the new one is absorbed by expanding the boundaries: the smallest start and the largest end among them. That way the new one grows to cover all the overlapping ones.",
+    },
+    {
+      question: "What is the transferable lesson of this class?",
+      options: [
+        "Always re-sort the input",
+        "Exploiting the structure the input already offers (here, 'already sorted') often knocks down the complexity",
+        "Always use recursion",
+        "Avoid scans",
+      ],
+      answer: 1,
+      explanation:
+        "Recognizing that the input is already sorted avoids the sort and swaps O(n log n) for O(n). Always ask what the input gives you for free.",
+    },
+  ]}
+/>
+
+## Summary
+
+- **Insert** into a sorted, non-overlapping list: three phases — before, merge,
+  after — in one pass.
+- **O(n)** time (no sort!), because the input already comes sorted.
+- Lesson: **exploit the given structure** instead of reorganizing from scratch.
+
+Next lesson: choosing what to **keep** with greedy reasoning.

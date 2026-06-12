@@ -1,0 +1,241 @@
+# Pattern 2: Two Pointers
+
+> Two indices that move intelligently. The secret of the pattern isn't the
+> pointers — it's the **argument that lets you discard candidates in bulk**
+> without even looking at them.
+
+<Challenge id="container-with-most-water" />
+
+> Did you try? The brute force tests **all pairs** of walls — O(n²) — and
+> works on the small examples, but it would be too slow for large inputs. The
+> annoyance: many of those pairs obviously can't be the answer. The theory
+> below shows how to discard them in bulk.
+
+## The theory: what problem does two pointers solve?
+
+Many problems ask for the best **pair** (or triple) of elements: the pair that
+sums to the target, the pair that forms the largest container, the triple that
+sums to zero. The brute force tests all pairs: O(n²).
+
+Two pointers attacks the central waste of that brute force: **it tests pairs
+that have no chance of being the answer.** If the array has some *structure* —
+it's sorted, or the quality of the pair depends on the shorter side — you can
+prove that whole blocks of pairs are useless and skip them all at once.
+
+### The classic mechanics (converging pointers)
+
+```text
+left  = start of the array
+right = end of the array
+while left < right:
+    evaluate the pair (left, right)
+    decide WHICH pointer to move — and the move discards
+    all the pairs that involved the abandoned position
+```
+
+Each step eliminates **a whole position** (and all the pairs with it). There
+are n positions, so the loop runs at most n times: **O(n)**. The magic is in
+the decision of which pointer to move — and it requires a justification.
+
+### The perfect example: pair that sums to the target, in a SORTED array
+
+Sorted array, I look for two numbers that add up to `target`:
+
+- If `nums[left] + nums[right]` is **less** than the target → the sum needs to
+  grow. Moving `right` to the left only *decreases* the sum. So the only useful
+  move is `left += 1`. And more: we just **proved** that
+  `nums[left]` doesn't pair with anyone (even the largest element was too small) —
+  we discard n pairs at once.
+- If the sum is **greater** → symmetric: `right -= 1`.
+
+This is the heart of the pattern: each move comes with a **proof of discard**.
+Without the proof, two pointers is guesswork.
+
+### The signals in the statement
+
+- The array is **sorted** (or sorting doesn't ruin the answer).
+- The question involves **pairs/triples** with some condition on sum, distance
+  or size.
+- You can reason: "if the current pair fails by *excess*, moving pointer X
+  doesn't help".
+- They ask for O(1) space (a hash map would spend O(n)).
+
+## Example 1 — Container With Most Water
+
+*"Each position is a wall of height `heights[i]`. Choose two walls that
+form the container holding the most water."* The water is limited by the
+**shorter** wall: `area = (right - left) × min(height_left, height_right)`.
+
+- **Brute force:** all combinations of walls — O(n²).
+- **The waste:** if the left wall is the shorter one, *any* other pair with
+  it and a closer wall is worse: the width shrinks and the height stays locked
+  by the same shorter wall. All those pairs are useless.
+- **The pattern:** start with the widest container (the ends) and, at each step,
+  **abandon the shorter wall** — it's the only hope of finding something better.
+
+Watch the decision rule at work (notice: the pointer that moves is always
+the one at the shorter bar):
+
+<TraceDemo id="container-with-most-water" />
+
+### Why is it O(n)?
+
+On each pass of the loop, `left` goes up or `right` goes down — the pointers
+only move **one toward the other** and never go back. They cross after at
+most n-1 moves, and each pass does only O(1) work (comparisons and
+arithmetic). Total: **O(n) time, O(1) space** — this pattern doesn't even
+ask for extra memory.
+
+| Solution | Time | Space | Why |
+| --- | --- | --- | --- |
+| Brute force | O(n²) | O(1) | all pairs of walls |
+| Two pointers | O(n) | O(1) | each step discards a wall forever |
+
+## Example 2 — 3Sum (the composite pattern)
+
+*"Find all triples that sum to zero, without repeating triples."* It looks like
+another universe, but it's the "pair that sums to the target" problem used as a
+building block:
+
+1. **Sort** the array — O(n log n). (Now two pointers becomes available!)
+2. **Fix** the first number `nums[i]` — a loop O(n).
+3. The rest became: *"in the sorted slice to the right of i, find pairs that sum
+   to `-nums[i]`"* — exactly the theory's example, O(n) with two pointers.
+4. Skip repeated values as you advance (so you don't duplicate triples).
+
+### Why is it O(n²)?
+
+Outer loop O(n) × pointer sweep O(n) = O(n²); the sort O(n log n)
+is smaller and disappears in the sum (rule 1 of the fundamentals). For a problem
+whose brute force is O(n³), O(n²) with O(1) space is the state of the art.
+
+<CodeRunner
+  python={`def three_sum(nums):
+    nums.sort()
+    result = []
+    for i in range(len(nums)):
+        if i > 0 and nums[i] == nums[i - 1]:
+            continue  # skip repeated first number
+        left, right = i + 1, len(nums) - 1
+        while left < right:
+            total = nums[i] + nums[left] + nums[right]
+            if total < 0:
+                left += 1      # sum needs to grow
+            elif total > 0:
+                right -= 1     # sum needs to shrink
+            else:
+                result.append([nums[i], nums[left], nums[right]])
+                left += 1
+                while left < right and nums[left] == nums[left - 1]:
+                    left += 1  # skip duplicates in the middle
+    return result
+
+print(three_sum([-1, 0, 1, 2, -1, -4]))  # expected: [[-1,-1,2],[-1,0,1]]`}
+  javascript={`function threeSum(nums) {
+  nums.sort(function (a, b) { return a - b; });
+  var result = [];
+  for (var i = 0; i < nums.length; i++) {
+    if (i > 0 && nums[i] === nums[i - 1]) continue; // skip repeated
+    var left = i + 1;
+    var right = nums.length - 1;
+    while (left < right) {
+      var total = nums[i] + nums[left] + nums[right];
+      if (total < 0) {
+        left++;        // sum needs to grow
+      } else if (total > 0) {
+        right--;       // sum needs to shrink
+      } else {
+        result.push([nums[i], nums[left], nums[right]]);
+        left++;
+        while (left < right && nums[left] === nums[left - 1]) {
+          left++;      // skip duplicates in the middle
+        }
+      }
+    }
+  }
+  return result;
+}
+
+console.log(JSON.stringify(threeSum([-1, 0, 1, 2, -1, -4])));
+// expected: [[-1,-1,2],[-1,0,1]]`}
+/>
+
+## Hash map or two pointers? (both solve pairs!)
+
+| Situation | Better choice | Why |
+| --- | --- | --- |
+| Unordered array, I need the **original indices** | Hash map | sorting would destroy the indices |
+| Array already sorted (or I can sort it) | Two pointers | O(1) space, no hashing cost |
+| Pairs with an **inequality** condition (sum &lt; target, distance ≤ k) | Two pointers | a hash map only finds exact values |
+| O(1) space required | Two pointers | a hash map pays O(n) |
+
+<Quiz
+  title="Review quiz"
+  questions={[
+    {
+      question:
+        "In Container With Most Water, why always move the pointer of the SHORTER wall?",
+      options: [
+        "Because the taller wall might break",
+        "Because keeping the shorter wall locks the height: with the width shrinking, no future pair with it beats the current one",
+        "To make the loop finish faster",
+        "It's convention, moving the taller one also works",
+      ],
+      answer: 1,
+      explanation:
+        "The area is width × height of the SHORTER wall. Keeping the shorter one, the height won't exceed it and the width only drops — all those pairs are provably discarded. Moving the taller one might lose the optimal answer.",
+    },
+    {
+      question:
+        "Why do converging two pointers guarantee O(n) and not O(n²)?",
+      options: [
+        "Because it uses two pointers, and 2 × n = O(n)",
+        "Because each pass moves a pointer only inward, never going back — at most n moves until they cross",
+        "Because the array is sorted",
+        "Because it uses no extra memory",
+      ],
+      answer: 1,
+      explanation:
+        "The justification is irreversible progress: each iteration consumes a position forever. n positions → at most n iterations × O(1) work.",
+    },
+    {
+      question:
+        "In 3Sum, what is the division of work that leads to O(n²)?",
+      options: [
+        "Sort O(n log n) × pointers O(n)",
+        "Fix the 1st number (loop O(n)) and, for each one, solve 'pair that sums to the target' with pointers (O(n))",
+        "Three optimized nested loops",
+        "Hash map inside hash map",
+      ],
+      answer: 1,
+      explanation:
+        "Nesting multiplies: n × n = O(n²). The sort enters in sequence (sum) and disappears for being smaller. Reducing a new problem to a pattern you already master is the course's central skill.",
+    },
+    {
+      question:
+        "New statement: 'in a sorted array, count the pairs with sum LESS than k'. Hash map or two pointers — and why?",
+      options: [
+        "Hash map, because it's always O(n)",
+        "Two pointers: an inequality has no 'exact complement' to look up in the map, but if nums[left]+nums[right] < k, ALL pairs (left, x) with x between left and right count at once",
+        "Neither, only brute force solves it",
+        "Either way, they're equivalent",
+      ],
+      answer: 1,
+      explanation:
+        "A hash map looks up exact values; inequalities are two pointers territory. And the bulk discard becomes bulk counting: right - left valid pairs all at once.",
+    },
+  ]}
+/>
+
+## Summary
+
+- Two pointers = **proven discard of candidates in bulk**; the proof for each
+  move is mandatory.
+- Converging: O(n) because the progress is irreversible — each step consumes
+  a position.
+- Costs **O(1) space** — an advantage over the hash map when the array is
+  sorted or the condition is an inequality.
+- Triple problems = fix one + two pointers on the rest (3Sum, O(n²)).
+
+Next lesson: when the question is about **contiguous slices** of the array —
+sliding window.

@@ -1,0 +1,179 @@
+# Pattern 2: Modified binary search (rotated array)
+
+> What if someone took the sorted array and **rotated** it at some arbitrary
+> point? `[0,1,2,4,5,6,7]` becomes `[4,5,6,7,0,1,2]`. You can still keep the
+> O(log n) — the trick is to figure out, at each step, **which half is still
+> sorted**.
+
+<Challenge id="search-rotated" />
+
+> Tried it? The easy way out is to scan everything — O(n) — and ignore that the
+> array is "almost sorted". The theory below recovers the O(log n) even with
+> the rotation.
+
+## The theory: one of the halves is always sorted
+
+Here's the observation that unlocks everything: no matter how much the array
+has been rotated, when you cut at `mid`, **at least one of the two halves is
+perfectly sorted**. Always. (The other one contains the "turning point".)
+
+You figure out which by comparing the ends:
+
+- If `nums[left] <= nums[mid]`, the **left half** `[left..mid]` is sorted.
+- Otherwise, the **right half** `[mid..right]` is sorted.
+
+And then the clever bit: in the **sorted** half, you know exactly which values
+it contains — so you can test whether `target` falls in it. If it does, go to
+that half; if not, go to the other one. Either way, you **discard half** — and
+O(log n) survives.
+
+```text
+mid = middle
+if nums[mid] == target → found
+if the LEFT half is sorted (nums[left] <= nums[mid]):
+    if target is in [nums[left], nums[mid]) → go left
+    else                                    → go right
+else (the RIGHT half is sorted):
+    if target is in (nums[mid], nums[right]] → go right
+    else                                     → go left
+```
+
+Watch the decision happen — notice how the active interval jumps to the side
+where the target *can* be:
+
+<TraceDemo id="search-rotated" />
+
+### Why does it stay O(log n)?
+
+The structure is the same as classic binary search: each iteration does O(1)
+work (a few comparisons) and **discards half** of the interval. The number of
+iterations is still log₂(n). The rotation only changes *how we decide the
+side* — not how many times we cut. **O(log n) time, O(1) space.**
+
+## Example 2 — Find Minimum in Rotated Sorted Array
+
+*"What's the smallest element of the rotated array?"* The smallest is the
+**turning point** (the place where the order "breaks"). Same philosophy, an
+even simpler decision: compare `nums[mid]` with `nums[right]`.
+
+- If `nums[mid] > nums[right]`, the turning point is **to the right** of `mid`
+  → the minimum is in `[mid+1 .. right]`.
+- Otherwise, `mid` could still be the minimum → `[left .. mid]`.
+
+<CodeRunner
+  python={`def find_min(nums):
+    left = 0
+    right = len(nums) - 1
+    while left < right:
+        mid = (left + right) // 2
+        if nums[mid] > nums[right]:
+            left = mid + 1      # turning point is after mid
+        else:
+            right = mid         # mid could still be the minimum
+    return nums[left]
+
+print(find_min([4, 5, 6, 7, 0, 1, 2]))   # 0
+print(find_min([3, 4, 5, 1, 2]))          # 1
+print(find_min([11, 13, 15, 17]))         # 11 (not rotated)`}
+  javascript={`function findMin(nums) {
+  var left = 0;
+  var right = nums.length - 1;
+  while (left < right) {
+    var mid = Math.floor((left + right) / 2);
+    if (nums[mid] > nums[right]) {
+      left = mid + 1;   // turning point is after mid
+    } else {
+      right = mid;      // mid could still be the minimum
+    }
+  }
+  return nums[left];
+}
+
+console.log(findMin([4, 5, 6, 7, 0, 1, 2])); // 0
+console.log(findMin([3, 4, 5, 1, 2]));        // 1
+console.log(findMin([11, 13, 15, 17]));       // 11 (not rotated)`}
+/>
+
+Notice that here we use `left < right` and `right = mid` (without the −1):
+we're converging on a **position** (the minimum), not testing an exact value
+— a different flavor of binary search. These boundary details are what you
+drill until they become reflex.
+
+## The lesson that generalizes
+
+Binary search doesn't require a **fully** sorted array — it only requires
+that, at each step, you can **decide with certainty which way to go**. In the
+rotated array, the sorted half gives you that certainty. Whenever you can
+answer "is the target on this side or the other?" in O(1), binary search is on
+the menu.
+
+<Quiz
+  title="Review quiz"
+  questions={[
+    {
+      question:
+        "When you cut a rotated array in the middle, what is ALWAYS true about the two halves?",
+      options: [
+        "Both are sorted",
+        "At least one of the two halves is fully sorted",
+        "Neither is sorted",
+        "The left one is never sorted",
+      ],
+      answer: 1,
+      explanation:
+        "The turning point is in only one of the halves; the other is a contiguous stretch of the original array, hence sorted. Identifying which one lets you decide the side.",
+    },
+    {
+      question:
+        "How do you know which half is sorted in the rotated array?",
+      options: [
+        "By counting the elements",
+        "By comparing nums[left] with nums[mid]: if nums[left] <= nums[mid], the left is sorted; otherwise, the right",
+        "By sorting the array first",
+        "By checking whether there are negatives",
+      ],
+      answer: 1,
+      explanation:
+        "If the left end is not greater than the middle, the stretch [left..mid] grows without a turn — it's sorted. Otherwise, the turn is on the left and it's the right half that's sorted.",
+    },
+    {
+      question:
+        "Why does search in the rotated array stay O(log n)?",
+      options: [
+        "Because the array is small",
+        "Because each step still discards half of the interval with O(1) work; the rotation only changes HOW we decide the side, not the number of cuts",
+        "Because it sorts first (O(n log n))",
+        "It doesn't — it becomes O(n)",
+      ],
+      answer: 1,
+      explanation:
+        "The number of iterations is log₂(n) just like classic search. The extra logic to pick the side is O(1), so the complexity doesn't change.",
+    },
+    {
+      question:
+        "What is the general condition for being able to use binary search, even without the array being fully sorted?",
+      options: [
+        "The array can't have duplicates",
+        "Being able to decide, in O(1) at each step, which half to go to with certainty",
+        "The array needs to be small",
+        "The values need to be positive",
+      ],
+      answer: 1,
+      explanation:
+        "The essence is discarding half with certainty. If the structure of the problem lets you answer 'is the target on this side?' in O(1), binary search applies — rotated array, boundaries, search on the answer, etc.",
+    },
+  ]}
+/>
+
+## Summary
+
+- In a rotated array, **one of the halves is always sorted**; find which by
+  comparing the ends and decide the side from there.
+- O(log n) holds: the rotation changes the *decision*, not the number of cuts.
+- Find Minimum: converge on the **position** of the turning point
+  (`left < right`, `right = mid`).
+- Binary search only requires **deciding the side with certainty in O(1)** —
+  not total order.
+
+The section's second module starts now: **bits**. Next lesson, the
+fundamentals.

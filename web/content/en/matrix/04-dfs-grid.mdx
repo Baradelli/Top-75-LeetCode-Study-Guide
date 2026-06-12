@@ -1,0 +1,134 @@
+# Pattern 3: DFS on a grid (flood fill)
+
+> Here the grid reveals its **graph** nature: neighboring cells are
+> "connected". To explore an entire connected region, depth-first search (DFS)
+> "floods" out from a cell, spreading to the neighbors — like the paint bucket
+> of an image editor.
+
+<Challenge id="number-of-islands" />
+
+> Tried it? Maybe you tried counting 1s or finding borders — and got lost in
+> the cases. The theory below gives the right framework: each new island
+> triggers a flood that marks all the connected land.
+
+## The theory: flood fill with DFS
+
+Think of "filling with the paint bucket": from a cell, you spread to the
+neighbors **of the same region**, and from those neighbors to their neighbors,
+until the region runs out. That is **DFS** on a grid:
+
+```text
+dfs(r, c):
+    if (r,c) is outside the grid     → stop
+    if (r,c) is not in the region,
+       or was already visited        → stop
+    mark (r,c) as visited
+    dfs(r+1, c); dfs(r-1, c)         # the 4 neighbors
+    dfs(r, c+1); dfs(r, c-1)
+```
+
+The first two lines are the **base cases** that stop the recursion (the grid's
+equivalent of "hitting the wall"). Marking as visited is what prevents going
+back and falling into an infinite loop.
+
+For *Number of Islands*: walk the grid; **every time** you find land not yet
+visited, it is a **new island** (+1), and you trigger a DFS that sinks the
+entire island. Since the DFS marks everything that is connected, each island is
+counted exactly once. Watch the DFS flooding — the current cell highlighted,
+the blue showing what has already been visited:
+
+<TraceDemo id="number-of-islands" />
+
+### Why is it O(m·n) time and O(m·n) space?
+
+- **Time:** the outer loop goes through all the cells; the DFS visits each cell
+  **at most once** in total (once marked, it is ignored). Adding up, each cell
+  is processed a constant number of times → **O(m·n)**.
+- **Space:** the `visited` grid is O(m·n); and the recursion stack can reach
+  O(m·n) in the worst case (an island that snakes through all the cells). You
+  can save space by marking in the grid itself (sinking the land into water)
+  instead of a separate grid.
+
+## Recursive DFS = implicit stack
+
+Recursion uses the **call stack** to remember where to return — it is the same
+stack you saw in the String section, now working for you for free. You can
+write the same DFS **iteratively** with an explicit stack (`stack`), useful
+when the recursion gets too deep and overflows. Both forms explore in the same
+"go deep first" order.
+
+## Where DFS on a grid shows up
+
+Counting/measuring connected regions (islands, maximum island area), filling
+regions (flood fill, capturing surrounded regions), and detecting shapes.
+Whenever the question is about **"what is connected to what"** in a grid, DFS
+(or BFS, from lesson 6) is the tool. And that is exactly the bridge to the
+**Graphs** section: the grid is just a graph with regular neighborhoods.
+
+<Quiz
+  title="Review quiz"
+  questions={[
+    {
+      question: "Why do we treat a grid as a graph in flood fill?",
+      options: [
+        "To make the code longer",
+        "Because each cell is like a node and neighboring cells are 'connected' — exploring the connected region is graph DFS/BFS",
+        "Because grids are sorted",
+        "Because it is faster than a loop",
+      ],
+      answer: 1,
+      explanation:
+        "Neighborhood = edges. Traversing everything connected to a cell is the same problem as traversing a connected component of a graph.",
+    },
+    {
+      question:
+        "In Number of Islands, why does each DFS count exactly one island?",
+      options: [
+        "Because it counts the cells",
+        "Because the DFS marks as visited ALL the land connected to the starting cell; the outer loop only triggers a new DFS (+1) when it finds land not yet visited",
+        "Because the grid is small",
+        "Because it sorts the islands",
+      ],
+      answer: 1,
+      explanation:
+        "By sinking the entire island at once, none of its cells triggers another DFS. So the number of DFS started by the outer loop is the number of islands.",
+    },
+    {
+      question: "What is the role of 'marking as visited' in DFS on a grid?",
+      options: [
+        "Speeding up the count",
+        "Preventing revisiting already explored cells — without it, the DFS would come back through the neighbors and enter an infinite loop",
+        "Sorting the cells",
+        "Saving memory",
+      ],
+      answer: 1,
+      explanation:
+        "Since neighbors point to each other, without marking visited the DFS would oscillate between two cells forever. Marking guarantees each cell is processed once.",
+    },
+    {
+      question:
+        "Recursive DFS uses the call stack. What does that imply about space?",
+      options: [
+        "Nothing, it is always O(1)",
+        "The recursion depth (and the stack size) can reach O(m·n) in the worst case — a region that snakes through all the cells",
+        "It uses O(log n)",
+        "The stack consumes no memory",
+      ],
+      answer: 1,
+      explanation:
+        "Each pending call occupies the stack. In a very long region, the recursion can go deep through all the cells — O(m·n) stack space. The iterative version with an explicit stack has the same cost.",
+    },
+  ]}
+/>
+
+## Summary
+
+- A grid is a graph; **flood fill with DFS** explores an entire connected
+  region.
+- Base cases (outside the grid / not part of it / already visited) stop the
+  recursion; **marking visited** avoids a loop.
+- Number of Islands: +1 and a DFS for each new piece of land → each island
+  counted once.
+- **O(m·n)** time; O(m·n) space (visited + recursion stack).
+
+Next lesson: when the path matters and can be **undone** — backtracking.

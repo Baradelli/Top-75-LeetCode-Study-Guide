@@ -1,0 +1,192 @@
+# Synthesis: which pattern to use?
+
+> You know the 5 patterns. What's left is the skill that wins the interview:
+> **glancing at a new statement and knowing which one to use** — with a justification.
+
+## The section's decision tree
+
+Faced with an array problem, run through these questions in order:
+
+```text
+1. Is the question about a CONTIGUOUS SLICE (subarray)?
+   ├── Yes, and the values are all positive (or fixed-size window)
+   │     → SLIDING WINDOW (state enters/leaves through the edges)
+   ├── Yes, but there are NEGATIVES
+   │     ├── "largest sum/product"     → KADANE (extend or restart)
+   │     └── "how many sum to k" /
+   │         range questions           → PREFIX (+ hash map to count)
+   └── No, continue ↓
+
+2. Am I looking for PAIRS/TRIPLES of elements?
+   ├── I need EXACT values (complement) and/or the original indices
+   │     → HASH MAP (ask the past, record for the future)
+   └── Sorted array (or I can sort) / INEQUALITY condition
+         → TWO POINTERS (proven bulk discard)
+
+3. Do I repeatedly ask "have I seen it? how many times? does it exist?"
+      → HASH MAP
+
+4. "For each position, something about ALL the rest" (left × right)
+      → PREFIX + SUFFIX (two passes)
+```
+
+And the final sanity check, always: **the limits**. n up to 10⁵-10⁶ asks for
+O(n) or O(n log n) — if your plan is O(n²), go back to the tree.
+
+## The complete map of the section
+
+| Pattern | Waste it eliminates | Key question | Time | Space |
+| --- | --- | --- | --- | --- |
+| Hash map | repeated searching | "have I seen what I'm looking for?" | O(n) | O(n) |
+| Two pointers | pairs with no chance | "which side do I abandon — and why?" | O(n)* | O(1) |
+| Sliding window | recomputing windows | "what enters, what leaves?" | O(n) | O(1)** |
+| Prefix/Suffix | re-summing slices | "can I pre-accumulate?" | O(n) | O(1)-O(n) |
+| Kadane | re-evaluating every start | "do I extend or restart?" | O(n) | O(1) |
+
+\* + O(n log n) if you need to sort first. &nbsp;&nbsp; \*\* depends on the
+window's state (a scalar = O(1); a count map = O(k)).
+
+Notice what they all have in common: **one pass (or two) with O(1) work
+per element**, each with its own trick to never revisit work already done.
+That's the spirit of everything that defeats O(n²).
+
+## Section quiz
+
+The real test: statements you **haven't seen** in the lessons. For each one,
+identify the pattern — and, more importantly, be able to say why. 7+ correct:
+you're ready for the final exam.
+
+<Quiz
+  title="Section quiz: Array"
+  questions={[
+    {
+      question:
+        "'Given an array and k, return the LARGEST AVERAGE among all subarrays of exactly k elements.' Which pattern?",
+      options: ["Hash map", "Sliding window (fixed window)", "Kadane", "Prefix + hash map"],
+      answer: 1,
+      explanation:
+        "Contiguous subarray of FIXED size k: sliding window in its purest form — sum += enter, -= leave, O(1) per position. Average is sum ÷ k.",
+    },
+    {
+      question:
+        "'In a SORTED array, find two numbers whose sum is CLOSEST to zero.' Which pattern and why?",
+      options: [
+        "Hash map, looking for the complement",
+        "Two pointers: sorted + proximity criterion (inequality) — a negative sum moves left, a positive one moves right",
+        "Kadane",
+        "Brute force, there's no pattern",
+      ],
+      answer: 1,
+      explanation:
+        "'Closest' isn't an exact value — a hash map has nothing to look up. Sorted + discard reasoning (sum < 0: only increasing left helps) = two pointers, O(n).",
+    },
+    {
+      question:
+        "'Count how many contiguous subarrays sum to exactly k. The array has NEGATIVE numbers.' Which pattern?",
+      options: [
+        "Variable sliding window",
+        "Two pointers",
+        "Prefix + hash map: count how many times the prefix (current_sum - k) has already appeared",
+        "Kadane",
+      ],
+      answer: 2,
+      explanation:
+        "Negatives rule out sliding window (no monotonicity). sum[i..j] = k becomes prefix[i] = current_prefix - k: counting already-seen values is a hash map. The combo from lessons 1 + 5.",
+    },
+    {
+      question:
+        "'Find the contiguous subarray with the largest sum' (with negatives). Which pattern?",
+      options: ["Sliding window", "Kadane", "Prefix + suffix", "Two pointers"],
+      answer: 1,
+      explanation:
+        "This is THE Kadane problem: best subarray ending here = max(restart, extend). O(n), O(1) — where sliding window breaks, Kadane takes over.",
+    },
+    {
+      question:
+        "'For each position i, return the SUM of all elements except nums[i].' Which O(n) approach?",
+      options: [
+        "For each i, sum the others (n passes)",
+        "Total sum once; answer[i] = total - nums[i] — prefix/suffix degenerated into a scalar",
+        "Hash map of sums",
+        "Sort first",
+      ],
+      answer: 1,
+      explanation:
+        "'Everything except i' with sum is simpler than with product: the sum has a 'division' (subtraction) with no zero catch. One pass for the total + one to fill = O(n).",
+    },
+    {
+      question:
+        "'Check whether some pair of EQUAL elements is at most k positions apart.' Which pattern?",
+      options: [
+        "Converging two pointers",
+        "Hash map of value → last index seen: when seeing a value again, check the distance",
+        "Kadane",
+        "Prefix",
+      ],
+      answer: 1,
+      explanation:
+        "'Have I seen this value? WHERE?' is the canonical hash map question (storing indices). Ask the past, record the new index. O(n).",
+    },
+    {
+      question:
+        "Your solution is O(n²) and the statement says n ≤ 10⁶. What does the decision tree tell you to do?",
+      options: [
+        "Submit anyway to see",
+        "Recognize the anticipated Time Limit Exceeded (10¹² steps) and look for the waste some pattern eliminates",
+        "Switch to a faster language",
+        "Shrink the array",
+      ],
+      answer: 1,
+      explanation:
+        "10¹² steps don't pass in any language. The limits dictate the target complexity; the path is to find which work is being repeated and which pattern eliminates it.",
+    },
+    {
+      question:
+        "'Return the INDICES of two numbers (UNSORTED array) that sum to the target.' Why is two pointers NOT the best choice?",
+      options: [
+        "Because two pointers only works with strings",
+        "Sorting would scramble the original indices (and cost O(n log n)); the hash map solves it in O(n) preserving indices",
+        "Because two pointers is O(n²) here",
+        "It is the best choice",
+      ],
+      answer: 1,
+      explanation:
+        "Two pointers requires order, and sorting destroys exactly what the statement asks for (indices). Hash map: O(n), one pass, indices intact. Each pattern has its input requirement.",
+    },
+    {
+      question:
+        "'Largest PRODUCT of a contiguous subarray' (with negatives). What's the extra care over basic Kadane?",
+      options: [
+        "None, it's identical to the sum one",
+        "Also carry the WORST product ending at i — two negatives become the best positive",
+        "Use two hash maps",
+        "Sort first",
+      ],
+      answer: 1,
+      explanation:
+        "The generalized pattern is 'derive the state at i from the state at i-1' — and in the product the state needs best AND worst. Whoever memorized the formula gets it wrong; whoever understood the pattern adapts.",
+    },
+    {
+      question:
+        "What is the mother idea that ALL the section's patterns share?",
+      options: [
+        "Always use extra memory",
+        "Never repeat work: each element is processed O(1) time(s), whether by remembering (hash), discarding (pointers), sliding (window), accumulating (prefix) or deciding locally (Kadane)",
+        "Sort the array before everything",
+        "Avoid loops",
+      ],
+      answer: 1,
+      explanation:
+        "They all defeat O(n²) the same way: by ensuring no work is redone. That lens — 'what work am I repeating?' — is what you carry into ALL the next sections.",
+    },
+  ]}
+/>
+
+## Ready for the exam?
+
+The final exam has **three brand-new problems** — one easy, one medium and one
+hard — with hidden test cases, like the real LeetCode. Everything you need is
+in the 7 lessons of this section (and an honest tip: the decision tree up top
+solves the pattern choice for all three).
+
+**Good luck!** Go back to the section page and click "Final exam".

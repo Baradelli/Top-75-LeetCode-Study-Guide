@@ -1,0 +1,148 @@
+# Recognizing array problems
+
+> The goal of this section is not to memorize the solutions to 8 problems — it's
+> for you to leave here able to solve **any** array problem, including the hard
+> ones you've never seen. This lesson teaches the method; the next ones teach the
+> patterns.
+>
+> Each pattern lesson starts with a **🎯 Try first** challenge: you try to solve
+> it before seeing the theory. Don't skip it — feeling the difficulty is what
+> makes the idea click afterward. (If you haven't seen the **Start here**
+> section yet, it's worth starting there.)
+
+## Why array is the first section
+
+Almost every LeetCode problem passes through an array at some point. The five
+patterns you'll learn here — hash map, two pointers, sliding window, prefix and
+Kadane — reappear in disguise in strings, matrices, intervals and even in trees.
+Mastering this section is mastering the foundation.
+
+## The general method (works for any problem)
+
+Faced with any array statement, follow these 4 steps. They are the
+"algorithm for choosing the algorithm":
+
+### Step 1 — Solve it by hand first
+
+Take the example from the statement and solve it **by hand**, without code. If
+you can't solve it with pen and paper, no pattern will save you. This step also
+reveals the special cases: empty array? a single element? negative numbers?
+duplicates?
+
+### Step 2 — Write the brute force (mentally)
+
+What is the dumb solution that tries everything? It's almost always "for each
+element, look at all the others" — two loops, O(n²). It's your starting point,
+not your shame: in an interview, *stating* the brute force first shows you
+understood the problem.
+
+### Step 3 — Find the waste
+
+This is the golden question: **what work does the brute force repeat
+needlessly?** Each pattern in the section eliminates a specific kind of
+waste:
+
+| The brute force's waste | The pattern that eliminates it |
+| --- | --- |
+| "I search for the same value many times" | **Hash map** — remember what you've seen |
+| "I compare pairs that obviously can't be the answer" | **Two pointers** — discard candidates in bulk |
+| "I recompute the whole window that barely changed" | **Sliding window** — update only the edge |
+| "I re-sum the same range many times" | **Prefix** — precompute running totals |
+| "I re-evaluate every subarray start" | **Kadane** — decide locally: extend or restart |
+
+### Step 4 — Check against the limits
+
+The statement always tells you the maximum input size — and that **dictates**
+the complexity you need (remember the Big-O table?):
+
+| Limit on n | Required complexity | Translation |
+| --- | --- | --- |
+| n ≤ ~500 | O(n²) or even O(n³) passes | brute force may be enough |
+| n ≤ ~100,000 | O(n log n) | there's probably a sort along the way |
+| n ≤ ~1,000,000 | O(n) or O(n log n) | you need one of the patterns |
+
+If your solution is O(n²) and n goes up to 10⁵, you already know the verdict
+before submitting: Time Limit Exceeded. Go back to step 3.
+
+## The method in action (no spoilers)
+
+Take the classic problem: *"find two numbers that add up to a target"*
+(Two Sum). Applying the method:
+
+1. **By hand:** `[2, 7, 11, 15]`, target 9 → 2 + 7 = 9. Easy manually:
+   you look at one number and *search* for the one that's missing.
+2. **Brute force:** for each `nums[i]`, scan the rest looking for
+   `target - nums[i]`. Two loops, O(n²).
+3. **Waste:** on each pass I *search again, from scratch,* for a value in the
+   array — even though I already went past it! If I **remembered** what I've
+   seen, the search would be instant.
+4. **Limits:** n up to 10⁴ — O(n²) barely passes, but the interview follow-up
+   is certain: "can you do it in a single pass?"
+
+"Remember what I've seen with instant lookup" has a name: **hash map** — the
+next lesson. Every pattern lesson in this section follows this same trail:
+first the waste, then the idea that eliminates it, then the problems where it
+shines.
+
+## The 8 problems of the section
+
+These are the Top 75 problems we'll use as **examples** of the patterns (the
+goal is the pattern, not the problem):
+
+- Two Sum and Contains Duplicate → *hash map*
+- Container With Most Water and 3Sum → *two pointers*
+- Best Time to Buy and Sell Stock → *sliding window / running minimum*
+- Product of Array Except Self → *prefix and suffix*
+- Maximum Subarray and Maximum Product Subarray → *Kadane*
+
+And on the final exam: three **brand-new** problems for you to apply all of
+this without a safety net.
+
+<Quiz
+  title="Review quiz"
+  questions={[
+    {
+      question:
+        "What is the 'golden question' of step 3 of the method, after thinking about the brute force?",
+      options: [
+        "Which data structure is the most modern?",
+        "What work does the brute force repeat needlessly?",
+        "How can I make the code shorter?",
+        "Which language is faster?",
+      ],
+      answer: 1,
+      explanation:
+        "Each pattern exists to eliminate a specific waste in the brute force. Identifying the waste is what points to the right pattern.",
+    },
+    {
+      question:
+        "The statement says n ≤ 100,000 and your solution is O(n²). What do you conclude BEFORE submitting?",
+      options: [
+        "It will pass with room to spare",
+        "It will get Time Limit Exceeded (~10 billion steps): I need a better pattern",
+        "It will get a memory error",
+        "Impossible to know without testing",
+      ],
+      answer: 1,
+      explanation:
+        "(10⁵)² = 10¹⁰ steps — orders of magnitude above what runs in 1-2s. The statement's limits dictate the target complexity: here, O(n) or O(n log n).",
+    },
+    {
+      question:
+        "In a problem, you notice the brute force keeps searching, repeatedly, whether a value exists in the array. Which pattern attacks exactly that waste?",
+      options: ["Kadane", "Sliding window", "Hash map", "Prefix"],
+      answer: 2,
+      explanation:
+        "Searching repeatedly = search waste. The hash map remembers what's already been seen and answers 'have I seen this value?' in O(1).",
+    },
+  ]}
+/>
+
+## Summary
+
+- The method: **solve by hand → brute force → find the waste →
+  check the limits.**
+- The statement's limits **dictate** the required complexity.
+- The 5 patterns of the section are 5 answers to 5 different wastes.
+
+Next lesson: the most-used pattern in all of LeetCode — **hash map**.

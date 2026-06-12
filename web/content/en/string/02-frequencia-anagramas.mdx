@@ -1,0 +1,246 @@
+# Pattern 1: Character counting (anagrams)
+
+> Two words are anagrams when they have **exactly the same characters, in any
+> order**. The tool that captures this is the frequency map — a string's
+> "fingerprint" that ignores order.
+
+<Challenge id="valid-anagram" />
+
+> Tried it? Comparing all permutations is O(k!) — infeasible. Sorting the two
+> strings and comparing works (O(k log k)), but there's something even more
+> direct. The theory below shows the "signature" that identifies anagrams in
+> O(n).
+
+## The theory: the frequency signature
+
+How do you tell whether `"listen"` and `"silent"` are the same thing
+rearranged? Comparing order doesn't help — order is exactly what changes. What
+**doesn't** change is *how many times each letter appears*. That count vector
+is the signature:
+
+```text
+"listen" → {l:1, i:1, s:1, t:1, e:1, n:1}
+"silent" → {l:1, i:1, s:1, t:1, e:1, n:1}   ← equal ⇒ anagrams
+```
+
+It's the same hash map from the Array section, with a different question:
+instead of "have I seen this value?", we ask "how many times have I seen each
+character?". Two strings are anagrams if and only if they have the same
+signature.
+
+### The signs in the prompt
+
+- The word **"anagram"** appears literally.
+- "Rearrange / permute the characters of...".
+- "Group words that are rearrangements of one another".
+- Anything where **order doesn't matter, only the composition**.
+
+### Two forms of the signature
+
+- **Count map** (`{char: amount}`): general, works for any alphabet (Unicode
+  included).
+- **Sorted string** (`sorted("listen") == "eilnst"`): simpler to write, but
+  costs O(k log k) per word (k = length). Useful as a *key* when grouping.
+
+## Example 1 — Valid Anagram
+
+*"Are `s` and `t` anagrams?"*
+
+- **Brute force:** test all permutations of `s` — O(k!). Infeasible.
+- **The waste:** permuting is absurd when all we need to know is whether the
+  *composition* is the same.
+- **The pattern:** compare the frequency signatures. An elegant way in a single
+  pass: **count +1 for each char of `s` and −1 for each char of `t`**; at the
+  end, all the counts must be zero.
+
+<CodeRunner
+  python={`def is_anagram(s, t):
+    if len(s) != len(t):
+        return False
+    contagem = {}
+    for c in s:
+        contagem[c] = contagem.get(c, 0) + 1
+    for c in t:
+        contagem[c] = contagem.get(c, 0) - 1
+        if contagem[c] < 0:
+            return False
+    return True
+
+print(is_anagram("listen", "silent"))  # True
+print(is_anagram("rat", "car"))        # False
+print(is_anagram("aacc", "ccac"))      # False`}
+  javascript={`function isAnagram(s, t) {
+  if (s.length !== t.length) {
+    return false;
+  }
+  var contagem = {};
+  for (var i = 0; i < s.length; i++) {
+    var c = s[i];
+    contagem[c] = (contagem[c] || 0) + 1;
+  }
+  for (var j = 0; j < t.length; j++) {
+    var d = t[j];
+    contagem[d] = (contagem[d] || 0) - 1;
+    if (contagem[d] < 0) {
+      return false;
+    }
+  }
+  return true;
+}
+
+console.log(isAnagram("listen", "silent")); // true
+console.log(isAnagram("rat", "car"));        // false
+console.log(isAnagram("aacc", "ccac"));      // false`}
+/>
+
+### Why is it O(n)? (justifying)
+
+- The length check immediately rules out trivial cases.
+- Two passes (one per string), each O(n), with O(1) map operations per
+  character → **O(n) time**.
+- The map holds at most the number of **distinct** characters of the alphabet —
+  for lowercase letters, at most 26. **O(1)** space (constant, doesn't grow
+  with n).
+
+Compare this with the "sort and compare" approach: `sorted(s) == sorted(t)`.
+It costs O(n log n) — correct and very short, but slower. A classic trade-off:
+code simplicity against speed.
+
+| Solution | Time | Space |
+| --- | --- | --- |
+| Test permutations | O(k!) | — |
+| Sort and compare | O(n log n) | O(n) |
+| Frequency map | O(n) | O(1) (fixed alphabet) |
+
+## Example 2 — Group Anagrams
+
+*"Group the words that are anagrams of one another."* E.g.: `["eat","tea","tan",
+"ate","nat","bat"]` → `[["eat","tea","ate"],["tan","nat"],["bat"]]`.
+
+- **The waste:** comparing each word with all the others is O(n²) string
+  comparisons.
+- **The pattern:** if anagrams have the **same signature**, use the signature
+  as the **key** of a hash map and drop each word into its bucket. One pass
+  groups everything.
+
+The signature here is usually the *sorted string* (`"eat"` → `"aet"`), because
+it naturally becomes a dictionary key:
+
+<CodeRunner
+  python={`def group_anagrams(palavras):
+    grupos = {}
+    for palavra in palavras:
+        chave = "".join(sorted(palavra))   # signature: sorted letters
+        if chave not in grupos:
+            grupos[chave] = []
+        grupos[chave].append(palavra)
+    return list(grupos.values())
+
+print(group_anagrams(["eat", "tea", "tan", "ate", "nat", "bat"]))`}
+  javascript={`function groupAnagrams(palavras) {
+  var grupos = {};
+  for (var i = 0; i < palavras.length; i++) {
+    var chave = palavras[i]
+    .split("")
+    .sort(function (a, b) {
+      return a < b ? -1 : a > b ? 1 : 0;
+    })
+    .join(""); // signature: sorted letters
+    if (grupos[chave] === undefined) {
+      grupos[chave] = [];
+    }
+    grupos[chave].push(palavras[i]);
+  }
+  var resultado = [];
+  for (var k in grupos) {
+    resultado.push(grupos[k]);
+  }
+  return resultado;
+}
+
+console.log(JSON.stringify(groupAnagrams(["eat","tea","tan","ate","nat","bat"])));`}
+/>
+
+### Why is it O(n · k log k)?
+
+There are `n` words; for each one, sorting the signature costs O(k log k)
+(k = word length). Inserting into the hash map is O(k) (computing the key's
+hash). Total: **O(n · k log k)**. Much better than comparing all pairs
+(O(n² · k)). If you want to nail O(n · k), swap the sorted signature for a
+26-slot count turned into a key — same idea, without the `log`.
+
+## Where else this pattern shows up
+
+The frequency signature is the basis of the **sliding window with counts** in
+the next lesson (the "valid window" is defined by a criterion over the
+frequencies inside it) and reappears in problems about "a permutation/substring
+that contains exactly these characters".
+
+<Quiz
+  title="Review quiz"
+  questions={[
+    {
+      question:
+        "Why does comparing character frequencies identify anagrams, but comparing order doesn't?",
+      options: [
+        "Because order is hard to compute",
+        "Because anagrams have the same character composition — only the order changes; frequency is exactly what stays the same",
+        "Because frequency is faster to compare",
+        "It doesn't identify them — anagrams need equal order",
+      ],
+      answer: 1,
+      explanation:
+        "Anagram = same multiset of characters. Frequency captures exactly that multiset, ignoring order — which is the only thing that changes between anagrams.",
+    },
+    {
+      question:
+        "In Valid Anagram, why does the +1 for s and −1 for t trick work in a single pass?",
+      options: [
+        "Because it sums everything and compares with zero by chance",
+        "If the compositions are equal, each char is added and subtracted the same number of times — all the counts zero out at the end",
+        "Because it sorts the strings",
+        "It only works if the strings are identical",
+      ],
+      answer: 1,
+      explanation:
+        "Char by char: +1 when seen in s, −1 when seen in t. Identical compositions ⇒ a zero balance for every letter. Any extra/missing letter leaves a nonzero balance.",
+    },
+    {
+      question:
+        "For lowercase letters (a–z), why does frequency counting use O(1) space?",
+      options: [
+        "Because it uses no memory",
+        "Because the map holds at most 26 keys, regardless of the string's length",
+        "Because strings are immutable",
+        "It isn't O(1), it's O(n)",
+      ],
+      answer: 1,
+      explanation:
+        "The alphabet is fixed: at most 26 entries, whether n = 10 or n = 1 million. A size that doesn't grow with the input is constant space, O(1).",
+    },
+    {
+      question:
+        "In Group Anagrams, why does using the 'sorted string' as the hash map key group them correctly?",
+      options: [
+        "Because it sorts the final result",
+        "Because two anagrams, when sorted, become exactly the same string — so they land on the same key/bucket",
+        "Because sorting removes duplicates",
+        "Because it's faster than counting",
+      ],
+      answer: 1,
+      explanation:
+        "\"eat\" and \"tea\" sorted are both \"aet\". Anagrams share the sorted signature, so the hash map drops them into the same bucket in a single pass.",
+    },
+  ]}
+/>
+
+## Summary
+
+- The **frequency signature** is a string's identity without order.
+- Valid Anagram: compare signatures (or +1/−1 in a single pass) — O(n), O(1)
+  space on a fixed alphabet.
+- Group Anagrams: use the signature as a hash map **key** to group —
+  O(n·k log k), much better than comparing pairs.
+
+Next lesson: the frequency signature gets some motion — **sliding window with
+a count map**.

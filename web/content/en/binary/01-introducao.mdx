@@ -1,0 +1,77 @@
+# Recognizing binary search and bits
+
+> This section has **two themes** that share the name "binary" but solve
+> different things: **binary search** (finding something by cutting the search
+> space in half) and **bit manipulation** (operating directly on the 0s and 1s
+> of a number). We'll treat them as two modules.
+
+> As in the previous sections, each pattern lesson opens with a **🎯 Try
+> first**. Solve it before reading the theory.
+
+## Module 1 — Binary search
+
+The most powerful idea in the section, and maybe in the whole course: if the
+data has an **order**, you don't need to look at each item one by one. Look at
+the middle, and the order tells you which half to continue in — **discarding
+the other one entirely**. Repeating this, the search space collapses:
+n → n/2 → n/4 → ... → 1.
+
+This "cutting in half" is what we call **O(log n)** (remember the Fundamentals
+section?), and it is absurdly fast:
+
+| n | Steps for linear search O(n) | Steps for binary search O(log n) |
+| --- | --- | --- |
+| 1,000 | 1,000 | ~10 |
+| 1,000,000 | 1,000,000 | ~20 |
+| 1,000,000,000 | 1 billion | ~30 |
+
+Thirty steps for a billion elements. That's why recognizing "I can use binary
+search here" is a game changer.
+
+### The signs of binary search
+
+- The array is **sorted** (or can be sorted without breaking the problem).
+- The statement asks for something **better than O(n)** — almost always
+  O(log n).
+- You're looking for a value, a boundary ("first/last that..."), or even
+  **the smallest value that satisfies a condition** (binary search on the
+  answer — we'll see this on the exam!).
+
+## Module 2 — Bit manipulation
+
+Every number, internally, is a sequence of bits (0s and 1s). Manipulating bits
+directly solves certain problems with an elegance and efficiency that no other
+approach can match — and it's a skill interviewers love to test.
+
+The tools: the operators `&` (AND), `|` (OR), `^` (XOR), `~` (NOT) and the
+shifts `<<`, `>>`. With them you turn bits on, off, test them, and count them.
+
+### The signs of bit manipulation
+
+- The statement mentions **bits, binary, powers of 2**.
+- "Find the number that appears once" / "the one that's missing" — the smell of
+  **XOR**.
+- A strange constraint: "without using the `+` operator", "O(1) space" in a
+  counting problem.
+- You need a **compact set** of flags (bitmask).
+
+## The problems in this section
+
+- **Binary search:** Search in Rotated Sorted Array, Find Minimum in Rotated
+  Sorted Array → *classic and modified binary search*.
+- **Bits:** Number of 1 Bits, Counting Bits, Reverse Bits, Missing Number, Sum
+  of Two Integers → *fundamentals, XOR and techniques*.
+
+And on the exam: three brand-new problems, including one that applies binary
+search in a way that might surprise you.
+
+## Summary
+
+- **Binary search**: sorted data → cut in half → O(log n), fast enough for
+  huge inputs.
+- **Bits**: operate on the 0s and 1s with `& | ^ ~ << >>`; the signs are
+  "binary", "appears once/missing" (XOR), space constraints.
+- They are two independent modules within the same section.
+
+Next lesson: **binary search** in its classic form — and the full
+justification of O(log n).

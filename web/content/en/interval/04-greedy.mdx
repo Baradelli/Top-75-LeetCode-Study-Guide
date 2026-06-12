@@ -1,0 +1,131 @@
+# Pattern 3: Greedy on overlap
+
+> "What is the minimum number of intervals to remove so the rest don't
+> overlap?" This kind of question is solved with a **greedy choice** — and the
+> trick lies in sorting by the right endpoint: the **end**.
+
+<Challenge id="erase-overlap-intervals" />
+
+> Tried it? The temptation is to remove "whatever seems to get in the way the
+> most." The theory below shows the simple greedy rule and why it gives the
+> optimal result.
+
+## The theory: keep the one that finishes early
+
+Removing the **minimum** so nothing overlaps is the same as **keeping the
+maximum** number of compatible (non-overlapping) intervals. And here is the
+greedy choice, classic to the "activity scheduling" problem:
+
+> Among competing intervals, **always keep the one that finishes earliest**.
+
+Why? Because the one that finishes earliest **leaves more free space** to the
+right for the next ones. Any other choice would occupy the line for longer
+without gaining anything. So:
+
+```text
+sort by END
+kept_end = -infinity
+removals = 0
+for each [start, e]:
+    if start >= kept_end:    # fits without overlapping
+        kept_end = e         # keep this one
+    else:                    # overlaps the last one kept
+        removals += 1        # remove this one
+```
+
+Sorting by **end** (and not by start!) is what makes the rule work: you always
+consider first the one that frees the line earliest. Each interval that
+**doesn't fit** after the last one kept is a removal.
+
+### Why is the greedy optimal here? (the intuition)
+
+Imagine there's an optimal solution that did **not** pick the interval with the
+earliest end. You can swap its first choice for that one (which ends earlier or
+at the same time) without making anything worse — it leaves at least as much
+space as the other. Repeating the argument, the greedy "finishes earliest"
+choice reaches the optimum. This "exchange argument" is the hallmark of correct
+greedy algorithms.
+
+### Complexity
+
+The **sort by end** dominates: **O(n log n)**. The scan is O(n), with O(1)
+state (just the last kept end and the counter). O(1) space beyond the sort.
+
+## Where this greedy shows up
+
+The same idea solves a family: **maximum number of meetings/activities that
+fit** in a schedule, **minimum number of arrows to burst balloons** (each
+balloon is an interval; arrows = intervals remaining after removing overlaps),
+and variations of "select the maximum number of compatible intervals."
+Whenever the question is "maximum that fits without conflict" or "minimum to
+remove," think: **sort by end + greedy**.
+
+<Quiz
+  title="Review quiz"
+  questions={[
+    {
+      question:
+        "In the problem of removing the minimum number of intervals so they don't overlap, why sort by END (and not by start)?",
+      options: [
+        "By convention",
+        "Because the greedy choice is to keep the one that finishes earliest (leaves more space to the right); sorting by end makes you consider those first",
+        "Because sorting by start causes an error",
+        "Because the end is always larger",
+      ],
+      answer: 1,
+      explanation:
+        "Keeping the one that finishes early maximizes the free space for the next ones. Sorting by end aligns the scan with this greedy rule.",
+    },
+    {
+      question:
+        "Why is 'remove the minimum so they don't overlap' equivalent to 'keep the maximum number of compatible intervals'?",
+      options: [
+        "It isn't equivalent",
+        "Because total = kept + removed; minimizing the removed is the same as maximizing the kept",
+        "Because they all overlap",
+        "Because the order doesn't matter",
+      ],
+      answer: 1,
+      explanation:
+        "They're two sides of the same coin: with the total fixed, the more you keep compatible, the fewer you need to remove.",
+    },
+    {
+      question:
+        "What is the 'exchange argument' that justifies the greedy choice?",
+      options: [
+        "Swapping two intervals around speeds up the code",
+        "If there's an optimal solution that didn't pick the one with the earliest end, you can swap it for the earliest-end one without making things worse — so the greedy is optimal too",
+        "Swap the sort for binary search",
+        "There's no justification",
+      ],
+      answer: 1,
+      explanation:
+        "The exchange argument shows the greedy choice is never worse than any alternative: the earliest-end one leaves at least as much space. It's the typical proof of greedy correctness.",
+    },
+    {
+      question:
+        "'Minimum number of arrows to burst all balloons (each balloon is an interval; a vertical arrow bursts all the ones it crosses).' How does it relate to this lesson?",
+      options: [
+        "It doesn't relate",
+        "It's the same greedy by end: the number of arrows is the number of groups of non-overlapping intervals — sort by end and count when you need a new arrow",
+        "It's binary search",
+        "It's interval merge",
+      ],
+      answer: 1,
+      explanation:
+        "Each arrow covers a set of balloons that overlap at a point. Sorting by end and firing at the end of each compatible group minimizes the arrows — the same greedy.",
+    },
+  ]}
+/>
+
+## Summary
+
+- "Minimum to remove" = "maximum to keep compatible" → **greedy**.
+- Sort by **end** and keep the ones that fit (`start >= last end`); the rest
+  are removals.
+- Correctness via the **exchange argument** (the one that finishes early leaves
+  more space).
+- **O(n log n)** (sort), O(1) state; same idea in "maximum activities" and
+  "arrows on balloons."
+
+Next lesson: counting the **maximum** overlap — the event sweep.

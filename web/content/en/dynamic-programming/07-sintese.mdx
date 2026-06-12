@@ -1,0 +1,159 @@
+# Synthesis: which pattern to use?
+
+> Five DP patterns covered — and this is the last section of the course. Let's
+> wrap up with the DP decision tree and then a look back at everything you
+> built.
+
+## The DP decision tree
+
+```text
+Recognize the DP: are there subproblems that REPEAT and does the answer build from the smaller ones?
+
+1. How to model the state?
+   ├── a position in a sequence              → dp[i] (1D DP)
+   ├── a target value to compose with items  → dp[a] (knapsack)
+   ├── a cell in a grid                       → dp[r][c] (grid DP)
+   └── prefixes of TWO sequences              → dp[i][j] (string DP)
+
+2. What is the recurrence (how does dp build from the smaller states)?
+   ├── sum/count paths                        → dp[i-1] + dp[i-2] / sum
+   ├── decide include or exclude              → max(exclude, include)
+   ├── minimize with reusable items           → min(dp[a-item] + 1)
+   └── compare last elements                  → match? diagonal : neighbors
+
+3. Base cases and fill order (from the smaller ones to the bigger).
+```
+
+And the section's reflexes: **time ≈ states × cost per state**; when the
+recurrence looks only at the last k states, **reduce the space**; and, before
+reaching for DP, ask whether a **greedy** already solves it.
+
+## The complete map of the section
+
+| Pattern | State | Time |
+| --- | --- | --- |
+| 1D DP | dp[i] (position) | O(n) |
+| Include/exclude | dp[i] = max(skip, take) | O(n) |
+| Knapsack | dp[a] (target value) | O(target × items) |
+| Grid DP | dp[r][c] (cell) | O(m·n) |
+| Sequence DP | dp[i][j] (prefixes) | O(m·n) |
+
+The mother idea: **DP is recursion + memory**. Define the state, the recurrence,
+and the base cases, and the rest is filling a table. What seemed like the most
+frightening topic is, deep down, the most systematic method of the course.
+
+## Section quiz
+
+Statements you **haven't seen** in the lessons. Identify the pattern and the why.
+6+ correct: ready for the course's final exam.
+
+<Quiz
+  title="Section quiz: Dynamic Programming"
+  questions={[
+    {
+      question:
+        "'Minimum cost to climb a staircase, where each step charges a cost (steps of 1 or 2).' Which pattern?",
+      options: [
+        "Grid DP",
+        "1D DP: dp[i] = cost[i] + min(dp[i-1], dp[i-2]) — a variant of Climbing Stairs with cost",
+        "Knapsack",
+        "Greedy",
+      ],
+      answer: 1,
+      explanation:
+        "A sequence of steps with a recurrence looking 1 and 2 back is 1D DP. Only the operation changes: sum the cost and minimize. (It's the easy exam!)",
+    },
+    {
+      question:
+        "'Split an array into two subsets with equal sum.' Which pattern?",
+      options: [
+        "Grid DP",
+        "Boolean 0/1 knapsack: target = sum/2; dp[v] = 'can we form v?'; each number used at most once",
+        "String DP",
+        "Simple 1D include/exclude",
+      ],
+      answer: 1,
+      explanation:
+        "It reduces to 'is there a subset summing to half?' — a 0/1 knapsack over the target value. Unlike coin change (unbounded), each number is used only once. (Medium exam!)",
+    },
+    {
+      question:
+        "'Edit distance: the minimum of insertions/removals/substitutions to transform one string into another.' Which pattern?",
+      options: [
+        "1D DP",
+        "2D sequence DP: dp[i][j] over the prefixes; match → diagonal; else 1 + min(replace, remove, insert)",
+        "Knapsack",
+        "Greedy",
+      ],
+      answer: 1,
+      explanation:
+        "Comparing prefixes of two strings is 2D DP. The three operations correspond to the three neighbors (diagonal, above, left). (It's the hard exam!)",
+    },
+    {
+      question:
+        "'Longest increasing subsequence in an array.' 1D or 2D, and why?",
+      options: [
+        "2D, compares with another array",
+        "1D: it's a SINGLE sequence; dp[i] looks at all previous positions j<i with nums[j]<nums[i] and extends the best one",
+        "Knapsack",
+        "Grid",
+      ],
+      answer: 1,
+      explanation:
+        "There's only one sequence, so the state is 1D (dp[i] = longest increasing subseq. ending at i). 2D is when you relate TWO sequences.",
+    },
+    {
+      question:
+        "'In how many ways can you decode a string of digits into letters (A=1..Z=26)?' Which pattern?",
+      options: [
+        "Knapsack",
+        "1D DP: dp[i] = ways to decode up to i, summing the 1-digit case (if valid) and the 2-digit case (if 10–26)",
+        "Grid DP",
+        "Greedy",
+      ],
+      answer: 1,
+      explanation:
+        "Each position decides between consuming 1 or 2 digits (if they form a valid code). dp[i] sums the ways coming from i-1 and i-2 — 1D DP in the Fibonacci style with conditions.",
+    },
+    {
+      question:
+        "What is the fastest way to estimate the time complexity of a DP?",
+      options: [
+        "Count the loops",
+        "Number of states × cost to compute each state (e.g.: amount states × O(coins) = O(amount·coins))",
+        "Always O(n²)",
+        "Measure it in seconds",
+      ],
+      answer: 1,
+      explanation:
+        "Each state is computed once (thanks to the memory). Multiplying the number of states by the cost of each gives the total time — the section's central shortcut.",
+    },
+  ]}
+/>
+
+## You finished the course 🎉
+
+If you made it this far, you covered **every type** of problem in the Top 75:
+
+- **Fundamentals** (Big-O) and the **Array** and **String** patterns — the base.
+- **Binary**, **Linked List**, **Matrix**, **Intervals** — structures and
+  techniques.
+- **Trees**, **Heap**, **Graphs** — recursion and advanced structures.
+- **Dynamic Programming** — where everything comes together.
+
+And more important than the problems: you trained the **way of thinking** —
+solving by hand, finding the waste in brute force, recognizing the pattern, and
+justifying the complexity. Notice how the patterns talk to each other: the Array
+hash map reappears in String and Graphs; DFS/BFS runs through Matrix, Tree, and
+Graph; Kadane was already DP. **They weren't 75 isolated problems — they were
+about 20 reused patterns.**
+
+## The final exam
+
+This section's exam has **three brand-new problems** — Min Cost Climbing Stairs
+(easy), Partition Equal Subset Sum (medium), and Edit Distance (hard) — with
+hidden cases. After it, the best next step is to open LeetCode and solve problems
+**without a net**: now you have the map.
+
+**Good luck on the exam — and congratulations on completing the course!** Go back
+to the section page and click "Final exam".

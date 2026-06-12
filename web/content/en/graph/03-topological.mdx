@@ -1,0 +1,136 @@
+# Pattern 2: Topological sort
+
+> "To do A, I need to do B first." When there are **dependencies** between
+> tasks (courses, compilation, package installation), topological sort finds a
+> valid order of execution — and, as a bonus, detects **circular
+> dependencies** (impossible to resolve).
+
+<Challenge id="course-schedule" />
+
+> Tried it? The question "can I finish all the courses?" is, deep down, "does
+> the dependency graph have a **cycle**?". The theory below shows how to order
+> and detect a cycle in one go.
+
+## The theory: Kahn's algorithm (BFS of in-degrees)
+
+Model each task as a node and each dependency "B before A" as a directed edge
+`B → A`. A **topological sort** is an order of the nodes in which every edge
+points "forward" — that is, every task comes after its dependencies.
+
+**Kahn's** algorithm uses the **in-degree** of each node: how many edges arrive
+at it = how many dependencies are still missing.
+
+```text
+1. compute the in-degree of each node
+2. queue ← all nodes with in-degree 0 (no dependencies: they can start already)
+3. while the queue is not empty:
+       node = dequeue; add it to the order
+       for each neighbor of node:   # "finished node", so I remove the edge node→nb
+           in-degree[nb] -= 1
+           if in-degree[nb] == 0: enqueue nb   # released all dependencies
+```
+
+Each node enters the queue exactly when its last dependency is resolved. Watch
+the order being built — notice the `indeg` dropping and the nodes releasing the
+following ones:
+
+<TraceDemo id="topological-sort" />
+
+### The key insight: topological sort detects a cycle
+
+Here is the brilliant part: if the graph has a **cycle**, the nodes of the
+cycle **never** reach in-degree 0 (each depends on the other). So the algorithm
+terminates without processing them. Conclusion:
+
+> If the number of processed nodes is **smaller** than the total, there is a
+> cycle — and the topological sort is **impossible**.
+
+It is exactly *Course Schedule*: "can I finish all the courses?" ⟺ "did I
+process all the nodes?" ⟺ "is there no cycle of prerequisites?".
+
+### Why is it O(V + E)?
+
+Computing the in-degrees walks all the edges (O(E)). Each node enters and
+leaves the queue once (O(V)), and each edge is "removed" once when processing
+its source (O(E)). Total: **O(V + E)** time, O(V) space.
+
+## Where it shows up
+
+Course Schedule (I and II — II asks for the order itself), **Alien Dictionary**
+(deducing the alphabet's order from sorted words: each pair of neighboring
+words gives an edge of precedence between letters), build systems, package
+dependency resolution. Whenever there is "**X before Y**" and you need an order
+(or to detect impossibility), think of topological sort.
+
+> There is also the **DFS** version (post-order + cycle detection with colors),
+> but Kahn (BFS of in-degrees) is the most direct to start with and already
+> handles cycle detection naturally.
+
+<Quiz
+  title="Review quiz"
+  questions={[
+    {
+      question: "What is a topological sort?",
+      options: [
+        "Sorting the nodes by value",
+        "An order of the nodes of a DIRECTED graph in which every edge points forward — every task comes after its dependencies",
+        "The BFS order",
+        "Sorting the edges by weight",
+      ],
+      answer: 1,
+      explanation:
+        "It is a linear order compatible with the dependencies: if there is an edge B→A (B before A), B appears before A in the order. It only exists in directed graphs without cycles (DAGs).",
+    },
+    {
+      question: "In Kahn's algorithm, what does a node having in-degree 0 mean?",
+      options: [
+        "That it has no neighbors",
+        "That no edge arrives at it — that is, it has no pending dependencies and can be processed now",
+        "That it is the last in the order",
+        "That it forms a cycle",
+      ],
+      answer: 1,
+      explanation:
+        "In-degree = missing dependencies. Zero means all have been resolved, so the node is free to enter the order (and the queue).",
+    },
+    {
+      question:
+        "How does topological sort detect a cycle (circular dependency)?",
+      options: [
+        "It counts the edges",
+        "The nodes of a cycle never reach in-degree 0; if the number of processed nodes is smaller than the total, there is a cycle — sort impossible",
+        "It looks for repeated edges",
+        "It does not detect cycles",
+      ],
+      answer: 1,
+      explanation:
+        "In a cycle, each node depends on another in the cycle, so none reaches in-degree zero. Leftover unprocessed nodes are the signature of the cycle — exactly what makes Course Schedule impossible.",
+    },
+    {
+      question:
+        "'Deduce the order of the letters of an alien alphabet from a list of sorted words.' Which pattern?",
+      options: [
+        "Union-Find",
+        "Topological sort: each pair of neighboring words reveals that one letter comes before another (an edge); sorting topologically gives the alphabet",
+        "Multi-source BFS",
+        "Heap",
+      ],
+      answer: 1,
+      explanation:
+        "Comparing adjacent words, the first differing letter gives a precedence (an edge between letters). The alphabet's order is the topological sort of that letter graph.",
+    },
+  ]}
+/>
+
+## Summary
+
+- **Topological sort**: order of tasks respecting dependencies (in directed
+  graphs).
+- **Kahn**: start with the nodes with **in-degree 0**, process and reduce the
+  in-degree of the neighbors.
+- If **not all** the nodes are processed, there is a **cycle** (sort
+  impossible) — this is how Course Schedule works.
+- **O(V + E)**. Shows up in courses, alien dictionary, build systems.
+
+Next lesson: grouping and asking "are they connected?" almost for free —
+**Union-Find**.

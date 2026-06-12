@@ -1,0 +1,137 @@
+# Synthesis: which pattern to use?
+
+> Four interval patterns covered. Since the section is lean, the decision tree
+> is too — but the reflex of **sorting by the right endpoint** is what
+> separates those who solve from those who get stuck.
+
+## The section's decision tree
+
+```text
+1. Need to MERGE overlapping intervals in an arbitrary list?
+   → sort by START + scan, merging into the last in the result
+
+2. The list is ALREADY sorted and I'm going to INSERT an interval?
+   → three phases (before / merge / after), in O(n) without sorting
+
+3. "Minimum to remove" / "maximum that fits without conflict"?
+   → GREEDY: sort by END, keep the one that finishes earliest
+
+4. "How many resources/rooms at the same time?" / "maximum overlap"?
+   → EVENT SWEEP (+1 at the start, −1 at the end) or min-heap of the ends
+```
+
+The question that guides everything: **sort by start or by end?** Start to
+merge/insert (process in line order); end for greedy choices (the one that
+frees space earliest).
+
+## The full map of the section
+
+| Pattern | Key question | Sort by | Time |
+| --- | --- | --- | --- |
+| Merge | "merge the overlapping ones" | start | O(n log n) |
+| Insert | "insert into a sorted list" | (already sorted) | O(n) |
+| Greedy | "minimum to remove / maximum that fits" | end | O(n log n) |
+| Event sweep | "how many at the same time / rooms" | start and end | O(n log n) |
+
+Note: almost everything is **O(n log n) dominated by the sort** — except
+insert, which exploits the already-sorted list and drops to O(n). The scan
+itself is always linear; the creativity lies in **which endpoint to sort by**
+and **what to accumulate** (last interval? counter of active ones?).
+
+## Section quiz
+
+Statements you **haven't seen** in the lessons. Identify the pattern and the
+reason why. 6+ correct: ready for the exam.
+
+<Quiz
+  title="Section quiz: Intervals"
+  questions={[
+    {
+      question:
+        "'Given a schedule, what is the MAXIMUM number of meetings that fit without overlapping?' Which pattern?",
+      options: [
+        "Merge",
+        "Greedy sorted by END: always keep the one that finishes earliest, counting how many fit",
+        "Event sweep",
+        "Three-phase insertion",
+      ],
+      answer: 1,
+      explanation:
+        "It's the classic 'activity selection': sorting by end and greedily picking the one that finishes earlier maximizes the compatible count. Same greedy as 'minimum to remove'.",
+    },
+    {
+      question:
+        "'Merge overlapping intervals' and 'insert into an already-sorted set': why do the complexities differ?",
+      options: [
+        "They're the same",
+        "Merge needs to SORT first (O(n log n)); insert exploits that the list is already sorted and does only a scan (O(n))",
+        "Insert is slower",
+        "Merge doesn't use a sort",
+      ],
+      answer: 1,
+      explanation:
+        "The cost of merge comes from the sort. Insertion starts from an already-sorted list, so it skips the sort — O(n). Exploiting the given structure changes the complexity.",
+    },
+    {
+      question:
+        "'What is the point in time with the most overlapping intervals?' Which technique?",
+      options: [
+        "Greedy by end",
+        "Event sweep: +1 at each start, −1 at each end, sorted by time; the peak of the counter is the answer",
+        "Three-phase insertion",
+        "Binary search",
+      ],
+      answer: 1,
+      explanation:
+        "Turning each interval into two events (in/out) and sweeping in order measures the overlap instant by instant; the maximum is the peak — the same as 'minimum number of rooms'.",
+    },
+    {
+      question:
+        "'Minimum number of arrows to burst balloons (intervals on the x-axis)' uses which pattern?",
+      options: [
+        "Event sweep",
+        "Greedy sorted by end: fire an arrow at the end of each group of overlapping balloons; the number of arrows is the number of compatible groups",
+        "Merge by start",
+        "Insertion",
+      ],
+      answer: 1,
+      explanation:
+        "It's the greedy from lesson 4 in different clothes: sort by end and count non-overlapping groups. Each arrow covers a group that shares a point.",
+    },
+    {
+      question:
+        "'Combine two ALREADY-sorted lists of intervals, returning the intersections.' Which approach?",
+      options: [
+        "Re-sort everything and merge",
+        "Two pointers (one per list): the intersection is [max of the starts, min of the ends] if valid; advance the pointer of the one that ends first",
+        "Greedy by end",
+        "Event sweep",
+      ],
+      answer: 1,
+      explanation:
+        "Since both are already sorted, two pointers sweep in O(n+m). The intersection of two intervals is [max start, min end], and you advance the one that ends first. (It shows up on the exam!)",
+    },
+    {
+      question:
+        "What is the decision that guides almost all interval problems?",
+      options: [
+        "Use recursion or iteration",
+        "Sort by START (merge/insert) or by END (greedy choices) — and then scan comparing against the accumulated state",
+        "Always use a heap",
+        "Convert intervals into graphs",
+      ],
+      answer: 1,
+      explanation:
+        "The sorting endpoint defines the strategy: start to process in line order; end for the greedy. Then a scan with state solves it.",
+    },
+  ]}
+/>
+
+## Ready for the exam?
+
+The final exam of the Intervals section has **three brand-new problems** —
+easy, medium, and hard — with hidden cases. The hard one (Car Pooling) applies
+the **event sweep** in a new scenario (passengers getting on and off): exactly
+the meeting-rooms reasoning. The four lessons cover everything you need.
+
+**Good luck on the exam!** Go back to the section page and click "Final exam."

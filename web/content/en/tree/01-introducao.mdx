@@ -1,0 +1,155 @@
+# Recognizing tree problems
+
+> A binary tree is like a linked list that **branches**: each node points to
+> up to two children (left and right). That branching is the gateway to
+> **recursion** — the tool that solves most of this section's problems almost
+> on its own.
+
+> As always, every pattern lesson opens with a **🎯 Try it first**.
+
+## The node: TreeNode
+
+```python
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left      # left child (or None)
+        self.right = right    # right child (or None)
+```
+
+You keep only the **root** (`root`). From it, you go down through `left`/`right`
+until you hit `None` (a leaf has no children). Quick vocabulary: **root**
+(top), **leaf** (no children), **height** (h, the longest path from the root to
+a leaf), **subtree** (any node with its descendants).
+
+> In the lesson editor you use a real `TreeNode`. In the **visualizations**, we
+> represent the tree with three arrays (`values`, `left`, `right`, with child
+> indices) so we can draw it at every step — it is the same tree, `left[i]` is
+> `node.left`.
+
+## Why recursion is the natural tool
+
+The definition of a tree is **recursive**: a tree is a node whose children
+are... smaller trees. So almost every problem is solved with the same recipe:
+
+> **Solve the problem for the children (recursion), then combine the results at
+> the current node. The base case is the empty tree (`None`).**
+
+Instead of thinking about the whole tree at once, you trust that the recursion
+solves the subtrees and you only decide **how to combine them**. That shift in
+perspective is the heart of the section.
+
+## The three traversals (DFS)
+
+Visiting all the nodes by "going deep" (DFS) has three orders, which differ in
+**when** you process the node relative to its children:
+
+| Traversal | Order | Example use |
+| --- | --- | --- |
+| **preorder** | node → left → right | copy/serialize the tree |
+| **in-order** | left → node → right | in a BST, it comes out in **ascending** order! |
+| **postorder** | left → right → node | when the node depends on its children (e.g. height) |
+
+See the three on a hand-built tree:
+
+<CodeRunner
+  python={`class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right
+
+# builds:   1
+#          / \\
+#         2   3
+#        / \\
+#       4   5
+raiz = TreeNode(1, TreeNode(2, TreeNode(4), TreeNode(5)), TreeNode(3))
+
+def pre_ordem(no, saida):
+    if not no: return
+    saida.append(no.val)        # node first
+    pre_ordem(no.left, saida)
+    pre_ordem(no.right, saida)
+
+def em_ordem(no, saida):
+    if not no: return
+    em_ordem(no.left, saida)
+    saida.append(no.val)        # node in the middle
+    em_ordem(no.right, saida)
+
+def pos_ordem(no, saida):
+    if not no: return
+    pos_ordem(no.left, saida)
+    pos_ordem(no.right, saida)
+    saida.append(no.val)        # node last
+
+a = []; pre_ordem(raiz, a); print("pre:", a)
+b = []; em_ordem(raiz, b); print("in: ", b)
+c = []; pos_ordem(raiz, c); print("post:", c)`}
+  javascript={`function TreeNode(val, left, right) {
+  this.val = val;
+  this.left = left || null;
+  this.right = right || null;
+}
+// builds:   1 / (2 (4,5), 3)
+var raiz = new TreeNode(1, new TreeNode(2, new TreeNode(4), new TreeNode(5)), new TreeNode(3));
+
+function preOrdem(no, saida) {
+  if (!no) return;
+  saida.push(no.val);          // node first
+  preOrdem(no.left, saida);
+  preOrdem(no.right, saida);
+}
+function emOrdem(no, saida) {
+  if (!no) return;
+  emOrdem(no.left, saida);
+  saida.push(no.val);          // node in the middle
+  emOrdem(no.right, saida);
+}
+function posOrdem(no, saida) {
+  if (!no) return;
+  posOrdem(no.left, saida);
+  posOrdem(no.right, saida);
+  saida.push(no.val);          // node last
+}
+var a = []; preOrdem(raiz, a); console.log("pre:", a);
+var b = []; emOrdem(raiz, b); console.log("in: ", b);
+var c = []; posOrdem(raiz, c); console.log("post:", c);`}
+/>
+
+## Big-O in trees: O(n) and O(h)
+
+Two measures that will show up all the time — and that you should always
+justify:
+
+- **Time O(n):** traversing the tree visits **each node once** (n = number of
+  nodes). Most tree algorithms are O(n).
+- **Space O(h):** the recursion stacks one call per level it is diving into;
+  at the bottom, the stack is as tall as the **height** h. Here lies the
+  subtlety:
+  - **Balanced** tree: h ≈ **log n** → space O(log n). 🎉
+  - **Degenerate** tree (it becomes a "list", each node with a single child):
+    h = n → space O(n). 😬
+
+That is why "O(h)" is the honest way to state the recursion's space: it is
+great when the tree is balanced and bad when it is degenerate. Keep this
+distinction — it reappears in the BST (O(h) search) and justifies why balanced
+trees matter so much.
+
+## The section's problems
+
+- Maximum Depth, Invert Tree, Same Tree → *recursive DFS*
+- Level Order Traversal → *level-order BFS*
+- Validate BST, Kth Smallest, Lowest Common Ancestor → *BST properties*
+- Construct from Traversals, Serialize/Deserialize → *construction*
+- Implement Trie → *prefix tree*
+
+## Summary
+
+- Tree = nodes with `left`/`right`; you keep the **root**; a leaf has no children.
+- **Recursion is natural**: solve the children, combine at the node, base case = `None`.
+- DFS traversals: pre, in (ascending in a BST!) and postorder.
+- **O(n)** time; **O(h)** space (log n if balanced, n if degenerate).
+
+Next lesson: the **recursive template** that unlocks most trees.

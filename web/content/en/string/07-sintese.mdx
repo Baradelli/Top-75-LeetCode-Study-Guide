@@ -1,0 +1,172 @@
+# Synthesis: which pattern to use?
+
+> Five patterns covered. Time to train the reflex that earns the interview:
+> read a new string prompt and know which tool to reach for — with
+> justification.
+
+## The section's decision tree
+
+```text
+1. Does the ORDER of the characters NOT matter, only the composition?
+   ├── Compare/group whole strings by composition
+   │     → FREQUENCY COUNTING (anagrams)
+   └── Continue ↓
+
+2. Is the answer a contiguous SUBSTRING that grows/shrinks under a condition?
+   → SLIDING WINDOW with a frequency map
+     (no repeats / ≤ k swaps / covers a target)
+
+3. Is the problem about SYMMETRY (palindrome)?
+   ├── "Is this a palindrome?"         → converging TWO POINTERS
+   └── "How many / the longest?"       → EXPAND FROM THE CENTER (odd and even)
+
+4. Is there NESTING or matching of openings/closings? Or "last pending"?
+   → STACK (LIFO)
+
+5. Do I need to REPRESENT data in a string and recover it without ambiguity?
+   → length-prefix ENCODING (design)
+```
+
+And the usual sanity check: **the limits**. Remember that enumerating all
+substrings is already O(n²) — if n is large, that's almost never the way.
+
+## The section's complete map
+
+| Pattern | Key question | Structure | Time | Space |
+| --- | --- | --- | --- | --- |
+| Frequency (anagrams) | "same composition?" | count map | O(n) or O(n·k log k) | O(1)* |
+| Sliding window | "substring that satisfies X?" | window + map | O(n) | O(1)* |
+| Two pointers | "is it a palindrome?" | two indices from the ends | O(n) | O(1) |
+| Expand from the center | "how many/longest palindrome?" | two indices from the center | O(n²) | O(1) |
+| Stack | "nesting / last pending?" | LIFO stack | O(n) | O(n) |
+| Encoding | "represent without ambiguity?" | length-prefix | O(n) | O(n) |
+
+\* O(1) when the alphabet is fixed (e.g.: 26 letters); otherwise O(min(n, alphabet)).
+
+And the connection to the previous section, worth internalizing: **frequency is
+the hash map, and sliding window and two pointers came from Array**. You didn't
+learn 5 new tools — you learned to apply the Array ones to characters and got
+the stack, expand-from-the-center, and encoding as a bonus.
+
+## Section quiz
+
+Prompts you **haven't seen** in the lessons. Identify the pattern and be able
+to say why. 7+ correct: ready for the exam.
+
+<Quiz
+  title="Section quiz: String"
+  questions={[
+    {
+      question:
+        "'Check whether s2 contains any permutation of s1 as a substring.' Which pattern?",
+      options: [
+        "Expand from the center",
+        "A fixed-size sliding window of |s1| comparing the window's frequency map with s1's",
+        "Stack",
+        "Encoding",
+      ],
+      answer: 1,
+      explanation:
+        "'Permutation as a substring' = a contiguous window of size |s1| whose composition matches s1's. Fixed window + frequency comparison: O(n).",
+    },
+    {
+      question:
+        "'Given a string, what's the length of the longest substring with at most 2 distinct characters?' Which pattern?",
+      options: [
+        "Fixed frequency counting",
+        "Variable sliding window: expand right, shrink left while there are more than 2 distinct chars in the map",
+        "Two pointers from the ends",
+        "Stack",
+      ],
+      answer: 1,
+      explanation:
+        "Contiguous substring + a condition over the chars inside it ('≤ 2 distinct') = variable sliding window, with the count map telling you how many distinct there are. O(n).",
+    },
+    {
+      question:
+        "'How many palindromic substrings are there in s?' Which pattern and what complexity?",
+      options: [
+        "Sliding window, O(n)",
+        "Expand from the center (odd and even), O(n²)",
+        "Stack, O(n)",
+        "Brute force over all substrings, O(n³)",
+      ],
+      answer: 1,
+      explanation:
+        "Palindromes have a center; expand from each one (odd and even) counting the valid ones. O(n²) — much better than the O(n³) of testing all substrings.",
+    },
+    {
+      question:
+        "'Remove all invalid parentheses to make the expression valid.' What structure is the natural basis?",
+      options: [
+        "Frequency map",
+        "Stack / counting of pending openings and closings (the LIFO matching reasoning)",
+        "Expand from the center",
+        "Two pointers",
+      ],
+      answer: 1,
+      explanation:
+        "Matching openings and closings and detecting the leftovers is stack/pending-count territory — the same LIFO reasoning as Valid Parentheses.",
+    },
+    {
+      question:
+        "'Is it a palindrome if you can remove at most one character?' Which pattern?",
+      options: [
+        "Stack",
+        "Converging two pointers: when you find a mismatch, try skipping the left char OR the right one and check the rest",
+        "Sliding window",
+        "Encoding",
+      ],
+      answer: 1,
+      explanation:
+        "It's the palindrome two pointers with a branch: at the first mismatch, there are two attempts (skip left or right). The converging structure is the same; only the reaction to the disagreement changes.",
+    },
+    {
+      question:
+        "'Encode a binary tree into a string and reconstruct it.' Which String-section principle applies?",
+      options: [
+        "Sliding window",
+        "Unambiguous encoding (recording the structure, including null nodes) — the same principle as length-prefix / serialization",
+        "Anagrams",
+        "Expand from the center",
+      ],
+      answer: 1,
+      explanation:
+        "Serializing structure without ambiguity is the design problem from the encoding lesson. You'll meet this literally again in the Trees section.",
+    },
+    {
+      question:
+        "'Are s and t anagrams?' — why NOT use a sliding window here?",
+      options: [
+        "Because sliding window is slow",
+        "Because there's no substring/window: you compare the composition of the WHOLE strings — a single frequency count suffices, O(n)",
+        "Because anagrams require sorting",
+        "You should use a sliding window",
+      ],
+      answer: 1,
+      explanation:
+        "A sliding window is for contiguous substrings. An anagram compares the complete strings: a direct frequency count, no window. Choosing the right tool starts with 'is it a substring or the whole string?'.",
+    },
+    {
+      question:
+        "What's the core idea that ties the String section to the Array section?",
+      options: [
+        "They're independent sections",
+        "A string is an array of characters: frequency is the hash map, sliding window and two pointers come from Array — only the element type and a few tools (stack, center, encoding) change",
+        "Strings are always sorted",
+        "Both use only brute force",
+      ],
+      answer: 1,
+      explanation:
+        "Reusing patterns in new contexts is the heart of the course. Recognizing 'this is the Array's sliding window, with a map in place of the number' is what lets you solve novel problems.",
+    },
+  ]}
+/>
+
+## Ready for the exam?
+
+The String section's final exam has **three novel problems** — easy, medium,
+and hard — with hidden cases. The five lessons cover everything you need, and
+the decision tree above settles the pattern choice for all three.
+
+**Good luck!** Go back to the section page and click "Final exam".

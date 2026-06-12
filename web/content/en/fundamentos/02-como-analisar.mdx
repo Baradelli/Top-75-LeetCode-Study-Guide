@@ -1,0 +1,200 @@
+# How to Analyze the Complexity of Any Code
+
+> In this lesson you learn the **four rules** that handle 95% of analyses.
+> From here on, every complexity that appears in the course comes with its
+> justification — and you'll be able to check each one.
+
+## Rule 1 — Blocks in sequence: **add** (and the largest wins)
+
+If the code does one thing and *then* does another, the costs add up:
+
+```python
+for x in nums:        # O(n)
+    ...
+for x in nums:        # O(n) again
+    ...
+```
+
+Total: O(n + n) = O(2n) = **O(n)**. Two separate loops are still linear!
+This is a classic mistake: seeing two `for` loops and shouting "O(n²)". It's
+only quadratic if one is **inside** the other.
+
+If the blocks have different costs, the largest wins: sorting at O(n log n)
+and then scanning at O(n) gives O(n log n + n) = **O(n log n)**.
+
+## Rule 2 — Nested loops: **multiply**
+
+If for *each* turn of the outer loop the inner loop runs in full, the cost
+multiplies:
+
+```python
+for i in range(n):        # runs n times...
+    for j in range(n):    # ...and each time costs n
+        ...               # total: n × n = O(n²)
+```
+
+The justification is literal: the body executes n × n times. And what if the
+inner loop is `range(i + 1, n)`? It runs n-1, then n-2, ... down to 1 time.
+The sum 1 + 2 + ... + n = n(n+1)/2 ≈ n²/2 — the ½ constant drops and it stays
+**O(n²)**.
+
+Watch out for the disguise: what multiplies is "how many times the inner one
+runs", not the number of `for` keywords in the text. An inner loop that
+always runs **10 times** (fixed, not depending on n) gives n × 10 = **O(n)**.
+
+## Rule 3 — Cutting in half: **log**
+
+If at each step the problem **divides** (instead of shrinking by 1), the
+number of steps is logarithmic:
+
+```python
+while n > 1:
+    n = n // 2    # 1,000,000 → 500,000 → 250,000 → ... → 1
+```
+
+How many times can you divide 1,000,000 by 2 until you reach 1? About 20
+(because 2²⁰ ≈ 1 million). That's log₂(n) — and we write **O(log n)**. It's
+the signature of binary search, which you'll see in the Binary section.
+
+And **O(n log n)**? It's O(log n) work repeated n times (or O(n) repeated
+log n times) — the cost of good sorting algorithms. The course's rule of
+thumb: *"did I use `sort`? Then I'm already paying O(n log n)"*.
+
+## Rule 4 — The hidden cost of built-in operations
+
+Every function call has a cost, even when it's a single line:
+
+| Operation | Cost | Why |
+| --- | --- | --- |
+| `nums[i]` | O(1) | address computed directly |
+| `x in hash_map` / `dict[x]` | O(1) on average | the superpower of the hash (next section!) |
+| `x in list` | **O(n)** | has to look item by item |
+| `list.sort()` | O(n log n) | rule 3 applied n times |
+| `min(list)`, `max(list)`, `sum(list)` | O(n) | they scan everything |
+| `list.insert(0, x)` | O(n) | shifts every element |
+
+The most common analysis mistake is forgetting these costs: an `x in list`
+inside a loop is an O(n) inside an O(n) — rule 2: **O(n²)** disguised as a
+single line.
+
+## Putting the rules to work
+
+Analyze the code below before running it. What's the Big-O of each function?
+Use the rules and then check against the step count.
+
+<CodeRunner
+  python={`def misterio_a(nums):          # what's the Big-O?
+    passos = 0
+    nums = sorted(nums)        # "hidden" cost n*log(n)
+    for x in nums:             # + n
+        passos = passos + 1
+    return passos              # sequence: the largest wins
+
+def misterio_b(nums):          # what's the Big-O?
+    passos = 0
+    for i in range(len(nums)):
+        j = len(nums)
+        while j > 1:           # cuts in half: log n
+            passos = passos + 1
+            j = j // 2
+    return passos              # n times log n
+
+nums = list(range(1024))
+print("misterio_a:", misterio_a(nums), "steps (n =", len(nums), ")")
+print("misterio_b:", misterio_b(nums), "steps = n * log2(n) =", 1024 * 10)`}
+  javascript={`function misterioA(nums) {       // what's the Big-O?
+  var passos = 0;
+  var copia = nums.slice().sort(function (a, b) {
+    return a - b;                  // "hidden" cost n*log(n)
+  });
+  for (var i = 0; i < copia.length; i++) {
+    passos = passos + 1;           // + n
+  }
+  return passos;                   // sequence: the largest wins
+}
+
+function misterioB(nums) {         // what's the Big-O?
+  var passos = 0;
+  for (var i = 0; i < nums.length; i++) {
+    var j = nums.length;
+    while (j > 1) {                // cuts in half: log n
+      passos = passos + 1;
+      j = Math.floor(j / 2);
+    }
+  }
+  return passos;                   // n times log n
+}
+
+var nums = [];
+for (var k = 0; k < 1024; k++) nums.push(k);
+console.log("misterioA:", misterioA(nums), "steps (n = 1024)");
+console.log("misterioB:", misterioB(nums), "steps = n * log2(n) =", 1024 * 10);`}
+/>
+
+Answer key: `misterio_a` is O(n log n) — the sort dominates the sequence
+(rule 1 + rule 4). `misterio_b` is O(n log n) — a log n inside an n loop
+(rules 2 and 3).
+
+## The method in 3 questions
+
+Faced with any code, ask:
+
+1. **How many times does each loop run?** (n? half each time = log n? fixed = constant?)
+2. **Are they nested (multiply) or in sequence (add, the largest wins)?**
+3. **Does any "one-line" operation have a hidden cost?** (sort, list `in`, min/max...)
+
+<Quiz
+  title="Practice quiz"
+  questions={[
+    {
+      question:
+        "A piece of code scans the array once and, for each element, does a binary search. What's the Big-O?",
+      options: ["O(n)", "O(log n)", "O(n log n)", "O(n²)"],
+      answer: 2,
+      explanation:
+        "A loop of n turns (rule 2: multiply) with an O(log n) inside (rule 3): n × log n = O(n log n).",
+    },
+    {
+      question:
+        "def f(nums):\n    for x in nums: ...\n    for y in nums: ...\n\nTwo separate loops, one after the other. What's the Big-O?",
+      options: ["O(n²)", "O(n)", "O(2n²)", "O(n log n)"],
+      answer: 1,
+      explanation:
+        "Rule 1: blocks in sequence add — n + n = 2n, and the constant drops. It would only be O(n²) if one loop were inside the other.",
+    },
+    {
+      question:
+        "Inside a loop over all n elements there is an `if x in list` (a plain list, not a set/dict). What's the total Big-O?",
+      options: ["O(n)", "O(n log n)", "O(n²)", "O(1)"],
+      answer: 2,
+      explanation:
+        "Rule 4: list `in` is a hidden O(n). Inside an O(n) loop, it multiplies (rule 2): O(n²). Swapping the list for a set/dict brings it down to O(n) — the theme of the Array section.",
+    },
+    {
+      question:
+        "An algorithm sorts the array and then uses two pointers to scan it once. What's the Big-O?",
+      options: ["O(n)", "O(n log n)", "O(n²)", "O(log n)"],
+      answer: 1,
+      explanation:
+        "Sort costs O(n log n), the scan costs O(n). In sequence the largest wins: O(n log n). You'll see exactly this shape in the two pointers pattern.",
+    },
+    {
+      question:
+        "A loop starts with j = n and does j = j // 2 until j reaches 1. About how many turns, for n = 1,000,000?",
+      options: ["1,000,000", "500,000", "~20", "~1,000"],
+      answer: 2,
+      explanation:
+        "Cutting in half is the signature of the log: 2²⁰ ≈ 1,000,000, so ~20 divisions are enough. O(log n) is absurdly fast.",
+    },
+  ]}
+/>
+
+## Summary
+
+- **Sequence adds** (the larger term wins); **nesting multiplies**.
+- **Dividing in half = O(log n)**; sort = O(n log n).
+- "One-line" operations have a hidden cost — list `in` is O(n).
+- Analysis means answering: how many times each piece runs, and why.
+
+In the next lesson: the other half of analysis — **memory** — and the quiz
+that wraps up the fundamentals.

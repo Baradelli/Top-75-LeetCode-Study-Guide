@@ -1,0 +1,218 @@
+# Pattern 1: Hash Map
+
+> The most-used pattern in LeetCode. The idea fits in one sentence: **trade
+> memory for time by remembering what you've already seen.**
+
+<Challenge id="two-sum" />
+
+> Did you try? If you went with the "obvious" solution — for each number, scan
+> the rest of the array looking for the complement — you wrote the **brute
+> force**: two nested loops, O(n²). It works, but it repeats a search at every
+> step. The theory below shows how to eliminate that waste.
+
+## The theory: what problem does the hash map solve?
+
+An array is great at answering *"what exists at position i?"* — cost O(1).
+But it's terrible at answering the inverse question: *"does value x exist?
+where?"* — cost O(n), because you have to look item by item.
+
+The hash map (Python dict, JS object/Map) **inverts the question**:
+it indexes by *value*, not by position. With it, *"have I seen x? where?"* costs
+O(1) on average.
+
+Why O(1)? The intuition: the hash map computes, from the value, *which drawer
+it would be in* (the hash function) — and goes straight to the drawer, without
+searching. It's like knowing the exact shelf for a book from its catalog card,
+instead of sweeping the whole library.
+
+### The signals in the statement
+
+Think hash map when the problem asks one of these questions, repeated
+many times:
+
+- **"Is there a pair that..."** — for each element, I look for a *complement*
+  (sum, difference, double...).
+- **"Is there a duplicate? How many times does it appear?"** — count or detect duplicates.
+- **"Group the ones that..."** — group by some characteristic.
+- The statement asks for **a single pass** or O(n) time in a problem that
+  seems to require pairwise comparisons.
+
+### The mental template
+
+Almost every hash map solution has this shape:
+
+```text
+map = empty
+for each element x in the array:
+    1. ASK the map what you need to know about the past
+       ("have I seen the complement of x?", "how many x have I seen?")
+    2. If the answer solves the problem → done
+    3. RECORD x in the map for the future
+```
+
+The trick: ask **before** recording. That way each element is compared only
+with the past, each pair is considered exactly once, and a single pass is
+enough.
+
+## Example 1 — Two Sum (the pattern's calling card)
+
+*"Given an array and a target, return the indices of two numbers that add up to
+the target."*
+
+Applying the method from the previous lesson:
+
+- **Brute force:** for each `nums[i]`, scan the rest looking for
+  `target - nums[i]`. That's all the pairs: O(n²) — space O(1).
+- **The waste:** the search for the complement redoes, on each pass, O(n) work
+  over values that already went past our eyes.
+- **The pattern:** store each value seen (and its index) in a hash map. The
+  search for the complement becomes an O(1) lookup.
+
+Watch the solution run step by step — notice that the `seen` map only grows
+with the **past**, and the question always comes before the record:
+
+<TraceDemo id="two-sum" />
+
+### Why is it O(n)? (justifying, as promised)
+
+- The loop runs **n times** — once per element.
+- Inside it there are only hash map operations (`in`/lookup/insertion), each
+  **O(1) on average** (rule 4 of the fundamentals section).
+- n passes × O(1) = **O(n) time**.
+- The map may end up storing all n elements = **O(n) space**.
+
+Compare: the brute force was O(n²) time with O(1) space. The hash map
+bought time by paying memory — the trade-off from the fundamentals lesson,
+happening in practice.
+
+| Solution | Time | Space | Why |
+| --- | --- | --- | --- |
+| Brute force | O(n²) | O(1) | tests all pairs |
+| Hash map | O(n) | O(n) | 1 pass × O(1) lookups |
+
+## Example 2 — Contains Duplicate
+
+*"Does the array have any repeated value?"* — it's the pattern in its purest
+form: the question to the past is simply *"have I seen you?"*.
+
+Implement it yourself in the editor below (skeleton ready). Tip: here we don't
+need indices, so a **set** (a hash map of keys only) is enough.
+
+<CodeRunner
+  python={`def contains_duplicate(nums):
+    seen = set()
+    for x in nums:
+        # 1. ask the past
+        if x in seen:
+            return True
+        # 3. record for the future
+        seen.add(x)
+    return False
+
+print(contains_duplicate([1, 2, 3, 1]))      # expected: True
+print(contains_duplicate([1, 2, 3, 4]))      # expected: False
+print(contains_duplicate([1, 1, 1, 3, 3]))   # expected: True`}
+  javascript={`function containsDuplicate(nums) {
+  var seen = {};
+  for (var i = 0; i < nums.length; i++) {
+    // 1. ask the past
+    if (seen[nums[i]]) {
+      return true;
+    }
+    // 3. record for the future
+    seen[nums[i]] = true;
+  }
+  return false;
+}
+
+console.log(containsDuplicate([1, 2, 3, 1]));    // expected: true
+console.log(containsDuplicate([1, 2, 3, 4]));    // expected: false
+console.log(containsDuplicate([1, 1, 1, 3, 3])); // expected: true`}
+/>
+
+An alternative worth knowing: **sort and look at neighbors** — duplicates
+end up side by side. Time O(n log n) (the sort dominates), space O(1). It's the
+inverted trade-off: it saves memory by paying time.
+
+| Solution | Time | Space |
+| --- | --- | --- |
+| Brute force (all pairs) | O(n²) | O(1) |
+| Sort + neighbors | O(n log n) | O(1) |
+| Hash set | O(n) | O(n) |
+
+## Where else this pattern shows up
+
+You'll meet the hash map again in *Group Anagrams* and *Valid Anagram*
+(String section — grouping and counting), in *Subarray Sum Equals K* (combined
+with prefix, lesson 5) and in half of the graph problems (storing visited nodes).
+It's the course's Swiss Army knife.
+
+<Quiz
+  title="Review quiz"
+  questions={[
+    {
+      question:
+        "In the pattern's template, why ask the map BEFORE recording the current element?",
+      options: [
+        "For performance: asking is faster than recording",
+        "So that each pair is considered exactly once and to avoid matching the element with itself",
+        "Because the map doesn't accept a record before a lookup",
+        "It's just style, the order doesn't matter",
+      ],
+      answer: 1,
+      explanation:
+        "By asking first, each element compares only with the past. In Two Sum with target 6 and nums [3, 3]: recording first would make the first 3 'find' itself.",
+    },
+    {
+      question:
+        "Why is the Two Sum solution with a hash map O(n) and not O(n²)?",
+      options: [
+        "Because it has only one loop, and single loops are always O(n)",
+        "Because the loop runs n times and each map operation costs O(1) on average — n × O(1) = O(n)",
+        "Because the hash map sorts the values internally",
+        "Because small arrays are fast",
+      ],
+      answer: 1,
+      explanation:
+        "The justification needs both parts: n passes AND O(1) cost per pass. If inside the loop there were a list `in` (O(n)), the single loop would still be O(n²).",
+    },
+    {
+      question:
+        "For Contains Duplicate, the 'sort and compare neighbors' solution (O(n log n), O(1) space) makes sense when...",
+      options: [
+        "Never — a hash set is always better",
+        "When extra memory is expensive or forbidden by the statement",
+        "When the array has negative numbers",
+        "When n is less than 10",
+      ],
+      answer: 1,
+      explanation:
+        "It's the inverted trade-off: it pays O(n log n) time to use O(1) space. If the follow-up is 'without extra memory', that's the answer.",
+    },
+    {
+      question:
+        "New statement: 'find two numbers whose DIFFERENCE is k'. How does the hash map pattern apply?",
+      options: [
+        "It doesn't apply, it's a two pointers problem",
+        "For each x, ask the map whether it has already seen x - k or x + k",
+        "Store the differences of all pairs in the map",
+        "Sort the map by value",
+      ],
+      answer: 1,
+      explanation:
+        "The pattern generalizes by swapping the complement: in the sum it was target - x; in the difference, x - k (or x + k). The structure — ask the past, record — is identical. That's thinking about the pattern, not the problem.",
+    },
+  ]}
+/>
+
+## Summary
+
+- A hash map answers *"have I seen x? where? how many times?"* in **O(1)
+  average** — an array answers that in O(n).
+- Template: **ask the past → record for the future**, in that order.
+- Signals: pairs with a complement, duplicates, counting, grouping, "a single
+  pass".
+- Cost: O(n) time, O(n) space — memory buying time.
+
+Next lesson: when the waste isn't repeated searching, but **comparing pairs
+that have no chance** — two pointers.

@@ -1,0 +1,210 @@
+# Pattern 3: Two Pointers and expand from the center
+
+> A palindrome is a word that reads the same backward: `racecar`, `level`.
+> Two pointers **converging from the ends** verify a palindrome;
+> two pointers **diverging from a center** find all of them.
+
+<Challenge id="valid-palindrome" />
+
+> Tried it? A common approach is to "clean" the string (strip punctuation,
+> lowercase it) and compare it with its reverse — it works, but spends O(n)
+> memory. The theory below does the same with two pointers and O(1) space.
+
+## Theory 1: checking with converging pointers
+
+The definition of a palindrome is symmetric: the 1st char must equal the last,
+the 2nd the second-to-last, and so on up to the middle. That's literally the
+two pointers from the Array section, on a string:
+
+```text
+left = 0; right = n - 1
+while left < right:
+    if s[left] != s[right]: not a palindrome
+    left += 1; right -= 1
+it's a palindrome
+```
+
+Why stop in the middle (`left < right`)? Because once they cross, all the
+symmetric pairs have already been checked — continuing would just repeat the
+comparisons. **O(n)** time (each char is visited once), **O(1)** space.
+
+## Example 1 — Valid Palindrome
+
+*"Is the string a palindrome, considering only letters/digits and ignoring
+case?"* E.g.: `"A man, a plan, a canal: Panama"` → true.
+
+The palindrome logic is the same; the twist is **skipping what doesn't count**.
+Instead of cleaning the string up front (spending O(n) memory), the two
+pointers simply jump over non-alphanumeric characters as they converge —
+keeping space at O(1).
+
+Watch the pointers converging on an already-cleaned string (focus on the
+pattern):
+
+<TraceDemo id="valid-palindrome" />
+
+<CodeRunner
+  python={`def is_palindrome(s):
+    def ok(c):
+        return c.isalnum()
+    left = 0
+    right = len(s) - 1
+    while left < right:
+        while left < right and not ok(s[left]):
+            left = left + 1
+        while left < right and not ok(s[right]):
+            right = right - 1
+        if s[left].lower() != s[right].lower():
+            return False
+        left = left + 1
+        right = right - 1
+    return True
+
+print(is_palindrome("A man, a plan, a canal: Panama"))  # True
+print(is_palindrome("race a car"))                       # False`}
+  javascript={`function isPalindrome(s) {
+  function ok(c) {
+    return /[a-z0-9]/i.test(c);
+  }
+  var left = 0;
+  var right = s.length - 1;
+  while (left < right) {
+    while (left < right && !ok(s[left])) left = left + 1;
+    while (left < right && !ok(s[right])) right = right - 1;
+    if (s[left].toLowerCase() !== s[right].toLowerCase()) {
+      return false;
+    }
+    left = left + 1;
+    right = right - 1;
+  }
+  return true;
+}
+
+console.log(isPalindrome("A man, a plan, a canal: Panama")); // true
+console.log(isPalindrome("race a car"));                     // false`}
+/>
+
+Even with the inner `while` loops skipping characters, each pointer traverses
+the string **once** in total — **O(n)**, **O(1)** space (cleaning the string up
+front would cost O(n) memory).
+
+## Theory 2: finding palindromes by expanding from the center
+
+Now the inverse problem: *how many / what's the longest* palindrome inside a
+string. Brute force tests all substrings and verifies each one —
+O(n²) substrings × O(n) verification = **O(n³)**.
+
+The waste: each verification starts from scratch, ignoring that palindromes
+have structure. The insight: **every palindrome has a center**, and it grows
+symmetrically out from it. So, instead of testing substrings, pick each
+possible center and **expand two pointers outward** while the sides match:
+
+```text
+for each center:
+    left, right = center
+    while within bounds and s[left] == s[right]:
+        found a palindrome!
+        left -= 1; right += 1
+```
+
+An essential detail: there are **two types of center**. Odd-length palindromes
+have their center at a character (`aba`, center `b`); even-length ones have
+their center **between two characters** (`abba`, center between the two `b`s).
+That's why we expand twice from each position.
+
+## Example 2 — Palindromic Substrings
+
+*"How many palindromic substrings are there?"* (`"aaa"` → 6: three `a`, two
+`aa`, one `aaa`). Each successful expansion **is** a palindrome — so you just
+count:
+
+<TraceDemo id="palindromic-substrings" />
+
+### Why is it O(n²)?
+
+There are `n` center positions (actually ~2n, counting odd and even), and each
+expansion costs at most O(n). Centers × expansion = **O(n²)** time, with
+**O(1)** space. We went from brute force's O(n³) down to O(n²) by eliminating
+the re-verification waste — and O(n²) is expected for "examining palindromes",
+since the answer can have size O(n²).
+
+## Example 3 — Longest Palindromic Substring
+
+The exact same technique: expand from each center and, instead of counting,
+**keep the longest palindrome** found (its start/end positions). Swapping
+"count" for "record the maximum" is the only difference — again, the pattern is
+the same, only what you harvest changes. O(n²) time, O(1) space.
+
+> There's Manacher's algorithm, which solves it in O(n). It's clever and rarely
+> required — expanding from the center (O(n²)) passes the vast majority of cases
+> and is what you should master first.
+
+<Quiz
+  title="Review quiz"
+  questions={[
+    {
+      question:
+        "Why does checking a palindrome with two pointers stop when left and right cross (left < right)?",
+      options: [
+        "To save code",
+        "Because once they cross, all symmetric pairs have already been compared; continuing would repeat comparisons",
+        "Because the middle never matters",
+        "To avoid an index error",
+      ],
+      answer: 1,
+      explanation:
+        "A palindrome is symmetric: comparing (0, n−1), (1, n−2)... covers everything halfway through. After they cross, the comparisons would just repeat in reverse.",
+    },
+    {
+      question:
+        "In Valid Palindrome with punctuation, why is skipping characters with the pointers themselves (instead of cleaning the string up front) advantageous?",
+      options: [
+        "It's easier to read",
+        "It keeps space at O(1) — cleaning the string would create an O(n) copy; each pointer still traverses the string only once",
+        "It becomes faster than O(n)",
+        "There's no advantage",
+      ],
+      answer: 1,
+      explanation:
+        "Skipping in place avoids the copy. Time stays O(n) (each char visited once in total) and space drops from O(n) to O(1).",
+    },
+    {
+      question:
+        "Why does 'expand from the center' need to consider two types of center?",
+      options: [
+        "For safety",
+        "Because odd-length palindromes have their center at a character and even-length ones have their center between two characters",
+        "To count faster",
+        "Because strings can be empty",
+      ],
+      answer: 1,
+      explanation:
+        "'aba' (odd) centers on the 'b'; 'abba' (even) centers between the two 'b's. Without expanding both cases from each position, you'd miss half the palindromes.",
+    },
+    {
+      question:
+        "Expand from the center is O(n²). How does this same code serve both to COUNT palindromes and to find the LONGEST one?",
+      options: [
+        "They're entirely different algorithms",
+        "The expansion is identical; only what you do for each palindrome found changes — increment a counter or compare/record the longest",
+        "The longest requires sorting",
+        "Counting is O(n) and the longest is O(n²)",
+      ],
+      answer: 1,
+      explanation:
+        "The pattern is 'expand from each center'. Counting (+1) or keeping the maximum (comparing sizes) is just the harvest. Mastering the pattern > memorizing each variant.",
+    },
+  ]}
+/>
+
+## Summary
+
+- Checking a palindrome: **converging two pointers**, O(n)/O(1); skip
+  irrelevant chars with the pointers themselves to keep O(1).
+- Finding palindromes: **expand from the center**, considering odd and even
+  centers — O(n²)/O(1), much better than the naive O(n³).
+- Counting or finding the longest use the same expansion; only what you harvest
+  changes.
+
+Next lesson: the structure that handles nesting and matching of symbols —
+the **stack**.
