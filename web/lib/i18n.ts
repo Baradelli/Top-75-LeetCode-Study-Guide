@@ -1,10 +1,33 @@
 export const LOCALES = ["pt", "en"] as const;
 export type Locale = (typeof LOCALES)[number];
 
+/**
+ * Locale base do conteúdo: o MDX das aulas é escrito em PT e o EN cai aqui
+ * quando a tradução ainda não existe. NÃO é o idioma padrão de quem visita
+ * (para isso veja `negotiateLocale`).
+ */
 export const DEFAULT_LOCALE: Locale = "pt";
+
+/** Idioma para visitantes cujo dispositivo não está em português. */
+export const FALLBACK_LOCALE: Locale = "en";
+
+/** Chave do localStorage onde guardamos o último idioma escolhido. */
+export const LOCALE_STORAGE_KEY = "leetcode-course-locale";
 
 export function isLocale(value: string): value is Locale {
   return (LOCALES as readonly string[]).includes(value);
+}
+
+/**
+ * Escolhe o locale a partir dos idiomas do dispositivo (navigator.languages):
+ * qualquer português (pt, pt-BR, pt-PT…) abre o curso em PT; qualquer outro
+ * idioma cai no inglês.
+ */
+export function negotiateLocale(languages: readonly string[]): Locale {
+  for (const lang of languages) {
+    if (lang.toLowerCase().startsWith("pt")) return "pt";
+  }
+  return FALLBACK_LOCALE;
 }
 
 /**

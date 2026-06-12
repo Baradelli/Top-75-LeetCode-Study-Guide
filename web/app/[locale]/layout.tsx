@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { isLocale, LOCALES, t } from "@/lib/i18n";
+import RememberLocale from "@/components/RememberLocale";
 
 export function generateStaticParams() {
   return LOCALES.map((locale) => ({ locale }));
@@ -21,6 +22,7 @@ export default async function LocaleLayout({
 
   return (
     <div className="flex min-h-screen flex-col bg-white text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
+      <RememberLocale locale={locale} />
       <header className="border-b border-zinc-200 dark:border-zinc-800">
         <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-4 py-4 sm:px-6">
           <Link
