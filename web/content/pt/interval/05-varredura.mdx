@@ -1,0 +1,158 @@
+# Padrão 4: Varredura de eventos (salas)
+
+> "Quantas salas de reunião eu preciso?" é a pergunta-modelo de uma técnica
+> poderosa: tratar cada **início** e cada **fim** como **eventos** numa linha do
+> tempo e varrê-los em ordem, contando quantos intervalos estão ativos ao mesmo
+> tempo.
+
+<Challenge id="min-meeting-rooms" />
+
+> Tentou? O número de salas é a quantidade de reuniões acontecendo **ao mesmo
+> tempo** no pior instante. A teoria abaixo mostra como medir essa
+> "sobreposição máxima" sem testar todos os instantes.
+
+## A teoria: inícios e fins como eventos
+
+A ideia-chave: o número mínimo de salas é a **sobreposição máxima** em
+qualquer ponto do tempo. Para medi-la, esqueça os intervalos como blocos e
+pense em **eventos**: cada reunião contribui com um `+1` no seu início (chega
+gente) e um `-1` no seu fim (sai gente). Ordene todos os eventos por tempo e
+varra, mantendo um contador de "salas em uso" — o **pico** é a resposta.
+
+Uma forma elegante (sem montar a lista de eventos): ordene os **inícios** e os
+**fins** em duas listas separadas e use dois ponteiros:
+
+```text
+inícios ordenados, fins ordenados
+salas = 0, máximo = 0, i = 0, j = 0
+enquanto há inícios:
+    se início[i] < fim[j]:     # uma reunião começou antes de outra terminar
+        salas += 1             # precisa de mais uma sala
+        i += 1
+        máximo = max(máximo, salas)
+    senão:                     # uma reunião terminou: libera sala
+        salas -= 1
+        j += 1
+retorna máximo
+```
+
+Cada vez que um início acontece **antes** do próximo fim, há uma reunião nova
+sobreposta → +1 sala. Quando um fim vem primeiro, uma sala é liberada. O maior
+valor de `salas` durante a varredura é o mínimo necessário.
+
+> Convenção dos extremos: aqui usamos `início < fim`, então uma reunião que
+> termina exatamente quando outra começa (`[1,5]` e `[5,10]`) **libera** a sala
+> a tempo — não conta como sobreposição. Confira sempre essa regra no enunciado.
+
+## A alternativa com min-heap
+
+Há uma segunda abordagem clássica, que você verá de novo na seção **Heap**:
+ordene as reuniões por início e mantenha um **min-heap** dos **fins** das
+reuniões em curso. Para cada nova reunião, se o menor fim do heap já passou,
+reaproveite a sala (remova esse fim); senão, abra uma sala nova. O tamanho do
+heap é o número de salas. As duas abordagens são O(n log n) — guarde que
+"sobreposição máxima" tem essas duas caras.
+
+## Exemplo irmão: Meeting Rooms I
+
+A versão mais simples pergunta só: *dá para assistir a todas as reuniões?* (ou
+seja, **alguma** se sobrepõe?). Basta ordenar por início e checar se alguma
+reunião começa antes de a anterior terminar:
+
+<CodeRunner
+  python={`def pode_assistir_todas(reunioes):
+    reunioes.sort(key=lambda x: x[0])     # ordena por início
+    for i in range(1, len(reunioes)):
+        if reunioes[i][0] < reunioes[i - 1][1]:   # começa antes da anterior acabar
+            return False
+    return True
+
+print(pode_assistir_todas([[0, 30], [5, 10], [15, 20]]))  # False (0-30 colide)
+print(pode_assistir_todas([[7, 10], [2, 4]]))             # True`}
+  javascript={`function podeAssistirTodas(reunioes) {
+  reunioes.sort(function (a, b) { return a[0] - b[0]; }); // ordena por início
+  for (var i = 1; i < reunioes.length; i++) {
+    if (reunioes[i][0] < reunioes[i - 1][1]) {  // começa antes da anterior acabar
+      return false;
+    }
+  }
+  return true;
+}
+
+console.log(podeAssistirTodas([[0, 30], [5, 10], [15, 20]])); // false
+console.log(podeAssistirTodas([[7, 10], [2, 4]]));            // true`}
+/>
+
+### Complexidade
+
+Tanto a varredura de eventos quanto o min-heap são **O(n log n)** (dominados
+pela ordenação), com O(n) de espaço. Meeting Rooms I é O(n log n) pelo sort +
+O(n) na varredura. Em todos, o gargalo é ordenar — o resto é uma passada.
+
+<Quiz
+  title="Quiz de fixação"
+  questions={[
+    {
+      question: "Por que o número mínimo de salas é a 'sobreposição máxima' no tempo?",
+      options: [
+        "Porque cada reunião precisa de uma sala diferente",
+        "Porque, no instante em que há k reuniões acontecendo ao mesmo tempo, são necessárias k salas — o pico dessa contagem é o mínimo que atende a todos os instantes",
+        "Porque salas são caras",
+        "Porque o sort exige",
+      ],
+      answer: 1,
+      explanation:
+        "Reuniões simultâneas exigem salas distintas. O maior número de simultâneas em qualquer ponto é exatamente quantas salas você precisa ter.",
+    },
+    {
+      question:
+        "Na varredura com inícios e fins ordenados, o que significa 'início[i] < fim[j]'?",
+      options: [
+        "Que a lista está desordenada",
+        "Que uma reunião COMEÇOU antes de a próxima a terminar terminar — ou seja, há uma nova sobreposição: +1 sala",
+        "Que uma sala foi liberada",
+        "Que acabou a varredura",
+      ],
+      answer: 1,
+      explanation:
+        "Se o próximo evento é um início (antes do próximo fim), entra mais uma reunião simultânea → mais uma sala. Se o próximo é um fim, uma sala se libera (-1).",
+    },
+    {
+      question:
+        "Qual a segunda abordagem clássica para o mínimo de salas, que reaparece na seção Heap?",
+      options: [
+        "Busca binária",
+        "Ordenar por início e manter um min-heap dos FINS em curso: reaproveita a sala se o menor fim já passou, senão abre nova; o tamanho do heap é o nº de salas",
+        "Recursão",
+        "Two pointers convergentes",
+      ],
+      answer: 1,
+      explanation:
+        "O min-heap dos fins permite, a cada nova reunião, checar em O(log n) se alguma sala já vagou. É a mesma resposta por outra estrutura — e prepara a seção Heap.",
+    },
+    {
+      question:
+        "Meeting Rooms I ('dá para assistir a todas?') se resolve como?",
+      options: [
+        "Varredura de eventos com contador",
+        "Ordenar por início e checar se ALGUMA reunião começa antes de a anterior terminar — se sim, há conflito (False)",
+        "Min-heap dos inícios",
+        "Busca binária",
+      ],
+      answer: 1,
+      explanation:
+        "Basta detectar qualquer sobreposição: ordenado por início, se reuniao[i].início < reuniao[i-1].fim, elas colidem e não dá para assistir a todas.",
+    },
+  ]}
+/>
+
+## Resumo
+
+- Mínimo de salas = **sobreposição máxima** no tempo.
+- **Varredura de eventos**: inícios (+1) e fins (−1) ordenados; o pico do
+  contador é a resposta. Alternativa: **min-heap** dos fins (volta na seção
+  Heap).
+- Meeting Rooms I: ordene por início e detecte qualquer conflito.
+- Tudo **O(n log n)**, dominado pelo sort.
+
+Última parada: a **síntese** da seção Intervalos e o quiz antes da prova.

@@ -1,0 +1,117 @@
+# Padrão 1: Ordenar e fundir (merge)
+
+> Fundir intervalos que se sobrepõem é o "olá, mundo" da seção. E mostra, na
+> forma mais pura, o método que vale para quase tudo aqui: **ordene por início,
+> depois varra uma vez**.
+
+<Challenge id="merge-intervals" />
+
+> Tentou? Sem ordenar, você fica comparando cada intervalo com todos os outros
+> (O(n²)) e ainda se perde com sobreposições em cadeia. A teoria abaixo mostra
+> por que ordenar primeiro torna tudo simples.
+
+## A teoria: ordenar transforma o problema
+
+Por que ordenar por **início** ajuda tanto? Porque, depois disso, qualquer
+intervalo que se sobreponha a um anterior **só pode se sobrepor ao último**
+que você processou (todos os anteriores já terminaram mais à esquerda). Isso
+reduz "comparar com todos" a "comparar com o último do resultado":
+
+```text
+ordena por início
+resultado = []
+para cada [início, fim]:
+    se resultado não vazio E início <= fim do último do resultado:
+        # sobrepõe → estende o fim do último
+        último.fim = max(último.fim, fim)
+    senão:
+        # não sobrepõe → começa um bloco novo
+        resultado.append([início, fim])
+```
+
+Repare no `max` ao estender: o intervalo atual pode estar **contido** no
+último (ex.: `[1,6]` engolindo `[2,4]`), então o fim não pode encolher. Veja a
+varredura — a faixa de cima é a entrada (atual em destaque), a de baixo é o
+resultado sendo construído e estendido:
+
+<TraceDemo id="merge-intervals" />
+
+### Por que é O(n log n) tempo e O(n) espaço?
+
+O **sort** custa O(n log n) e **domina**. A varredura é uma única passada O(n),
+comparando cada intervalo só com o último do resultado. O espaço é O(n) para a
+lista de saída (ou O(log n)–O(n) do próprio sort). A força bruta de comparar
+todos os pares seria O(n²) — ordenar é o que derruba isso.
+
+## O reflexo que vale a seção
+
+Esse é o **template-mãe** dos intervalos: *ordenar por um extremo + uma
+varredura comparando com o estado acumulado*. Guarde a forma do código — as
+próximas aulas são variações dela (inserir muda o "quando começar a fundir",
+o guloso muda o critério de ordenação, a varredura de eventos muda o que
+acumula).
+
+<Quiz
+  title="Quiz de fixação"
+  questions={[
+    {
+      question: "Por que ordenar por início simplifica o merge de intervalos?",
+      options: [
+        "Porque deixa o código bonito",
+        "Porque depois disso um intervalo só pode se sobrepor ao ÚLTIMO processado — reduz 'comparar com todos' (O(n²)) para 'comparar com um' (O(n))",
+        "Porque remove duplicatas",
+        "Porque ordena os fins também",
+      ],
+      answer: 1,
+      explanation:
+        "Com os inícios em ordem, todos os intervalos anteriores ao último já começaram (e terminaram) antes — então a única sobreposição possível do atual é com o último do resultado.",
+    },
+    {
+      question:
+        "Ao fundir um intervalo que se sobrepõe, por que usar max(fim_último, fim_atual) em vez de só fim_atual?",
+      options: [
+        "Para evitar erro de índice",
+        "Porque o intervalo atual pode estar CONTIDO no último (ex.: [1,6] engole [2,4]); o fim não pode encolher",
+        "Porque o sort exige",
+        "É indiferente",
+      ],
+      answer: 1,
+      explanation:
+        "Se o atual termina antes do último (está contido), pegar o fim do atual encolheria o bloco erroneamente. O max preserva o maior alcance.",
+    },
+    {
+      question: "Qual a complexidade do merge e o que a domina?",
+      options: [
+        "O(n²), os dois loops",
+        "O(n log n), dominada pelo SORT; a varredura em si é O(n)",
+        "O(n) sempre",
+        "O(log n)",
+      ],
+      answer: 1,
+      explanation:
+        "Ordenar é O(n log n) e domina; a varredura é uma passada linear. Sem ordenar, seria O(n²) comparando todos os pares.",
+    },
+    {
+      question:
+        "Qual é o 'template-mãe' dos problemas de intervalo, do qual o merge é o exemplo?",
+      options: [
+        "Busca binária",
+        "Ordenar por um extremo + uma varredura comparando cada intervalo com o estado acumulado",
+        "Recursão com memoização",
+        "Dois ponteiros convergentes",
+      ],
+      answer: 1,
+      explanation:
+        "Ordenar + varrer-com-estado é a forma comum da seção. Inserir, guloso e varredura de eventos são variações desse mesmo esqueleto.",
+    },
+  ]}
+/>
+
+## Resumo
+
+- **Merge**: ordene por início; varra fundindo quando `início <= fim do
+  último` (com `max` no fim).
+- **O(n log n)** (sort domina), O(n) de espaço; bem melhor que o O(n²) ingênuo.
+- É o **template-mãe** da seção: ordenar + varrer com estado acumulado.
+
+Próxima aula: inserir um intervalo num conjunto **já ordenado**.

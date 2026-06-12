@@ -1,6 +1,6 @@
 # Plano — Curso Interativo de LeetCode e Algoritmos
 
-> Status: "Comece aqui" + Fundamentos + Array + String + Binary + Linked List + Matrix + Tree completas (attempt-first). Tree trouxe o TreeTraceVisualizer (SVG, layout in-order×profundidade) e suporte a TreeNode no LocalJudge (array nível-a-nível ↔ árvore). Próxima seção de conteúdo: Heap. Última atualização: 2026-06-10.
+> Status: "Comece aqui" + Fundamentos + Array + String + Binary + Linked List + Matrix + Interval + Tree completas (attempt-first). Interval trouxe o IntervalTraceVisualizer (barras numa linha do tempo). Faltam: Heap, Graph, Dynamic Programming. Próxima seção de conteúdo: Heap. Última atualização: 2026-06-10.
 
 ## 1. Visão
 

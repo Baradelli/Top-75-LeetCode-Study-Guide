@@ -8,6 +8,7 @@ import BitTraceVisualizer from "./visualizers/BitTraceVisualizer";
 import LinkedListVisualizer from "./visualizers/LinkedListVisualizer";
 import GridTraceVisualizer from "./visualizers/GridTraceVisualizer";
 import TreeTraceVisualizer from "./visualizers/TreeTraceVisualizer";
+import IntervalTraceVisualizer from "./visualizers/IntervalTraceVisualizer";
 import { DEMOS } from "@/lib/demos";
 
 /**
@@ -54,6 +55,13 @@ export default function TraceDemo({ id }: { id: string }) {
         return <TreeTraceVisualizer {...props} config={config} />;
       }
       return TreeBound;
+    }
+    if ("interval" in demo) {
+      const config = demo.interval;
+      function IntervalBound(props: VisualizerProps) {
+        return <IntervalTraceVisualizer {...props} config={config} />;
+      }
+      return IntervalBound;
     }
     const config = demo.string;
     function StringBound(props: VisualizerProps) {

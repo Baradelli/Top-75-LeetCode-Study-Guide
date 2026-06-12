@@ -618,6 +618,92 @@ Exemplo: \`[-10,9,20,null,null,15,7]\` → \`42\` (o caminho 15 → 20 → 7). \
       tree: { treeArgs: [0], treeReturn: false },
     },
   ],
+
+  interval: [
+    {
+      slug: "summary-ranges",
+      title: "Summary Ranges",
+      difficulty: "facil",
+      leetcodeUrl: "https://leetcode.com/problems/summary-ranges/",
+      statement: `Dado um array \`nums\` **ordenado** de inteiros únicos, retorne a lista dos **intervalos** que cobrem exatamente os números, como strings. Um número solto vira \`"a"\`; uma sequência consecutiva vira \`"a->b"\`.
+
+Exemplo: \`[0,1,2,4,5,7]\` → \`["0->2","4->5","7"]\`.`,
+      functionName: { python: "summary_ranges", javascript: "summaryRanges" },
+      starter: {
+        python: `def summary_ranges(nums):
+    # escreva sua solução aqui
+    pass`,
+        javascript: `function summaryRanges(nums) {
+  // escreva sua solução aqui
+}`,
+      },
+      tests: [
+        { args: [[0, 1, 2, 4, 5, 7]], expected: ["0->2", "4->5", "7"] },
+        { args: [[0, 2, 3, 4, 6, 8, 9]], expected: ["0", "2->4", "6", "8->9"] },
+        { args: [[]], expected: [] },
+        { args: [[-1]], expected: ["-1"], hidden: true },
+        { args: [[0, 1, 2, 3, 4]], expected: ["0->4"], hidden: true },
+      ],
+      hint: "Percorra o array agrupando sequências consecutivas: marque o início de cada grupo e avance enquanto o próximo for o anterior + 1. Ao fechar o grupo, formate como 'a' (se sozinho) ou 'a->b'.",
+    },
+    {
+      slug: "interval-intersections",
+      title: "Interval List Intersections",
+      difficulty: "medio",
+      leetcodeUrl: "https://leetcode.com/problems/interval-list-intersections/",
+      statement: `Dadas duas listas de intervalos \`A\` e \`B\`, **cada uma ordenada e sem sobreposições internas**, retorne a lista das **interseções** entre elas (também ordenada).
+
+Exemplo: \`A = [[0,2],[5,10],[13,23],[24,25]]\`, \`B = [[1,5],[8,12],[15,24],[25,26]]\` → \`[[1,2],[5,5],[8,10],[15,23],[24,24],[25,25]]\`.`,
+      functionName: {
+        python: "interval_intersection",
+        javascript: "intervalIntersection",
+      },
+      starter: {
+        python: `def interval_intersection(A, B):
+    # escreva sua solução aqui
+    pass`,
+        javascript: `function intervalIntersection(A, B) {
+  // escreva sua solução aqui
+}`,
+      },
+      tests: [
+        {
+          args: [[[0, 2], [5, 10], [13, 23], [24, 25]], [[1, 5], [8, 12], [15, 24], [25, 26]]],
+          expected: [[1, 2], [5, 5], [8, 10], [15, 23], [24, 24], [25, 25]],
+        },
+        { args: [[], [[1, 2]]], expected: [] },
+        { args: [[[1, 3], [5, 9]], []], expected: [] },
+        { args: [[[1, 7]], [[3, 10]]], expected: [[3, 7]], hidden: true },
+      ],
+      hint: "Dois ponteiros, um em cada lista. A interseção do par atual é [max(dos inícios), min(dos fins)] — só existe se max_início ≤ min_fim. Depois, avance o ponteiro do intervalo que TERMINA primeiro (ele não pode intersectar mais nada à frente).",
+    },
+    {
+      slug: "car-pooling",
+      title: "Car Pooling",
+      difficulty: "dificil",
+      leetcodeUrl: "https://leetcode.com/problems/car-pooling/",
+      statement: `Um carro com \`capacidade\` lugares faz uma rota só para a frente. Cada viagem é \`[passageiros, de, até]\` (embarcam em \`de\`, descem em \`até\`). Retorne \`true\` se for possível fazer todas as viagens sem nunca exceder a capacidade.
+
+Exemplo: \`trips = [[2,1,5],[3,3,7]]\`, \`capacidade = 4\` → \`false\` (em [3,5] há 5 passageiros); com \`capacidade = 5\` → \`true\`.`,
+      functionName: { python: "car_pooling", javascript: "carPooling" },
+      starter: {
+        python: `def car_pooling(trips, capacidade):
+    # escreva sua solução aqui
+    pass`,
+        javascript: `function carPooling(trips, capacidade) {
+  // escreva sua solução aqui
+}`,
+      },
+      tests: [
+        { args: [[[2, 1, 5], [3, 3, 7]], 4], expected: false },
+        { args: [[[2, 1, 5], [3, 3, 7]], 5], expected: true },
+        { args: [[[2, 1, 5], [3, 5, 7]], 3], expected: true },
+        { args: [[[3, 2, 7], [3, 7, 9], [8, 3, 9]], 11], expected: true, hidden: true },
+        { args: [[[9, 0, 1], [3, 3, 7]], 4], expected: false, hidden: true },
+      ],
+      hint: "Varredura de eventos (como as salas de reunião): cada viagem gera um evento de +passageiros em 'de' e -passageiros em 'até'. Ordene os eventos por posição, faça a soma corrente e verifique se em algum ponto ela ultrapassa a capacidade.",
+    },
+  ],
 };
 
 export function getExam(section: string): ExamProblem[] | undefined {

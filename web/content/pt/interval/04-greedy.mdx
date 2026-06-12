@@ -1,0 +1,128 @@
+# Padrão 3: Guloso de sobreposição
+
+> "Qual o mínimo de intervalos a remover para o resto não se sobrepor?" Esse
+> tipo de pergunta se resolve com uma **escolha gulosa** — e a sacada está em
+> ordenar pelo extremo certo: o **fim**.
+
+<Challenge id="erase-overlap-intervals" />
+
+> Tentou? A tentação é remover "o que parece atrapalhar mais". A teoria abaixo
+> mostra a regra gulosa simples e por que ela dá o resultado ótimo.
+
+## A teoria: manter quem termina cedo
+
+Remover o **mínimo** para não sobrepor é o mesmo que **manter o máximo** de
+intervalos compatíveis (que não se sobrepõem). E aqui está a escolha gulosa,
+clássica do problema de "agendamento de atividades":
+
+> Entre intervalos que competem, **mantenha sempre o que termina mais cedo**.
+
+Por quê? Porque quem termina mais cedo **deixa mais espaço livre** à direita
+para os próximos. Qualquer outra escolha ocuparia a reta por mais tempo sem
+ganhar nada. Então:
+
+```text
+ordene por FIM
+fim_mantido = -infinito
+remoções = 0
+para cada [início, f]:
+    se início >= fim_mantido:   # cabe sem sobrepor
+        fim_mantido = f         # mantém este
+    senão:                      # sobrepõe o último mantido
+        remoções += 1           # remove este
+```
+
+Ordenar por **fim** (e não por início!) é o que faz a regra funcionar: você
+sempre considera primeiro quem libera a reta mais cedo. Cada intervalo que
+**não cabe** depois do último mantido é uma remoção.
+
+### Por que o guloso é ótimo aqui? (a intuição)
+
+Imagine que existe uma solução ótima que **não** escolheu o intervalo de fim
+mais cedo. Você pode trocar a primeira escolha dela por esse (que termina antes
+ou junto) sem piorar nada — ele deixa pelo menos tanto espaço quanto o outro.
+Repetindo o argumento, a escolha gulosa "termina mais cedo" alcança o ótimo.
+Esse "argumento de troca" é a marca dos algoritmos gulosos corretos.
+
+### Complexidade
+
+O **sort por fim** domina: **O(n log n)**. A varredura é O(n), com O(1) de
+estado (só o último fim mantido e o contador). Espaço O(1) além da ordenação.
+
+## Onde esse guloso aparece
+
+A mesma ideia resolve uma família: **número máximo de reuniões/atividades que
+cabem** numa agenda, **mínimo de flechas para estourar balões** (cada balão é
+um intervalo; flechas = intervalos restantes após remover sobreposições) e
+variações de "selecione o máximo de intervalos compatíveis". Sempre que a
+pergunta for "máximo que cabe sem conflito" ou "mínimo a remover", pense:
+**ordenar por fim + guloso**.
+
+<Quiz
+  title="Quiz de fixação"
+  questions={[
+    {
+      question:
+        "No problema de remover o mínimo de intervalos para não sobreporem, por que ordenar por FIM (e não por início)?",
+      options: [
+        "Por convenção",
+        "Porque a escolha gulosa é manter quem termina mais cedo (deixa mais espaço à direita); ordenar por fim faz você considerar esses primeiro",
+        "Porque ordenar por início dá erro",
+        "Porque o fim é sempre maior",
+      ],
+      answer: 1,
+      explanation:
+        "Manter quem termina cedo maximiza o espaço livre para os próximos. Ordenar por fim alinha a varredura com essa regra gulosa.",
+    },
+    {
+      question:
+        "Por que 'remover o mínimo para não sobrepor' é equivalente a 'manter o máximo de intervalos compatíveis'?",
+      options: [
+        "Não é equivalente",
+        "Porque total = mantidos + removidos; minimizar os removidos é o mesmo que maximizar os mantidos",
+        "Porque todos se sobrepõem",
+        "Porque a ordem não importa",
+      ],
+      answer: 1,
+      explanation:
+        "São dois lados da mesma moeda: com o total fixo, quanto mais você mantém compatíveis, menos precisa remover.",
+    },
+    {
+      question:
+        "Qual é o 'argumento de troca' que justifica a escolha gulosa?",
+      options: [
+        "Trocar dois intervalos de lugar acelera o código",
+        "Se houver uma solução ótima que não escolheu o de fim mais cedo, dá para trocá-lo pelo de fim mais cedo sem piorar — logo o guloso também é ótimo",
+        "Trocar o sort por busca binária",
+        "Não há justificativa",
+      ],
+      answer: 1,
+      explanation:
+        "O argumento de troca mostra que a escolha gulosa nunca é pior que qualquer alternativa: o de fim mais cedo deixa ao menos tanto espaço. É a prova típica de corretude gulosa.",
+    },
+    {
+      question:
+        "'Mínimo de flechas para estourar todos os balões (cada balão é um intervalo; uma flecha vertical estoura todos que ela cruza).' Como se relaciona com esta aula?",
+      options: [
+        "Não se relaciona",
+        "É o mesmo guloso por fim: o número de flechas é o número de grupos de intervalos não-sobrepostos — ordene por fim e conte quando precisa de uma nova flecha",
+        "É busca binária",
+        "É merge de intervalos",
+      ],
+      answer: 1,
+      explanation:
+        "Cada flecha cobre um conjunto de balões que se sobrepõem num ponto. Ordenando por fim e disparando no fim de cada grupo compatível, minimiza-se as flechas — o mesmo guloso.",
+    },
+  ]}
+/>
+
+## Resumo
+
+- "Mínimo a remover" = "máximo a manter compatível" → **guloso**.
+- Ordene por **fim** e mantenha quem cabe (`início >= último fim`); o resto é
+  remoção.
+- Corretude pelo **argumento de troca** (quem termina cedo deixa mais espaço).
+- **O(n log n)** (sort), O(1) de estado; mesma ideia em "máximo de atividades"
+  e "flechas em balões".
+
+Próxima aula: contar a sobreposição **máxima** — varredura de eventos.

@@ -1,0 +1,72 @@
+# Reconhecendo problemas de intervalos
+
+> Um intervalo é um par `[início, fim]` — um trecho de uma reta: um horário de
+> reunião, um período, um pedaço de eixo. Esta é uma seção curta e de respiro:
+> quase tudo nela começa com **um único movimento** que organiza o caos.
+
+> Como sempre, cada aula de padrão abre com um **🎯 Tente primeiro**.
+
+## O movimento de abertura: ordenar
+
+Intervalos costumam chegar **fora de ordem**, e é difícil raciocinar sobre eles
+assim. O primeiro reflexo, em quase todo problema da seção, é **ordenar** —
+por **início** ou por **fim**, dependendo do que você quer:
+
+- Ordenar por **início**: ideal para **fundir** e **inserir** (você processa
+  os intervalos na ordem em que aparecem na reta).
+- Ordenar por **fim**: ideal para escolhas **gulosas** ("quantos cabem sem
+  sobrepor?") — manter quem termina cedo deixa mais espaço para os próximos.
+
+Esse passo custa **O(n log n)** e geralmente domina a complexidade da solução.
+Depois dele, uma única varredura O(n) resolve o resto.
+
+## A pergunta-chave: dois intervalos se sobrepõem?
+
+Quase toda a seção gira em torno de **sobreposição**. Dois intervalos
+`a = [a0, a1]` e `b = [b0, b1]` **se sobrepõem** quando um começa antes de o
+outro terminar:
+
+```text
+sobrepõem  ⟺  a0 <= b1  E  b0 <= a1
+```
+
+E o complemento é útil: eles **não** se sobrepõem quando um termina antes de o
+outro começar (`a1 < b0` ou `b1 < a0`). Visualize numa reta — duas barras se
+"tocam" ou não:
+
+```text
+[1────3]                     [1──────6]   ← sobrepõem (compartilham [2,3])
+     [2──────6]
+                
+[1──3]      [8──10]          não se sobrepõem (3 < 8)
+```
+
+> Detalhe que sempre gera dúvida: `[1,5]` e `[5,10]` **encostam** no ponto 5.
+> Conta como sobreposição? Depende do enunciado — às vezes o fim é "aberto"
+> (uma reunião que acaba às 5 libera a sala para outra que começa às 5).
+> Sempre confira essa convenção nos exemplos.
+
+## Como pensar na seção
+
+O método é quase sempre o mesmo: **ordene** (por início ou fim) e faça **uma
+varredura** comparando cada intervalo com o "estado" acumulado (o último
+intervalo do resultado, ou uma contagem de sobreposições). A criatividade está
+em escolher **por qual extremo ordenar** e **o que acumular**.
+
+## Os problemas da seção
+
+- Merge Intervals → *ordenar por início + fundir*
+- Insert Interval → *inserir num conjunto ordenado*
+- Non-overlapping Intervals → *guloso por fim*
+- Meeting Rooms / Meeting Rooms II → *varredura de eventos*
+
+## Resumo
+
+- Intervalo = `[início, fim]`; pense numa **barra numa reta**.
+- O primeiro movimento é quase sempre **ordenar** (por início para fundir/
+  inserir; por fim para escolhas gulosas).
+- **Sobreposição:** `a0 <= b1 e b0 <= a1`; cuidado com a convenção de
+  extremos que se tocam.
+- Método geral: **ordenar + uma varredura** comparando com o estado acumulado.
+
+Próxima aula: o problema mais clássico da seção — **fundir** intervalos.

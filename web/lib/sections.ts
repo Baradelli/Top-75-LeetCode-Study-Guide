@@ -95,7 +95,7 @@ export const SECTIONS: Section[] = [
     description:
       "Ordenar + raciocínio guloso — um respiro antes do bloco de recursão.",
     patterns: ["Ordenar + varrer", "Merge", "Sobreposição"],
-    status: "soon",
+    status: "available",
   },
   {
     slug: "tree",
@@ -352,6 +352,44 @@ export const LESSONS: Record<string, Lesson[]> = {
       title: "Síntese: qual padrão usar?",
       description:
         "A árvore de decisão da seção Lista Ligada e o quiz geral antes da prova final.",
+    },
+  ],
+  interval: [
+    {
+      slug: "01-introducao",
+      title: "Reconhecendo problemas de intervalos",
+      description:
+        "O que é um intervalo, o primeiro movimento (ordenar) e a condição de sobreposição.",
+    },
+    {
+      slug: "02-merge",
+      title: "Padrão 1: Ordenar e fundir (merge)",
+      description:
+        "Ordenar por início e varrer, fundindo intervalos que se sobrepõem.",
+    },
+    {
+      slug: "03-insert",
+      title: "Padrão 2: Inserir num conjunto ordenado",
+      description:
+        "Inserir um intervalo numa lista já ordenada em três fases: antes, funde, depois.",
+    },
+    {
+      slug: "04-greedy",
+      title: "Padrão 3: Guloso de sobreposição",
+      description:
+        "Ordenar por fim e manter os que cabem — a escolha gulosa que maximiza o resultado.",
+    },
+    {
+      slug: "05-varredura",
+      title: "Padrão 4: Varredura de eventos (salas)",
+      description:
+        "Contar a sobreposição máxima tratando inícios e fins como eventos no tempo.",
+    },
+    {
+      slug: "06-sintese",
+      title: "Síntese: qual padrão usar?",
+      description:
+        "A árvore de decisão da seção Intervalos e o quiz geral antes da prova final.",
     },
   ],
   matrix: [

@@ -1,0 +1,138 @@
+# Síntese: qual padrão usar?
+
+> Quatro padrões de intervalos cobertos. Como a seção é enxuta, a árvore de
+> decisão também é — mas o reflexo de **ordenar pelo extremo certo** é o que
+> separa quem resolve de quem trava.
+
+## A árvore de decisão da seção
+
+```text
+1. Preciso FUNDIR intervalos sobrepostos numa lista qualquer?
+   → ordene por INÍCIO + varra fundindo no último do resultado
+
+2. A lista JÁ está ordenada e vou INSERIR um intervalo?
+   → três fases (antes / funde / depois), em O(n) sem sort
+
+3. "Mínimo a remover" / "máximo que cabe sem conflito"?
+   → GULOSO: ordene por FIM, mantenha quem termina mais cedo
+
+4. "Quantos recursos/salas ao mesmo tempo?" / "sobreposição máxima"?
+   → VARREDURA DE EVENTOS (+1 no início, −1 no fim) ou min-heap dos fins
+```
+
+A pergunta que orienta tudo: **ordenar por início ou por fim?** Início para
+fundir/inserir (processar na ordem da reta); fim para escolhas gulosas
+(quem libera espaço mais cedo).
+
+## O mapa completo da seção
+
+| Padrão | Pergunta-chave | Ordena por | Tempo |
+| --- | --- | --- | --- |
+| Merge | "funda os sobrepostos" | início | O(n log n) |
+| Insert | "insere em lista ordenada" | (já ordenada) | O(n) |
+| Guloso | "mínimo a remover / máximo que cabe" | fim | O(n log n) |
+| Varredura de eventos | "quantos ao mesmo tempo / salas" | início e fim | O(n log n) |
+
+Repare: quase tudo é **O(n log n) dominado pelo sort** — exceto inserir, que
+aproveita a lista já ordenada e cai para O(n). A varredura em si é sempre
+linear; a criatividade está em **por qual extremo ordenar** e **o que
+acumular** (último intervalo? contador de ativos?).
+
+## Quiz da seção
+
+Enunciados que você **não viu** nas aulas. Identifique o padrão e o porquê. 6+
+acertos: pronto para a prova.
+
+<Quiz
+  title="Quiz da seção: Intervalos"
+  questions={[
+    {
+      question:
+        "'Dada uma agenda, qual o número MÁXIMO de reuniões que cabem sem se sobrepor?' Qual padrão?",
+      options: [
+        "Merge",
+        "Guloso ordenado por FIM: mantenha sempre a que termina mais cedo, contando quantas cabem",
+        "Varredura de eventos",
+        "Inserção em três fases",
+      ],
+      answer: 1,
+      explanation:
+        "É o clássico 'seleção de atividades': ordenar por fim e pegar gulosamente quem termina antes maximiza a quantidade compatível. Mesmo guloso de 'mínimo a remover'.",
+    },
+    {
+      question:
+        "'Funda intervalos sobrepostos' e 'insere num conjunto já ordenado': por que as complexidades diferem?",
+      options: [
+        "São iguais",
+        "Merge precisa ORDENAR primeiro (O(n log n)); inserir aproveita que a lista já está ordenada e faz só uma varredura (O(n))",
+        "Inserir é mais lento",
+        "Merge não usa sort",
+      ],
+      answer: 1,
+      explanation:
+        "O custo do merge vem do sort. A inserção parte de uma lista já ordenada, então pula o sort — O(n). Explorar a estrutura dada muda a complexidade.",
+    },
+    {
+      question:
+        "'Qual o ponto do tempo com mais intervalos sobrepostos?' Qual técnica?",
+      options: [
+        "Guloso por fim",
+        "Varredura de eventos: +1 em cada início, −1 em cada fim, ordenados por tempo; o pico do contador é a resposta",
+        "Inserção em três fases",
+        "Busca binária",
+      ],
+      answer: 1,
+      explanation:
+        "Transformar cada intervalo em dois eventos (entra/sai) e varrer em ordem mede a sobreposição instante a instante; o máximo é o pico — o mesmo do 'mínimo de salas'.",
+    },
+    {
+      question:
+        "'Mínimo de flechas para estourar balões (intervalos no eixo x)' usa qual padrão?",
+      options: [
+        "Varredura de eventos",
+        "Guloso ordenado por fim: dispare uma flecha no fim de cada grupo de balões sobrepostos; o nº de flechas é o nº de grupos compatíveis",
+        "Merge por início",
+        "Inserção",
+      ],
+      answer: 1,
+      explanation:
+        "É o guloso da aula 4 em outra roupa: ordenar por fim e contar grupos não-sobrepostos. Cada flecha cobre um grupo que compartilha um ponto.",
+    },
+    {
+      question:
+        "'Some duas listas de intervalos JÁ ordenadas, devolvendo as interseções.' Qual abordagem?",
+      options: [
+        "Ordenar tudo de novo e fundir",
+        "Dois ponteiros (um por lista): a interseção é [max dos inícios, min dos fins] se válida; avance o ponteiro do que termina primeiro",
+        "Guloso por fim",
+        "Varredura de eventos",
+      ],
+      answer: 1,
+      explanation:
+        "Como as duas já estão ordenadas, dois ponteiros varrem em O(n+m). A interseção de dois intervalos é [max início, min fim], e avança-se quem acaba antes. (Aparece na prova!)",
+    },
+    {
+      question:
+        "Qual é a decisão que orienta quase todos os problemas de intervalo?",
+      options: [
+        "Usar recursão ou iteração",
+        "Ordenar por INÍCIO (fundir/inserir) ou por FIM (escolhas gulosas) — e então varrer comparando com o estado acumulado",
+        "Usar um heap sempre",
+        "Converter intervalos em grafos",
+      ],
+      answer: 1,
+      explanation:
+        "O extremo de ordenação define a estratégia: início para processar na ordem da reta; fim para o guloso. Depois, uma varredura com estado resolve.",
+    },
+  ]}
+/>
+
+## Pronto para a prova?
+
+A prova final da seção Intervalos tem **três problemas inéditos** — fácil,
+médio e difícil — com casos ocultos. O difícil (Car Pooling) aplica a
+**varredura de eventos** num cenário novo (passageiros que entram e saem):
+exatamente o raciocínio das salas de reunião. As quatro aulas cobrem tudo que
+você precisa.
+
+**Boa prova!** Volte para a página da seção e clique em "Prova final".

@@ -61,6 +61,17 @@ export interface TreeVisualConfig {
   scalarVars?: string[];
 }
 
+export interface IntervalVisualConfig {
+  /** Array de intervalos [início, fim]. */
+  intervalsVar: string;
+  /** Índice do intervalo atual (cursor). */
+  cursorVar?: string;
+  /** Array de intervalos resultado (desenhado abaixo). */
+  resultVar?: string;
+  /** Variáveis escalares em destaque (ex.: novo intervalo). */
+  scalarVars?: string[];
+}
+
 export interface GridVisualConfig {
   /** Matriz 2D principal (números ou letras). */
   gridVar: string;
@@ -98,7 +109,8 @@ export type DemoDefinition =
   | { python: string; javascript: string; bit: BitVisualConfig }
   | { python: string; javascript: string; linked: LinkedVisualConfig }
   | { python: string; javascript: string; grid: GridVisualConfig }
-  | { python: string; javascript: string; tree: TreeVisualConfig };
+  | { python: string; javascript: string; tree: TreeVisualConfig }
+  | { python: string; javascript: string; interval: IntervalVisualConfig };
 
 export const DEMOS: Record<string, DemoDefinition> = {
   // ---------------------------------------------------------------- ARRAY ---
@@ -1075,6 +1087,95 @@ console.log(encontrado);`,
       cursorVar: "no",
       visitedVar: "visitado",
       scalarVars: ["alvo"],
+    },
+  },
+
+  // ------------------------------------------------------------- INTERVAL ---
+  "merge-intervals": {
+    python: `intervalos = [[1, 3], [2, 6], [8, 10], [15, 18]]
+intervalos.sort(key=lambda x: x[0])    # 1º passo: ordenar por início
+resultado = []
+i = 0
+while i < len(intervalos):
+    inicio = intervalos[i][0]
+    fim = intervalos[i][1]
+    if resultado and inicio <= resultado[-1][1]:
+        # sobrepõe o último do resultado: estende o fim
+        resultado[-1][1] = max(resultado[-1][1], fim)
+    else:
+        resultado.append([inicio, fim])   # não sobrepõe: novo bloco
+    i = i + 1
+print(resultado)`,
+    javascript: `var intervalos = [[1, 3], [2, 6], [8, 10], [15, 18]];
+intervalos.sort(function (a, b) { return a[0] - b[0]; }); // ordenar por início
+var resultado = [];
+var i = 0;
+while (i < intervalos.length) {
+  var inicio = intervalos[i][0];
+  var fim = intervalos[i][1];
+  if (resultado.length && inicio <= resultado[resultado.length - 1][1]) {
+    // sobrepõe o último do resultado: estende o fim
+    resultado[resultado.length - 1][1] = Math.max(resultado[resultado.length - 1][1], fim);
+  } else {
+    resultado.push([inicio, fim]);          // não sobrepõe: novo bloco
+  }
+  i = i + 1;
+}
+console.log(resultado);`,
+    interval: {
+      intervalsVar: "intervalos",
+      cursorVar: "i",
+      resultVar: "resultado",
+    },
+  },
+
+  "insert-interval": {
+    python: `intervalos = [[1, 2], [3, 5], [6, 7], [8, 10], [12, 16]]
+novo = [4, 8]
+resultado = []
+i = 0
+n = len(intervalos)
+# 1) os que terminam ANTES do novo começar: passam direto
+while i < n and intervalos[i][1] < novo[0]:
+    resultado.append(intervalos[i])
+    i = i + 1
+# 2) os que SOBREPÕEM o novo: fundem-se nele
+while i < n and intervalos[i][0] <= novo[1]:
+    novo = [min(novo[0], intervalos[i][0]), max(novo[1], intervalos[i][1])]
+    i = i + 1
+resultado.append(novo)
+# 3) os que vêm DEPOIS: passam direto
+while i < n:
+    resultado.append(intervalos[i])
+    i = i + 1
+print(resultado)`,
+    javascript: `var intervalos = [[1, 2], [3, 5], [6, 7], [8, 10], [12, 16]];
+var novo = [4, 8];
+var resultado = [];
+var i = 0;
+var n = intervalos.length;
+// 1) os que terminam ANTES do novo começar: passam direto
+while (i < n && intervalos[i][1] < novo[0]) {
+  resultado.push(intervalos[i]);
+  i = i + 1;
+}
+// 2) os que SOBREPÕEM o novo: fundem-se nele
+while (i < n && intervalos[i][0] <= novo[1]) {
+  novo = [Math.min(novo[0], intervalos[i][0]), Math.max(novo[1], intervalos[i][1])];
+  i = i + 1;
+}
+resultado.push(novo);
+// 3) os que vêm DEPOIS: passam direto
+while (i < n) {
+  resultado.push(intervalos[i]);
+  i = i + 1;
+}
+console.log(resultado);`,
+    interval: {
+      intervalsVar: "intervalos",
+      cursorVar: "i",
+      resultVar: "resultado",
+      scalarVars: ["novo"],
     },
   },
 };

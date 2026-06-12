@@ -1,0 +1,113 @@
+# Padrão 2: Inserir num conjunto ordenado
+
+> E quando a lista **já está ordenada e sem sobreposições**, e você precisa
+> encaixar um novo intervalo? Aproveitar que ela já está organizada permite
+> resolver em **uma passada**, sem reordenar — dividindo a lista em três fases.
+
+<Challenge id="insert-interval" />
+
+> Tentou? Dá para adicionar o novo, reordenar e fundir tudo (a aula anterior) —
+> mas isso joga fora a informação de que a lista **já estava ordenada**. A
+> teoria abaixo faz em O(n), sem sort.
+
+## A teoria: três fases na reta
+
+Como a lista já está ordenada e sem sobreposições, os intervalos se dividem
+naturalmente em **três grupos** em relação ao novo intervalo:
+
+```text
+1. ANTES:     terminam antes de o novo começar  (fim < novo.início)
+              → copie-os intactos
+2. SOBREPÕEM: tocam o novo                       (início <= novo.fim)
+              → funda todos no novo (min dos inícios, max dos fins)
+3. DEPOIS:    começam depois de o novo terminar
+              → copie-os intactos
+```
+
+Você percorre a lista uma vez, passando por essas três fases em ordem. A fase
+2 é o coração: enquanto o intervalo atual toca o novo, ele é absorvido —
+`novo = [min(inícios), max(fins)]`. No fim da fase 2, o novo (já fundido) entra
+no resultado, e a fase 3 só copia o resto.
+
+Veja as três fases — repare o `novo` (escalar) crescendo ao absorver os
+intervalos da fase 2:
+
+<TraceDemo id="insert-interval" />
+
+### Por que é O(n) tempo (sem sort!)?
+
+A lista **já vem ordenada**, então não pagamos o O(n log n) do merge: uma
+única passada linear classifica cada intervalo numa das três fases →
+**O(n) de tempo**, O(n) de espaço para a saída. É a vantagem de explorar a
+estrutura dada (ordenada) em vez de reordenar do zero.
+
+## A lição
+
+Quando o enunciado garante que a entrada **já tem uma ordem**, não a
+desperdice. Aqui, "já ordenada" transforma um problema de merge (O(n log n))
+num de três fases lineares (O(n)). Sempre pergunte: *o que a entrada já me dá
+de graça?*
+
+<Quiz
+  title="Quiz de fixação"
+  questions={[
+    {
+      question:
+        "Por que dá para inserir em O(n) (sem ordenar), enquanto o merge geral é O(n log n)?",
+      options: [
+        "Porque a lista é menor",
+        "Porque a lista de entrada JÁ está ordenada e sem sobreposições — basta uma passada linear, sem pagar o custo do sort",
+        "Porque inserir não funde nada",
+        "Porque usa busca binária",
+      ],
+      answer: 1,
+      explanation:
+        "O custo O(n log n) do merge vem do sort. Como aqui a entrada já vem ordenada, pulamos o sort e resolvemos com uma varredura O(n).",
+    },
+    {
+      question: "Quais são as três fases da inserção?",
+      options: [
+        "Ordenar, fundir, devolver",
+        "Antes (terminam antes do novo começar, copia), sobrepõem (fundem no novo), depois (copia o resto)",
+        "Esquerda, meio, direita por busca binária",
+        "Inserir, remover, repetir",
+      ],
+      answer: 1,
+      explanation:
+        "Como tudo está ordenado, os intervalos se agrupam em antes / sobrepõem / depois em relação ao novo. A fase do meio absorve os que tocam o novo.",
+    },
+    {
+      question: "Na fase de sobreposição, como o novo intervalo é atualizado?",
+      options: [
+        "novo = intervalo atual",
+        "novo = [min(novo.início, atual.início), max(novo.fim, atual.fim)] — engloba os dois",
+        "novo = [atual.início, novo.fim]",
+        "novo não muda",
+      ],
+      answer: 1,
+      explanation:
+        "Cada intervalo que toca o novo é absorvido expandindo as bordas: o menor início e o maior fim entre eles. Assim o novo cresce para cobrir todos os sobrepostos.",
+    },
+    {
+      question: "Qual a lição transferível desta aula?",
+      options: [
+        "Sempre reordenar a entrada",
+        "Aproveitar a estrutura que a entrada já oferece (aqui, 'já ordenada') costuma derrubar a complexidade",
+        "Usar recursão sempre",
+        "Evitar varreduras",
+      ],
+      answer: 1,
+      explanation:
+        "Reconhecer que a entrada já está ordenada evita o sort e troca O(n log n) por O(n). Pergunte sempre o que a entrada dá de graça.",
+    },
+  ]}
+/>
+
+## Resumo
+
+- **Inserir** numa lista ordenada e sem sobreposições: três fases — antes,
+  funde, depois — numa passada.
+- **O(n)** de tempo (sem sort!), porque a entrada já vem ordenada.
+- Lição: **explore a estrutura dada** em vez de reorganizar do zero.
+
+Próxima aula: escolher o que **manter** com raciocínio guloso.

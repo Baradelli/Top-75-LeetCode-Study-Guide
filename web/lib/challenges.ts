@@ -28,6 +28,229 @@ export interface Challenge {
 }
 
 export const CHALLENGES: Record<string, Challenge> = {
+  "merge-intervals": {
+    title: "Merge Intervals",
+    statement: `Dada uma lista de intervalos \`[início, fim]\`, **funda** todos os que se sobrepõem e retorne a lista resultante (ordenada por início).
+
+Exemplo: \`[[1,3],[2,6],[8,10],[15,18]]\` → \`[[1,6],[8,10],[15,18]]\` (o [1,3] e o [2,6] se sobrepõem → [1,6]).`,
+    functionName: { python: "merge", javascript: "merge" },
+    starter: {
+      python: `def merge(intervalos):
+    # funda os intervalos que se sobrepõem
+    pass`,
+      javascript: `function merge(intervalos) {
+  // funda os intervalos que se sobrepõem
+}`,
+    },
+    tests: [
+      { args: [[[1, 3], [2, 6], [8, 10], [15, 18]]], expected: [[1, 6], [8, 10], [15, 18]] },
+      { args: [[[1, 4], [4, 5]]], expected: [[1, 5]] },
+      { args: [[[1, 4]]], expected: [[1, 4]] },
+      { args: [[[1, 4], [2, 3]]], expected: [[1, 4]] },
+    ],
+    hint: "O primeiro movimento quase sempre é ORDENAR por início. Aí, percorrendo, dois intervalos se sobrepõem quando o início do atual é ≤ o fim do último do resultado — nesse caso, estenda o fim; senão, comece um bloco novo.",
+    solution: {
+      python: `def merge(intervalos):
+    intervalos.sort(key=lambda x: x[0])
+    resultado = []
+    for inicio, fim in intervalos:
+        if resultado and inicio <= resultado[-1][1]:
+            resultado[-1][1] = max(resultado[-1][1], fim)
+        else:
+            resultado.append([inicio, fim])
+    return resultado`,
+      javascript: `function merge(intervalos) {
+  intervalos.sort(function (a, b) { return a[0] - b[0]; });
+  var resultado = [];
+  for (var i = 0; i < intervalos.length; i++) {
+    var inicio = intervalos[i][0], fim = intervalos[i][1];
+    if (resultado.length && inicio <= resultado[resultado.length - 1][1]) {
+      resultado[resultado.length - 1][1] = Math.max(resultado[resultado.length - 1][1], fim);
+    } else {
+      resultado.push([inicio, fim]);
+    }
+  }
+  return resultado;
+}`,
+    },
+    solutionIdea:
+      "Ordena por início e varre: sobrepõe (início ≤ fim do último) → estende; senão → novo bloco. O(n log n) pelo sort.",
+  },
+
+  "insert-interval": {
+    title: "Insert Interval",
+    statement: `Dada uma lista de intervalos **ordenada e sem sobreposições** e um \`novo\` intervalo, insira-o (fundindo se necessário) mantendo a lista ordenada e sem sobreposições.
+
+Exemplo: \`intervalos = [[1,3],[6,9]]\`, \`novo = [2,5]\` → \`[[1,5],[6,9]]\`.`,
+    functionName: { python: "insert", javascript: "insert" },
+    starter: {
+      python: `def insert(intervalos, novo):
+    # insira 'novo' mantendo ordenado e sem sobreposições
+    pass`,
+      javascript: `function insert(intervalos, novo) {
+  // insira 'novo' mantendo ordenado e sem sobreposições
+}`,
+    },
+    tests: [
+      { args: [[[1, 3], [6, 9]], [2, 5]], expected: [[1, 5], [6, 9]] },
+      { args: [[[1, 2], [3, 5], [6, 7], [8, 10], [12, 16]], [4, 8]], expected: [[1, 2], [3, 10], [12, 16]] },
+      { args: [[], [5, 7]], expected: [[5, 7]] },
+      { args: [[[1, 5]], [2, 3]], expected: [[1, 5]] },
+    ],
+    hint: "Como já está ordenado, pense em três fases: (1) copie os intervalos que terminam ANTES do novo começar; (2) funda no novo todos que o SOBREPÕEM (ajustando min do início e max do fim); (3) adicione o novo fundido e copie o resto.",
+    solution: {
+      python: `def insert(intervalos, novo):
+    resultado = []
+    i = 0
+    n = len(intervalos)
+    while i < n and intervalos[i][1] < novo[0]:
+        resultado.append(intervalos[i])
+        i += 1
+    while i < n and intervalos[i][0] <= novo[1]:
+        novo = [min(novo[0], intervalos[i][0]), max(novo[1], intervalos[i][1])]
+        i += 1
+    resultado.append(novo)
+    while i < n:
+        resultado.append(intervalos[i])
+        i += 1
+    return resultado`,
+      javascript: `function insert(intervalos, novo) {
+  var resultado = [];
+  var i = 0;
+  var n = intervalos.length;
+  while (i < n && intervalos[i][1] < novo[0]) { resultado.push(intervalos[i]); i++; }
+  while (i < n && intervalos[i][0] <= novo[1]) {
+    novo = [Math.min(novo[0], intervalos[i][0]), Math.max(novo[1], intervalos[i][1])];
+    i++;
+  }
+  resultado.push(novo);
+  while (i < n) { resultado.push(intervalos[i]); i++; }
+  return resultado;
+}`,
+    },
+    solutionIdea:
+      "Três fases sobre a lista já ordenada: antes / sobreposição (funde) / depois. Uma passada, O(n).",
+  },
+
+  "erase-overlap-intervals": {
+    title: "Non-overlapping Intervals",
+    statement: `Dada uma lista de intervalos, retorne o **número mínimo** de intervalos a **remover** para que os restantes não se sobreponham.
+
+Exemplo: \`[[1,2],[2,3],[3,4],[1,3]]\` → \`1\` (remover [1,3] basta).`,
+    functionName: {
+      python: "erase_overlap_intervals",
+      javascript: "eraseOverlapIntervals",
+    },
+    starter: {
+      python: `def erase_overlap_intervals(intervalos):
+    # mínimo de remoções para não haver sobreposição
+    pass`,
+      javascript: `function eraseOverlapIntervals(intervalos) {
+  // mínimo de remoções para não haver sobreposição
+}`,
+    },
+    tests: [
+      { args: [[[1, 2], [2, 3], [3, 4], [1, 3]]], expected: 1 },
+      { args: [[[1, 2], [1, 2], [1, 2]]], expected: 2 },
+      { args: [[[1, 2], [2, 3]]], expected: 0 },
+      { args: [[[1, 100], [11, 22], [1, 11], [2, 12]]], expected: 2 },
+    ],
+    hint: "Estratégia gulosa: ordene por FIM. Vá mantendo os que cabem (o início ≥ fim do último mantido) — assim você conserva o máximo de intervalos. Cada intervalo que NÃO cabe é uma remoção. (Manter quem termina mais cedo deixa mais espaço para os próximos.)",
+    solution: {
+      python: `def erase_overlap_intervals(intervalos):
+    intervalos.sort(key=lambda x: x[1])
+    remocoes = 0
+    fim = float("-inf")
+    for inicio, f in intervalos:
+        if inicio >= fim:
+            fim = f          # cabe: mantém
+        else:
+            remocoes += 1    # sobrepõe: remove
+    return remocoes`,
+      javascript: `function eraseOverlapIntervals(intervalos) {
+  intervalos.sort(function (a, b) { return a[1] - b[1]; });
+  var remocoes = 0;
+  var fim = -Infinity;
+  for (var i = 0; i < intervalos.length; i++) {
+    if (intervalos[i][0] >= fim) {
+      fim = intervalos[i][1];   // cabe: mantém
+    } else {
+      remocoes += 1;            // sobrepõe: remove
+    }
+  }
+  return remocoes;
+}`,
+    },
+    solutionIdea:
+      "Guloso: ordena por fim e mantém quem cabe (início ≥ último fim); o resto conta como remoção. Manter os que terminam cedo maximiza o que sobra. O(n log n).",
+  },
+
+  "min-meeting-rooms": {
+    title: "Meeting Rooms II",
+    statement: `Dada uma lista de reuniões \`[início, fim]\`, retorne o **número mínimo de salas** necessárias para realizar todas (duas reuniões que se sobrepõem no tempo precisam de salas diferentes).
+
+Exemplo: \`[[0,30],[5,10],[15,20]]\` → \`2\`.`,
+    functionName: {
+      python: "min_meeting_rooms",
+      javascript: "minMeetingRooms",
+    },
+    starter: {
+      python: `def min_meeting_rooms(intervalos):
+    # número mínimo de salas para todas as reuniões
+    pass`,
+      javascript: `function minMeetingRooms(intervalos) {
+  // número mínimo de salas para todas as reuniões
+}`,
+    },
+    tests: [
+      { args: [[[0, 30], [5, 10], [15, 20]]], expected: 2 },
+      { args: [[[7, 10], [2, 4]]], expected: 1 },
+      { args: [[[1, 5], [5, 10]]], expected: 1 },
+      { args: [[[1, 5], [2, 6], [3, 7]]], expected: 3 },
+      { args: [[]], expected: 0 },
+    ],
+    hint: "O nº de salas é a sobreposição MÁXIMA num instante. Separe os inícios e os fins em duas listas ordenadas e faça uma varredura com dois ponteiros: um início antes do próximo fim → +1 sala; senão → uma sala liberou (-1). O pico é a resposta. (Um min-heap dos fins é a outra abordagem clássica.)",
+    solution: {
+      python: `def min_meeting_rooms(intervalos):
+    if not intervalos:
+        return 0
+    inicios = sorted(iv[0] for iv in intervalos)
+    fins = sorted(iv[1] for iv in intervalos)
+    salas = 0
+    maximo = 0
+    i = 0
+    j = 0
+    while i < len(inicios):
+        if inicios[i] < fins[j]:
+            salas += 1          # começou antes de a anterior terminar
+            i += 1
+            maximo = max(maximo, salas)
+        else:
+            salas -= 1          # uma reunião terminou: libera sala
+            j += 1
+    return maximo`,
+      javascript: `function minMeetingRooms(intervalos) {
+  if (intervalos.length === 0) return 0;
+  var inicios = intervalos.map(function (iv) { return iv[0]; }).sort(function (a, b) { return a - b; });
+  var fins = intervalos.map(function (iv) { return iv[1]; }).sort(function (a, b) { return a - b; });
+  var salas = 0, maximo = 0, i = 0, j = 0;
+  while (i < inicios.length) {
+    if (inicios[i] < fins[j]) {
+      salas += 1;            // começou antes de a anterior terminar
+      i += 1;
+      maximo = Math.max(maximo, salas);
+    } else {
+      salas -= 1;            // uma reunião terminou: libera sala
+      j += 1;
+    }
+  }
+  return maximo;
+}`,
+    },
+    solutionIdea:
+      "Varredura de eventos: inícios e fins ordenados; início antes do próximo fim → +1 sala. O pico de salas simultâneas é a resposta. O(n log n).",
+  },
+
   "max-depth": {
     title: "Maximum Depth of Binary Tree",
     statement: `Retorne a **profundidade máxima** de uma árvore binária (número de nós no caminho mais longo da raiz até uma folha). A árvore é dada como \`root\` (cada nó tem \`.val\`, \`.left\`, \`.right\`).
