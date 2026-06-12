@@ -72,6 +72,15 @@ export interface IntervalVisualConfig {
   scalarVars?: string[];
 }
 
+export interface HeapVisualConfig {
+  /** Array que armazena o heap (desenhado como árvore binária completa). */
+  heapVar: string;
+  /** Índice do nó atual sendo ajustado (sift-up/down). */
+  cursorVar?: string;
+  /** Variáveis escalares em destaque. */
+  scalarVars?: string[];
+}
+
 export interface GridVisualConfig {
   /** Matriz 2D principal (números ou letras). */
   gridVar: string;
@@ -110,7 +119,8 @@ export type DemoDefinition =
   | { python: string; javascript: string; linked: LinkedVisualConfig }
   | { python: string; javascript: string; grid: GridVisualConfig }
   | { python: string; javascript: string; tree: TreeVisualConfig }
-  | { python: string; javascript: string; interval: IntervalVisualConfig };
+  | { python: string; javascript: string; interval: IntervalVisualConfig }
+  | { python: string; javascript: string; heap: HeapVisualConfig };
 
 export const DEMOS: Record<string, DemoDefinition> = {
   // ---------------------------------------------------------------- ARRAY ---
@@ -1176,6 +1186,94 @@ console.log(resultado);`,
       cursorVar: "i",
       resultVar: "resultado",
       scalarVars: ["novo"],
+    },
+  },
+
+  // ----------------------------------------------------------------- HEAP ---
+  "heap-push": {
+    python: `heap = []
+valores = [5, 3, 8, 1, 4, 7, 2]
+i = -1
+for v in valores:
+    heap.append(v)          # entra na última posição
+    i = len(heap) - 1
+    while i > 0:            # sobe enquanto for menor que o pai (sift-up)
+        pai = (i - 1) // 2
+        if heap[pai] <= heap[i]:
+            break
+        heap[pai], heap[i] = heap[i], heap[pai]
+        i = pai
+print(heap)`,
+    javascript: `var heap = [];
+var valores = [5, 3, 8, 1, 4, 7, 2];
+var i = -1;
+for (var k = 0; k < valores.length; k++) {
+  heap.push(valores[k]);    // entra na última posição
+  i = heap.length - 1;
+  while (i > 0) {           // sobe enquanto for menor que o pai (sift-up)
+    var pai = (i - 1) >> 1;
+    if (heap[pai] <= heap[i]) break;
+    var t = heap[pai]; heap[pai] = heap[i]; heap[i] = t;
+    i = pai;
+  }
+}
+console.log(heap);`,
+    heap: {
+      heapVar: "heap",
+      cursorVar: "i",
+    },
+  },
+
+  "heap-pop": {
+    python: `heap = [1, 3, 2, 7, 4, 8, 5]   # já é um min-heap válido
+saida = []
+i = 0
+while len(heap) > 0:
+    saida.append(heap[0])         # o menor está sempre no topo
+    ultimo = heap.pop()
+    if len(heap) > 0:
+        heap[0] = ultimo          # move o último para o topo...
+        i = 0
+        n = len(heap)
+        while True:               # ...e desce até a posição certa (sift-down)
+            menor = i
+            e = 2 * i + 1
+            d = 2 * i + 2
+            if e < n and heap[e] < heap[menor]:
+                menor = e
+            if d < n and heap[d] < heap[menor]:
+                menor = d
+            if menor == i:
+                break
+            heap[menor], heap[i] = heap[i], heap[menor]
+            i = menor
+print(saida)`,
+    javascript: `var heap = [1, 3, 2, 7, 4, 8, 5]; // já é um min-heap válido
+var saida = [];
+var i = 0;
+while (heap.length > 0) {
+  saida.push(heap[0]);            // o menor está sempre no topo
+  var ultimo = heap.pop();
+  if (heap.length > 0) {
+    heap[0] = ultimo;             // move o último para o topo...
+    i = 0;
+    var n = heap.length;
+    while (true) {                // ...e desce até a posição certa (sift-down)
+      var menor = i;
+      var e = 2 * i + 1;
+      var d = 2 * i + 2;
+      if (e < n && heap[e] < heap[menor]) menor = e;
+      if (d < n && heap[d] < heap[menor]) menor = d;
+      if (menor === i) break;
+      var t = heap[menor]; heap[menor] = heap[i]; heap[i] = t;
+      i = menor;
+    }
+  }
+}
+console.log(saida);`,
+    heap: {
+      heapVar: "heap",
+      cursorVar: "i",
     },
   },
 };

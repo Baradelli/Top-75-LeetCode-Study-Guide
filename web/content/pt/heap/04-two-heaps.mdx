@@ -1,0 +1,139 @@
+# Padrão 3: Dois heaps (mediana do fluxo)
+
+> Achar a **mediana** parece exigir os dados ordenados. Mas e se eles chegam um
+> a um, num fluxo sem fim, e você precisa da mediana **a cada inserção**?
+> Ordenar tudo toda vez seria caríssimo. A solução elegante: **dois heaps**.
+
+<Challenge id="running-median" />
+
+> Tentou? Reordenar a lista a cada número é O(n log n) por inserção. A teoria
+> abaixo mantém a mediana acessível em O(1), com inserções O(log n).
+
+## A teoria: divida em duas metades equilibradas
+
+A mediana é o "meio" dos dados ordenados. A ideia genial: você não precisa de
+*tudo* ordenado — precisa só saber **onde o meio se divide**. Então mantenha os
+números em **duas metades**:
+
+- **`baixo`**: a metade **menor**, num **max-heap** (o maior dela no topo —
+  o maior dos pequenos).
+- **`alto`**: a metade **maior**, num **min-heap** (o menor dela no topo —
+  o menor dos grandes).
+
+Se as duas metades estão **equilibradas em tamanho**, a mediana está bem na
+fronteira entre elas — nos topos dos dois heaps:
+
+```text
+... 1  3  5 | 8  9 12 ...
+   (max-heap baixo)  (min-heap alto)
+        topo=5         topo=8
+
+mediana = topo de baixo            (se baixo tem 1 a mais → ímpar)
+        = (topo baixo + topo alto)/2   (se tamanhos iguais → par)
+```
+
+A cada novo número, você o insere e **reequilibra** os tamanhos (movendo o topo
+de um heap para o outro se necessário), mantendo a diferença de tamanhos em no
+máximo 1. Os topos sempre dão a mediana.
+
+```text
+ao inserir x:
+    empurre x no `baixo` (max-heap)
+    mova o topo de `baixo` para `alto`   (garante baixo <= alto)
+    se `alto` ficou maior que `baixo`:
+        mova o topo de `alto` de volta    (reequilibra os tamanhos)
+mediana: topo de baixo (ímpar) ou média dos dois topos (par)
+```
+
+### Por que é O(log n) por inserção e O(1) na consulta?
+
+Cada inserção faz alguns push/pop nos heaps — **O(log n)** cada. A mediana é só
+**olhar os topos** — **O(1)**. Comparado a "ordenar a cada vez" (O(n log n) por
+inserção) ou manter uma lista ordenada com inserção (O(n)), os dois heaps são
+imbatíveis para um fluxo.
+
+| Abordagem | Inserir | Consultar mediana |
+| --- | --- | --- |
+| Reordenar tudo | O(n log n) | O(1) |
+| Lista ordenada (inserir no lugar) | O(n) | O(1) |
+| **Dois heaps** | **O(log n)** | **O(1)** |
+
+## A lição: equilíbrio entre duas estruturas
+
+O padrão "dois heaps" é um caso de uma ideia mais geral: **manter dois extremos
+equilibrados** para que a informação que você quer (aqui, a mediana) fique
+sempre acessível na fronteira. O max-heap guarda o topo da metade baixa; o
+min-heap, o fundo da metade alta. Equilibrar os tamanhos mantém a mediana
+"presa" entre os dois topos.
+
+> Em Python, não há max-heap: o truque é guardar os valores **negados** no
+> `heapq` (assim o menor negado é o maior real). Em JS, basta inverter o
+> comparador (`(a, b) => b - a`).
+
+<Quiz
+  title="Quiz de fixação"
+  questions={[
+    {
+      question: "Por que dois heaps permitem achar a mediana sem ordenar tudo?",
+      options: [
+        "Porque ordenam internamente",
+        "Porque mantêm os dados em duas metades (menor num max-heap, maior num min-heap); equilibradas, a mediana fica nos topos — a fronteira entre as metades",
+        "Porque guardam só a mediana",
+        "Porque usam busca binária",
+      ],
+      answer: 1,
+      explanation:
+        "Você não precisa de tudo ordenado, só de onde está o meio. A fronteira entre a metade baixa (max-heap) e a alta (min-heap) é exatamente a mediana.",
+    },
+    {
+      question:
+        "Qual heap guarda a metade MENOR dos números, e o que fica no seu topo?",
+      options: [
+        "Um min-heap; o menor de todos",
+        "Um MAX-heap; no topo fica o MAIOR da metade menor — ou seja, o elemento logo à esquerda da mediana",
+        "Um max-heap; o menor de todos",
+        "Tanto faz",
+      ],
+      answer: 1,
+      explanation:
+        "A metade menor num max-heap deixa no topo o maior dela — o valor que encosta na mediana pela esquerda. A metade maior num min-heap deixa no topo o menor dela (encosta pela direita).",
+    },
+    {
+      question:
+        "Por que é preciso reequilibrar os tamanhos dos dois heaps a cada inserção?",
+      options: [
+        "Para economizar memória",
+        "Porque a mediana só fica nos topos se as metades tiverem tamanhos quase iguais (diferença ≤ 1); senão a fronteira se desloca",
+        "Para ordenar os heaps",
+        "Não é preciso",
+      ],
+      answer: 1,
+      explanation:
+        "Se um heap ficar muito maior, o 'meio' real não estará mais na fronteira entre os topos. Mantendo |tamanhos| ≤ 1, a mediana é sempre o topo (ímpar) ou a média dos topos (par).",
+    },
+    {
+      question:
+        "Quais as complexidades de inserir e de consultar a mediana com dois heaps?",
+      options: [
+        "Inserir O(n), consultar O(n)",
+        "Inserir O(log n) (push/pop nos heaps), consultar O(1) (olhar os topos)",
+        "Inserir O(1), consultar O(log n)",
+        "Ambas O(n log n)",
+      ],
+      answer: 1,
+      explanation:
+        "Cada inserção move elementos entre os heaps a O(log n); a mediana é só ler os topos, O(1). Muito melhor que reordenar (O(n log n)) a cada inserção.",
+    },
+  ]}
+/>
+
+## Resumo
+
+- **Dois heaps**: max-heap da metade menor + min-heap da metade maior,
+  equilibrados em tamanho.
+- A **mediana** fica nos topos: topo do max-heap (ímpar) ou média dos dois
+  topos (par).
+- **Inserir O(log n)**, **consultar O(1)** — ideal para fluxos.
+- Em Python, simule max-heap com valores negados; em JS, inverta o comparador.
+
+Última parada: a **síntese** da seção Heap e o quiz antes da prova.

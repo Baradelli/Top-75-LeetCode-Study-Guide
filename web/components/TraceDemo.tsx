@@ -9,6 +9,7 @@ import LinkedListVisualizer from "./visualizers/LinkedListVisualizer";
 import GridTraceVisualizer from "./visualizers/GridTraceVisualizer";
 import TreeTraceVisualizer from "./visualizers/TreeTraceVisualizer";
 import IntervalTraceVisualizer from "./visualizers/IntervalTraceVisualizer";
+import HeapTraceVisualizer from "./visualizers/HeapTraceVisualizer";
 import { DEMOS } from "@/lib/demos";
 
 /**
@@ -62,6 +63,13 @@ export default function TraceDemo({ id }: { id: string }) {
         return <IntervalTraceVisualizer {...props} config={config} />;
       }
       return IntervalBound;
+    }
+    if ("heap" in demo) {
+      const config = demo.heap;
+      function HeapBound(props: VisualizerProps) {
+        return <HeapTraceVisualizer {...props} config={config} />;
+      }
+      return HeapBound;
     }
     const config = demo.string;
     function StringBound(props: VisualizerProps) {

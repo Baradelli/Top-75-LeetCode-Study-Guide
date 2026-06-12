@@ -704,6 +704,101 @@ Exemplo: \`trips = [[2,1,5],[3,3,7]]\`, \`capacidade = 4\` → \`false\` (em [3,
       hint: "Varredura de eventos (como as salas de reunião): cada viagem gera um evento de +passageiros em 'de' e -passageiros em 'até'. Ordene os eventos por posição, faça a soma corrente e verifique se em algum ponto ela ultrapassa a capacidade.",
     },
   ],
+
+  heap: [
+    {
+      slug: "last-stone-weight",
+      title: "Last Stone Weight",
+      difficulty: "facil",
+      leetcodeUrl: "https://leetcode.com/problems/last-stone-weight/",
+      statement: `Cada turno, pegue as **duas pedras mais pesadas** \`x ≤ y\` e bata-as: se \`x == y\`, ambas somem; senão, sobra uma de peso \`y - x\`. Repita até restar no máximo uma. Retorne o peso da última pedra (ou \`0\`).
+
+Exemplo: \`[2,7,4,1,8,1]\` → \`1\`.`,
+      functionName: { python: "last_stone_weight", javascript: "lastStoneWeight" },
+      starter: {
+        python: `import heapq
+
+def last_stone_weight(stones):
+    # escreva sua solução aqui
+    pass`,
+        javascript: `function lastStoneWeight(stones) {
+  // escreva sua solução aqui
+}`,
+      },
+      tests: [
+        { args: [[2, 7, 4, 1, 8, 1]], expected: 1 },
+        { args: [[1]], expected: 1 },
+        { args: [[2, 2]], expected: 0 },
+        { args: [[3, 7, 2]], expected: 2, hidden: true },
+        { args: [[10, 4, 4, 2]], expected: 0, hidden: true },
+      ],
+      hint: "Você precisa repetidamente das duas MAIORES pedras → um max-heap. A cada turno, retire as duas maiores, e devolva a diferença (se não-zero). No fim, o topo (ou 0) é a resposta. Em Python, use heapq com valores negados para simular o max-heap.",
+    },
+    {
+      slug: "connect-sticks",
+      title: "Minimum Cost to Connect Sticks",
+      difficulty: "medio",
+      leetcodeUrl: "https://leetcode.com/problems/minimum-cost-to-connect-sticks/",
+      statement: `Conectar dois bastões de tamanhos \`a\` e \`b\` custa \`a + b\` e produz um bastão de tamanho \`a + b\`. Conecte todos num só, com **custo total mínimo**, e retorne esse custo.
+
+Exemplo: \`[2,4,3]\` → \`14\` (2+3=5, depois 5+4=9; total 5+9=14).`,
+      functionName: { python: "connect_sticks", javascript: "connectSticks" },
+      starter: {
+        python: `import heapq
+
+def connect_sticks(sticks):
+    # escreva sua solução aqui
+    pass`,
+        javascript: `function connectSticks(sticks) {
+  // escreva sua solução aqui
+}`,
+      },
+      tests: [
+        { args: [[2, 4, 3]], expected: 14 },
+        { args: [[1, 8, 3, 5]], expected: 30 },
+        { args: [[5]], expected: 0 },
+        { args: [[1, 2, 3, 4, 5]], expected: 33, hidden: true },
+        { args: [[3, 4, 5, 6]], expected: 36, hidden: true },
+      ],
+      hint: "Estratégia gulosa com MIN-heap: sempre conecte os dois MENORES bastões disponíveis (os menores são somados mais vezes, então convém juntá-los cedo). Some o custo de cada junção e devolva o bastão combinado ao heap. É o algoritmo de Huffman.",
+    },
+    {
+      slug: "kth-smallest-matrix",
+      title: "Kth Smallest Element in a Sorted Matrix",
+      difficulty: "dificil",
+      leetcodeUrl:
+        "https://leetcode.com/problems/kth-smallest-element-in-a-sorted-matrix/",
+      statement: `Dada uma matriz \`n × n\` em que **cada linha e cada coluna estão ordenadas** crescentemente, retorne o **k-ésimo MENOR** elemento (na ordem global).
+
+Exemplo: \`[[1,5,9],[10,11,13],[12,13,15]]\`, \`k = 8\` → \`13\`.`,
+      functionName: {
+        python: "kth_smallest",
+        javascript: "kthSmallest",
+      },
+      starter: {
+        python: `import heapq
+
+def kth_smallest(matrix, k):
+    # escreva sua solução aqui
+    pass`,
+        javascript: `function kthSmallest(matrix, k) {
+  // escreva sua solução aqui
+}`,
+      },
+      tests: [
+        { args: [[[1, 5, 9], [10, 11, 13], [12, 13, 15]], 8], expected: 13 },
+        { args: [[[-5]], 1], expected: -5 },
+        { args: [[[1, 2], [1, 3]], 2], expected: 1 },
+        { args: [[[1, 2], [1, 3]], 3], expected: 2, hidden: true },
+        {
+          args: [[[1, 3, 5], [6, 7, 12], [11, 14, 14]], 6],
+          expected: 11,
+          hidden: true,
+        },
+      ],
+      hint: "É um merge de k-way disfarçado: comece com o canto superior esquerdo num MIN-heap; retire k vezes, e a cada retirada empurre os vizinhos à direita e abaixo (marcando visitados para não repetir). O k-ésimo retirado é a resposta. O(k log k).",
+    },
+  ],
 };
 
 export function getExam(section: string): ExamProblem[] | undefined {

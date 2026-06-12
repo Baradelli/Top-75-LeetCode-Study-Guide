@@ -1,0 +1,172 @@
+# Padrão 1: Top-K com heap de tamanho K
+
+> "Os K maiores", "o K-ésimo menor", "os K mais frequentes" — uma família
+> inteira de problemas. A sacada: você **não precisa ordenar tudo**. Basta um
+> heap que guarda **só os K melhores** vistos até agora.
+
+<Challenge id="kth-largest" />
+
+> Tentou? Ordenar o array e pegar a posição certa funciona (O(n log n)) — e
+> passa! Mas há uma abordagem que é melhor quando K é pequeno e o fluxo é
+> grande. A teoria abaixo mostra o heap de tamanho K.
+
+## A teoria: um heap de tamanho fixo K
+
+Para achar o **K-ésimo maior**, mantenha um **min-heap com no máximo K
+elementos** — os K maiores vistos até agora. O truque é contraintuitivo: para
+guardar os **maiores**, use um **min-heap**, porque assim o **menor dos K
+grandes** fica no topo, fácil de descartar:
+
+```text
+para cada número x:
+    empurre x no heap
+    se o heap passou de K elementos:
+        remova o topo (o menor) → sobram os K maiores
+no fim: o topo do heap é o K-ésimo maior
+```
+
+Por que funciona? O heap sempre contém os K maiores até agora; seu menor
+elemento (o topo) é exatamente o K-ésimo maior. Qualquer número menor que esse
+topo é descartado na hora.
+
+### Por que O(n log k) — e quando vale a pena?
+
+São `n` elementos; cada push/pop custa O(log **k**) (o heap nunca passa de K).
+Total: **O(n log k)**, com **O(k)** de espaço. Compare com ordenar tudo
+(O(n log n), O(n) de espaço): quando **k é bem menor que n**, log k ≪ log n, e
+o heap ganha — além de funcionar para **fluxos** (dados que chegam aos poucos),
+onde ordenar tudo nem seria possível.
+
+| Abordagem | Tempo | Espaço | Boa quando |
+| --- | --- | --- | --- |
+| Ordenar tudo | O(n log n) | O(n) | precisa de tudo ordenado |
+| Heap de tamanho K | O(n log k) | O(k) | K ≪ n, ou fluxo |
+
+## Exemplo: Top K Frequent Elements
+
+*"Os K elementos que mais aparecem."* Combina dois padrões que você já tem:
+**contagem de frequência** (hash map, da seção Array/String) + **top-K com
+heap**. Conte as frequências, depois use um heap de tamanho K sobre os pares
+`(frequência, elemento)`:
+
+<CodeRunner
+  python={`import heapq
+
+def top_k_frequent(nums, k):
+    contagem = {}
+    for x in nums:
+        contagem[x] = contagem.get(x, 0) + 1
+    h = []   # min-heap de (frequência, elemento), tamanho <= k
+    for elem, freq in contagem.items():
+        heapq.heappush(h, (freq, elem))
+        if len(h) > k:
+            heapq.heappop(h)     # descarta o menos frequente dos guardados
+    return sorted([elem for freq, elem in h])
+
+print(top_k_frequent([1, 1, 1, 2, 2, 3], 2))   # [1, 2]
+print(top_k_frequent([4, 4, 4, 5, 5, 6], 1))   # [4]`}
+  javascript={`function Heap(cmp) { this.a = []; this.cmp = cmp; }
+Heap.prototype.size = function () { return this.a.length; };
+Heap.prototype.push = function (x) {
+  var a = this.a, c = this.cmp; a.push(x); var i = a.length - 1;
+  while (i > 0) { var p = (i - 1) >> 1; if (c(a[p], a[i]) <= 0) break; var t = a[p]; a[p] = a[i]; a[i] = t; i = p; }
+};
+Heap.prototype.pop = function () {
+  var a = this.a, c = this.cmp, top = a[0], last = a.pop();
+  if (a.length) { a[0] = last; var i = 0, n = a.length;
+    for (;;) { var l = 2*i+1, r = 2*i+2, s = i;
+      if (l < n && c(a[l], a[s]) < 0) s = l; if (r < n && c(a[r], a[s]) < 0) s = r;
+      if (s === i) break; var t = a[s]; a[s] = a[i]; a[i] = t; i = s; } }
+  return top;
+};
+function topKFrequent(nums, k) {
+  var contagem = {};
+  for (var i = 0; i < nums.length; i++) contagem[nums[i]] = (contagem[nums[i]] || 0) + 1;
+  var h = new Heap(function (a, b) { return a[0] - b[0]; }); // por frequência
+  for (var elem in contagem) {
+    h.push([contagem[elem], Number(elem)]);
+    if (h.size() > k) h.pop();           // descarta o menos frequente
+  }
+  var res = [];
+  while (h.size() > 0) res.push(h.pop()[1]);
+  res.sort(function (a, b) { return a - b; });
+  return res;
+}
+console.log(topKFrequent([1, 1, 1, 2, 2, 3], 2)); // [1, 2]
+console.log(topKFrequent([4, 4, 4, 5, 5, 6], 1)); // [4]`}
+/>
+
+## A lição: para os K maiores, use um MIN-heap
+
+A inversão é a parte que confunde — e por isso vale fixar: **K maiores →
+min-heap de tamanho K** (o topo é o "porteiro", o menor dos grandes, pronto
+para ser expulso). **K menores → max-heap de tamanho K** (o topo é o maior dos
+pequenos). Guardar só K, e descartar o extremo errado, é o que dá o O(n log k).
+
+<Quiz
+  title="Quiz de fixação"
+  questions={[
+    {
+      question:
+        "Para achar os K MAIORES elementos, por que usar um MIN-heap (e não um max-heap)?",
+      options: [
+        "Por convenção",
+        "Porque o min-heap mantém no topo o MENOR dos K maiores guardados — exatamente o candidato a ser descartado quando chega algo maior",
+        "Porque min-heaps são mais rápidos",
+        "Porque max-heaps não existem",
+      ],
+      answer: 1,
+      explanation:
+        "Guardando os K maiores num min-heap, o topo é o menor deles (o K-ésimo maior). Qualquer novo número maior que o topo entra e expulsa o topo; menores são ignorados.",
+    },
+    {
+      question: "Por que o heap de tamanho K é O(n log k) e não O(n log n)?",
+      options: [
+        "Porque K é sempre 1",
+        "Porque o heap nunca passa de K elementos, então cada push/pop custa O(log k); são n operações → O(n log k)",
+        "Porque não usa heap",
+        "Porque ordena no final",
+      ],
+      answer: 1,
+      explanation:
+        "O tamanho do heap é limitado a K. log k < log n quando K ≪ n, então o heap de tamanho K bate ordenar tudo nesses casos (e funciona em fluxos).",
+    },
+    {
+      question:
+        "Quando o heap de tamanho K é preferível a simplesmente ordenar o array?",
+      options: [
+        "Nunca",
+        "Quando K é bem menor que n, ou quando os dados chegam como um FLUXO (não dá para ordenar tudo de uma vez)",
+        "Quando o array é pequeno",
+        "Quando há duplicatas",
+      ],
+      answer: 1,
+      explanation:
+        "Ordenar dá tudo em ordem (O(n log n)). Se você só quer os K melhores — especialmente em um fluxo — o heap de tamanho K economiza tempo e memória.",
+    },
+    {
+      question: "Como o Top K Frequent combina padrões que você já conhece?",
+      options: [
+        "Só usa heap",
+        "Contagem de frequência (hash map) para contar, depois heap de tamanho K sobre os pares (frequência, elemento)",
+        "Ordena duas vezes",
+        "Usa busca binária",
+      ],
+      answer: 1,
+      explanation:
+        "Primeiro o hash map conta (padrão da seção Array/String); depois o heap de tamanho K seleciona os K mais frequentes. Padrões se combinam.",
+    },
+  ]}
+/>
+
+## Resumo
+
+- **Top-K**: mantenha um heap de tamanho K com os K melhores; o topo é o
+  K-ésimo.
+- **K maiores → min-heap**; **K menores → max-heap** (o topo é o que se
+  descarta).
+- **O(n log k)**, O(k) espaço — ganha de ordenar quando K ≪ n ou em fluxos.
+- Top K Frequent = hash map (contar) + heap de tamanho K.
+
+Próxima aula: o heap escolhendo o próximo menor entre **K fontes** — k-way
+merge.

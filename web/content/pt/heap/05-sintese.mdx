@@ -1,0 +1,135 @@
+# Síntese: qual padrão usar?
+
+> Três padrões de heap cobertos. A seção é curta, mas o reflexo que ela treina
+> é poderoso: reconhecer quando a pergunta é sobre **extremos repetidos** e
+> sacar o heap.
+
+## A árvore de decisão da seção
+
+```text
+O problema pede o MENOR ou o MAIOR repetidamente, sem precisar de tudo ordenado?
+   → pense em HEAP. Daí:
+
+1. "Os K maiores / menores / K-ésimo / K mais frequentes"?
+   → HEAP DE TAMANHO K  (K maiores → min-heap; K menores → max-heap)
+
+2. "Fundir / pegar o próximo menor entre VÁRIAS fontes ordenadas"?
+   → K-WAY MERGE  (min-heap com a cabeça de cada fonte)
+
+3. "Mediana de um fluxo / equilibrar duas metades"?
+   → DOIS HEAPS  (max-heap da metade menor + min-heap da maior)
+```
+
+E o reflexo geral: **heap = "qual o extremo agora?" em O(log n)**. Se você se
+pegar querendo reordenar a cada passo, ou comparar repetidamente para achar o
+mínimo/máximo de um conjunto que muda, é sinal de heap.
+
+## O mapa completo da seção
+
+| Padrão | Pergunta-chave | Estrutura | Tempo |
+| --- | --- | --- | --- |
+| Top-K | "os K maiores/menores" | heap de tamanho K | O(n log k) |
+| k-way merge | "próximo menor entre K fontes" | min-heap de K cabeças | O(N log k) |
+| Dois heaps | "mediana de um fluxo" | max-heap + min-heap | O(log n)/inserção |
+
+A ideia que une tudo: o heap mantém o **extremo acessível em O(1)** e se
+**reajusta em O(log n)** quando o conjunto muda. Por isso ele é a ferramenta de
+"prioridade" — e reaparece como **fila de prioridade** no Dijkstra (grafos) e
+em agendadores.
+
+## Quiz da seção
+
+Enunciados que você **não viu** nas aulas. Identifique o padrão e o porquê. 6+
+acertos: pronto para a prova.
+
+<Quiz
+  title="Quiz da seção: Heap"
+  questions={[
+    {
+      question:
+        "'Retorne os K pontos mais próximos da origem.' Qual padrão e qual heap?",
+      options: [
+        "Ordenar tudo por distância",
+        "Heap de tamanho K: um MAX-heap pela distância, mantendo os K mais próximos (descarta o mais distante quando passa de K)",
+        "k-way merge",
+        "Dois heaps",
+      ],
+      answer: 1,
+      explanation:
+        "K MENORES distâncias → max-heap de tamanho K (o topo é o pior dos K guardados, descartado quando chega um melhor). O(n log k).",
+    },
+    {
+      question:
+        "'Conecte todos os bastões com custo mínimo (juntar a e b custa a+b).' Qual padrão?",
+      options: [
+        "Heap de tamanho K",
+        "Min-heap guloso: junte sempre os DOIS MENORES, devolva a soma ao heap, repita — os menores são somados mais vezes, então junte-os cedo (Huffman)",
+        "Dois heaps",
+        "k-way merge",
+      ],
+      answer: 1,
+      explanation:
+        "É o algoritmo de Huffman: o min-heap entrega os dois menores a cada passo. Juntar os menores primeiro minimiza quantas vezes eles entram na soma total.",
+    },
+    {
+      question:
+        "'Fluxo de números; a qualquer momento, retorne a mediana atual.' Qual padrão?",
+      options: [
+        "Heap de tamanho K",
+        "Dois heaps: max-heap da metade menor + min-heap da maior, equilibrados; a mediana fica nos topos",
+        "k-way merge",
+        "Ordenar a cada consulta",
+      ],
+      answer: 1,
+      explanation:
+        "Mediana de fluxo é o caso clássico de dois heaps: inserir em O(log n), consultar em O(1) olhando os topos.",
+    },
+    {
+      question:
+        "'Funda K arrays ordenados num só.' Por que o heap bate concatenar+ordenar?",
+      options: [
+        "Não bate",
+        "Porque aproveita que cada array já está ordenado: o próximo menor está entre as K cabeças (O(log K) por elemento) → O(N log K), melhor que O(N log N) quando K ≪ N",
+        "Porque o heap ordena mais rápido",
+        "Porque usa menos memória sempre",
+      ],
+      answer: 1,
+      explanation:
+        "Concatenar+ordenar ignora a ordem existente (O(N log N)). O heap explora as K cabeças ordenadas, baixando o trabalho por elemento para log K.",
+    },
+    {
+      question:
+        "Para os K MAIORES elementos, qual tipo de heap de tamanho K e por quê?",
+      options: [
+        "Max-heap, para ter o maior no topo",
+        "MIN-heap: o topo é o menor dos K maiores guardados — o 'porteiro' que é expulso quando chega algo maior",
+        "Tanto faz",
+        "Dois heaps",
+      ],
+      answer: 1,
+      explanation:
+        "Contraintuitivo mas essencial: K maiores → min-heap (descarta o menor); K menores → max-heap (descarta o maior). O topo é sempre o candidato a sair.",
+    },
+    {
+      question: "Qual a ideia-mãe que define quando usar um heap?",
+      options: [
+        "Quando os dados estão ordenados",
+        "Quando você precisa do EXTREMO (mínimo/máximo) repetidamente, de um conjunto que muda, sem precisar de tudo ordenado — heap dá topo em O(1) e ajuste em O(log n)",
+        "Quando há recursão",
+        "Quando a entrada é uma árvore",
+      ],
+      answer: 1,
+      explanation:
+        "Heap é a estrutura de 'prioridade': extremo acessível em O(1), reajuste em O(log n). Reordenar a cada passo é o sintoma de que um heap resolveria melhor.",
+    },
+  ]}
+/>
+
+## Pronto para a prova?
+
+A prova final da seção Heap tem **três problemas inéditos** — fácil, médio e
+difícil — com casos ocultos. O difícil (k-ésimo menor numa matriz ordenada) é
+um k-way merge disfarçado: comece pelo canto e expanda vizinhos com um
+min-heap. As três aulas cobrem tudo que você precisa.
+
+**Boa prova!** Volte para a página da seção e clique em "Prova final".

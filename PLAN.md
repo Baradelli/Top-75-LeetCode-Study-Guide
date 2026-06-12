@@ -1,6 +1,6 @@
 # Plano — Curso Interativo de LeetCode e Algoritmos
 
-> Status: "Comece aqui" + Fundamentos + Array + String + Binary + Linked List + Matrix + Interval + Tree completas (attempt-first). Interval trouxe o IntervalTraceVisualizer (barras numa linha do tempo). Faltam: Heap, Graph, Dynamic Programming. Próxima seção de conteúdo: Heap. Última atualização: 2026-06-10.
+> Status: "Comece aqui" + Fundamentos + Array + String + Binary + Linked List + Matrix + Interval + Tree + Heap completas (attempt-first). Heap trouxe o HeapTraceVisualizer (array desenhado como árvore completa, sift-up/down). Faltam: Graph, Dynamic Programming. Próxima seção: Graph. Última atualização: 2026-06-10.
 
 ## 1. Visão
 

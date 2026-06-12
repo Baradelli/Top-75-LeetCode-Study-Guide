@@ -111,7 +111,7 @@ export const SECTIONS: Section[] = [
     description:
       "Uma árvore por dentro; revisita problemas anteriores com a nova ferramenta.",
     patterns: ["Min/max heap", "Top-K", "Two heaps"],
-    status: "soon",
+    status: "available",
   },
   {
     slug: "graph",
@@ -478,6 +478,38 @@ export const LESSONS: Record<string, Lesson[]> = {
       title: "Síntese: qual padrão usar?",
       description:
         "A árvore de decisão da seção Árvores e o quiz geral antes da prova final.",
+    },
+  ],
+  heap: [
+    {
+      slug: "01-introducao",
+      title: "Reconhecendo problemas de heap",
+      description:
+        "O que é um heap, a propriedade do heap, push/pop em O(log n) e quando ele é a ferramenta.",
+    },
+    {
+      slug: "02-top-k",
+      title: "Padrão 1: Top-K com heap de tamanho K",
+      description:
+        "Manter só os K melhores num heap de tamanho fixo — o k-ésimo maior em O(n log k).",
+    },
+    {
+      slug: "03-k-way",
+      title: "Padrão 2: Fundir K fontes (k-way merge)",
+      description:
+        "O heap escolhe sempre o próximo menor entre K listas — o merge k revisitado.",
+    },
+    {
+      slug: "04-two-heaps",
+      title: "Padrão 3: Dois heaps (mediana do fluxo)",
+      description:
+        "Dividir os dados em duas metades equilibradas para achar a mediana em O(log n).",
+    },
+    {
+      slug: "05-sintese",
+      title: "Síntese: qual padrão usar?",
+      description:
+        "A árvore de decisão da seção Heap e o quiz geral antes da prova final.",
     },
   ],
 };

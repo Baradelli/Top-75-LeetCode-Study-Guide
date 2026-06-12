@@ -28,6 +28,215 @@ export interface Challenge {
 }
 
 export const CHALLENGES: Record<string, Challenge> = {
+  "kth-largest": {
+    title: "Kth Largest Element in an Array",
+    statement: `Retorne o **k-ésimo MAIOR** elemento de \`nums\` (o k-ésimo na ordem decrescente, contando repetições).
+
+Exemplo: \`nums = [3,2,1,5,6,4]\`, \`k = 2\` → \`5\`.
+
+(Em Python há \`heapq\`; em JS, a solução inclui uma pequena classe de heap, já que a linguagem não tem uma nativa.)`,
+    functionName: { python: "find_kth_largest", javascript: "findKthLargest" },
+    starter: {
+      python: `import heapq
+
+def find_kth_largest(nums, k):
+    # dica: um min-heap de tamanho k
+    pass`,
+      javascript: `function findKthLargest(nums, k) {
+  // dica: um min-heap de tamanho k (você pode ordenar para passar, mas tente o heap)
+}`,
+    },
+    tests: [
+      { args: [[3, 2, 1, 5, 6, 4], 2], expected: 5 },
+      { args: [[3, 2, 3, 1, 2, 4, 5, 5, 6], 4], expected: 4 },
+      { args: [[1], 1], expected: 1 },
+      { args: [[7, 6, 5, 4, 3, 2, 1], 7], expected: 1 },
+    ],
+    hint: "Mantenha um MIN-heap de tamanho k com os maiores vistos: empurre cada número e, se o heap passar de k, remova o menor (o topo). No fim, o topo do heap é o k-ésimo maior. O(n log k).",
+    solution: {
+      python: `import heapq
+
+def find_kth_largest(nums, k):
+    h = []
+    for x in nums:
+        heapq.heappush(h, x)
+        if len(h) > k:
+            heapq.heappop(h)   # descarta o menor: sobram os k maiores
+    return h[0]                # o topo é o k-ésimo maior`,
+      javascript: `function Heap(cmp) { this.a = []; this.cmp = cmp; }
+Heap.prototype.size = function () { return this.a.length; };
+Heap.prototype.peek = function () { return this.a[0]; };
+Heap.prototype.push = function (x) {
+  var a = this.a, c = this.cmp; a.push(x); var i = a.length - 1;
+  while (i > 0) { var p = (i - 1) >> 1; if (c(a[p], a[i]) <= 0) break; var t = a[p]; a[p] = a[i]; a[i] = t; i = p; }
+};
+Heap.prototype.pop = function () {
+  var a = this.a, c = this.cmp, top = a[0], last = a.pop();
+  if (a.length) { a[0] = last; var i = 0, n = a.length;
+    for (;;) { var l = 2*i+1, r = 2*i+2, s = i;
+      if (l < n && c(a[l], a[s]) < 0) s = l; if (r < n && c(a[r], a[s]) < 0) s = r;
+      if (s === i) break; var t = a[s]; a[s] = a[i]; a[i] = t; i = s; } }
+  return top;
+};
+function findKthLargest(nums, k) {
+  var h = new Heap(function (a, b) { return a - b; }); // min-heap
+  for (var i = 0; i < nums.length; i++) {
+    h.push(nums[i]);
+    if (h.size() > k) h.pop();   // descarta o menor: sobram os k maiores
+  }
+  return h.peek();               // o topo é o k-ésimo maior
+}`,
+    },
+    solutionIdea:
+      "Min-heap de tamanho k com os k maiores vistos; o topo é o k-ésimo maior. O(n log k) tempo, O(k) espaço.",
+  },
+
+  "merge-k-sorted": {
+    title: "Merge k Sorted Lists",
+    statement: `Dadas \`k\` listas **ordenadas** (aqui, como arrays), funda todas numa **única lista ordenada** e retorne-a.
+
+Exemplo: \`[[1,4,5],[1,3,4],[2,6]]\` → \`[1,1,2,3,4,4,5,6]\`.
+
+(Este é o "merge k" que você viu na seção Lista Ligada — agora com a ferramenta certa: o heap.)`,
+    functionName: { python: "merge_k", javascript: "mergeK" },
+    starter: {
+      python: `import heapq
+
+def merge_k(lists):
+    # funda as k listas ordenadas numa só
+    pass`,
+      javascript: `function mergeK(lists) {
+  // funda as k listas ordenadas numa só
+}`,
+    },
+    tests: [
+      { args: [[[1, 4, 5], [1, 3, 4], [2, 6]]], expected: [1, 1, 2, 3, 4, 4, 5, 6] },
+      { args: [[]], expected: [] },
+      { args: [[[]]], expected: [] },
+      { args: [[[1], [0]]], expected: [0, 1] },
+    ],
+    hint: "O próximo menor do resultado é sempre a cabeça de alguma das listas. Mantenha um MIN-heap com a cabeça de cada lista (guardando de qual lista e posição veio); retire a menor, adicione-a ao resultado e empurre a próxima daquela mesma lista. O(N log k).",
+    solution: {
+      python: `import heapq
+
+def merge_k(lists):
+    h = []
+    for i, lst in enumerate(lists):
+        if lst:
+            heapq.heappush(h, (lst[0], i, 0))   # (valor, qual lista, índice)
+    res = []
+    while h:
+        val, i, j = heapq.heappop(h)
+        res.append(val)
+        if j + 1 < len(lists[i]):
+            heapq.heappush(h, (lists[i][j + 1], i, j + 1))
+    return res`,
+      javascript: `function Heap(cmp) { this.a = []; this.cmp = cmp; }
+Heap.prototype.size = function () { return this.a.length; };
+Heap.prototype.push = function (x) {
+  var a = this.a, c = this.cmp; a.push(x); var i = a.length - 1;
+  while (i > 0) { var p = (i - 1) >> 1; if (c(a[p], a[i]) <= 0) break; var t = a[p]; a[p] = a[i]; a[i] = t; i = p; }
+};
+Heap.prototype.pop = function () {
+  var a = this.a, c = this.cmp, top = a[0], last = a.pop();
+  if (a.length) { a[0] = last; var i = 0, n = a.length;
+    for (;;) { var l = 2*i+1, r = 2*i+2, s = i;
+      if (l < n && c(a[l], a[s]) < 0) s = l; if (r < n && c(a[r], a[s]) < 0) s = r;
+      if (s === i) break; var t = a[s]; a[s] = a[i]; a[i] = t; i = s; } }
+  return top;
+};
+function mergeK(lists) {
+  var h = new Heap(function (a, b) { return a[0] - b[0]; }); // por valor
+  for (var i = 0; i < lists.length; i++) {
+    if (lists[i].length) h.push([lists[i][0], i, 0]);   // [valor, lista, índice]
+  }
+  var res = [];
+  while (h.size() > 0) {
+    var item = h.pop();
+    var val = item[0], li = item[1], j = item[2];
+    res.push(val);
+    if (j + 1 < lists[li].length) h.push([lists[li][j + 1], li, j + 1]);
+  }
+  return res;
+}`,
+    },
+    solutionIdea:
+      "Min-heap com a cabeça de cada lista; retira a menor e repõe a próxima daquela lista. O(N log k), onde N = total de elementos.",
+  },
+
+  "running-median": {
+    title: "Find Median from Data Stream",
+    statement: `Os números chegam um a um (um fluxo). Retorne a lista das **medianas** após cada número inserido. (Mediana de uma quantidade par de elementos é a média dos dois centrais.)
+
+Exemplo: \`[1, 2, 3]\` → \`[1, 1.5, 2]\`. \`[5, 15, 1, 3]\` → \`[5, 10.0, 5, 4.0]\`.`,
+    functionName: { python: "running_median", javascript: "runningMedian" },
+    starter: {
+      python: `import heapq
+
+def running_median(nums):
+    # mantenha duas metades equilibradas; retorne a mediana após cada inserção
+    pass`,
+      javascript: `function runningMedian(nums) {
+  // mantenha duas metades equilibradas; retorne a mediana após cada inserção
+}`,
+    },
+    tests: [
+      { args: [[1, 2, 3]], expected: [1, 1.5, 2] },
+      { args: [[5, 15, 1, 3]], expected: [5, 10, 5, 4] },
+      { args: [[2, 2, 2]], expected: [2, 2, 2] },
+      { args: [[1, 2]], expected: [1, 1.5] },
+    ],
+    hint: "Use DOIS heaps: um MAX-heap com a metade menor e um MIN-heap com a metade maior, mantendo os tamanhos equilibrados. A mediana é o topo do max-heap (tamanhos ímpares) ou a média dos dois topos (pares). Cada inserção é O(log n).",
+    solution: {
+      python: `import heapq
+
+def running_median(nums):
+    baixo = []   # max-heap (valores negados): metade menor
+    alto = []    # min-heap: metade maior
+    res = []
+    for x in nums:
+        heapq.heappush(baixo, -x)
+        heapq.heappush(alto, -heapq.heappop(baixo))   # passa o maior da metade baixa
+        if len(alto) > len(baixo):
+            heapq.heappush(baixo, -heapq.heappop(alto))  # reequilibra
+        if len(baixo) > len(alto):
+            res.append(-baixo[0])
+        else:
+            res.append((-baixo[0] + alto[0]) / 2)
+    return res`,
+      javascript: `function Heap(cmp) { this.a = []; this.cmp = cmp; }
+Heap.prototype.size = function () { return this.a.length; };
+Heap.prototype.peek = function () { return this.a[0]; };
+Heap.prototype.push = function (x) {
+  var a = this.a, c = this.cmp; a.push(x); var i = a.length - 1;
+  while (i > 0) { var p = (i - 1) >> 1; if (c(a[p], a[i]) <= 0) break; var t = a[p]; a[p] = a[i]; a[i] = t; i = p; }
+};
+Heap.prototype.pop = function () {
+  var a = this.a, c = this.cmp, top = a[0], last = a.pop();
+  if (a.length) { a[0] = last; var i = 0, n = a.length;
+    for (;;) { var l = 2*i+1, r = 2*i+2, s = i;
+      if (l < n && c(a[l], a[s]) < 0) s = l; if (r < n && c(a[r], a[s]) < 0) s = r;
+      if (s === i) break; var t = a[s]; a[s] = a[i]; a[i] = t; i = s; } }
+  return top;
+};
+function runningMedian(nums) {
+  var baixo = new Heap(function (a, b) { return b - a; }); // max-heap: metade menor
+  var alto = new Heap(function (a, b) { return a - b; });  // min-heap: metade maior
+  var res = [];
+  for (var k = 0; k < nums.length; k++) {
+    baixo.push(nums[k]);
+    alto.push(baixo.pop());                 // passa o maior da metade baixa
+    if (alto.size() > baixo.size()) baixo.push(alto.pop()); // reequilibra
+    if (baixo.size() > alto.size()) res.push(baixo.peek());
+    else res.push((baixo.peek() + alto.peek()) / 2);
+  }
+  return res;
+}`,
+    },
+    solutionIdea:
+      "Dois heaps equilibrados (max-heap da metade menor, min-heap da maior); a mediana sai dos topos. Inserção O(log n).",
+  },
+
   "merge-intervals": {
     title: "Merge Intervals",
     statement: `Dada uma lista de intervalos \`[início, fim]\`, **funda** todos os que se sobrepõem e retorne a lista resultante (ordenada por início).

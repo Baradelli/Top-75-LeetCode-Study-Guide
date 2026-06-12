@@ -1,0 +1,124 @@
+# Padrão 2: Fundir K fontes (k-way merge)
+
+> Na seção Lista Ligada, você fundiu **duas** listas ordenadas comparando as
+> cabeças. E para fundir **K** listas? Comparar K cabeças a cada passo seria
+> O(K) por elemento. O heap faz isso em O(log K) — e essa é a sua ferramenta
+> certa para o famoso *Merge k Sorted Lists*.
+
+<Challenge id="merge-k-sorted" />
+
+> Tentou? Concatenar tudo e ordenar funciona (O(N log N)), mas joga fora o fato
+> de cada lista **já estar ordenada**. A teoria abaixo usa o heap para
+> aproveitar isso.
+
+## A teoria: o heap escolhe o próximo menor
+
+O próximo elemento do resultado é sempre o **menor entre as cabeças** das K
+listas. Em vez de olhar todas as K cabeças a cada passo, mantenha-as num
+**min-heap**: o topo é o menor, retirado em O(log K).
+
+A peça-chave: ao guardar uma cabeça no heap, guarde também **de qual lista**
+ela veio (e a posição), para repor a próxima daquela lista depois:
+
+```text
+min-heap com a 1ª cabeça de cada lista (valor, qual lista, índice)
+enquanto o heap não está vazio:
+    (valor, lista, índice) = retira o menor
+    adiciona valor ao resultado
+    se há próximo naquela lista:
+        empurra (próximo valor, mesma lista, índice+1)
+```
+
+O heap tem no máximo **K** elementos (uma cabeça por lista), e cada um dos **N**
+elementos totais entra e sai uma vez. Por isso o custo é **O(N log K)** — bem
+melhor que comparar K cabeças por elemento (O(N·K)) ou concatenar e ordenar
+(O(N log N), que é maior quando K ≪ N).
+
+## Revisitando dois problemas com a ferramenta certa
+
+Esta seção **revisita** problemas que você já resolveu — agora com o heap:
+
+- **Merge k Sorted Lists** (seção Lista Ligada): lá você fundiria par a par
+  (torneio, O(N log K)); o heap dá o mesmo O(N log K) numa passada só, mantendo
+  as K cabeças.
+- **Meeting Rooms II** (seção Intervalos): lá usamos varredura de eventos; a
+  outra solução clássica é um **min-heap dos horários de fim** das reuniões em
+  curso — o tamanho do heap é o número de salas. Mesma resposta, ferramenta
+  nova.
+
+> A lição: o heap é a estrutura que responde *"qual o próximo/menor agora?"* à
+> medida que o conjunto muda. Vários problemas que você resolveu com truques
+> específicos têm uma solução limpa e geral com heap.
+
+## Por que não concatenar e ordenar?
+
+Concatenar as K listas e ordenar é O(N log N) e **ignora** que cada lista já
+está ordenada. O heap aproveita essa ordem: como o próximo menor só pode vir de
+uma das K cabeças, o trabalho por elemento cai de log N para log K. Quando você
+tem **muitos elementos em poucas listas** (K ≪ N), a diferença é real.
+
+<Quiz
+  title="Quiz de fixação"
+  questions={[
+    {
+      question: "No k-way merge, por que o próximo elemento do resultado está sempre entre as K cabeças?",
+      options: [
+        "Por acaso",
+        "Porque cada lista está ordenada: o menor ainda não usado de cada lista é sua cabeça atual, então o menor global está entre essas K cabeças",
+        "Porque o heap ordena tudo",
+        "Porque as listas têm o mesmo tamanho",
+      ],
+      answer: 1,
+      explanation:
+        "Em listas ordenadas, tudo depois da cabeça é maior. Logo o próximo menor do resultado é o mínimo das K cabeças — exatamente o que o min-heap entrega.",
+    },
+    {
+      question: "Por que guardar 'de qual lista' veio cada elemento no heap?",
+      options: [
+        "Para ordenar as listas",
+        "Para saber qual é a PRÓXIMA cabeça a repor no heap depois de retirar um elemento daquela lista",
+        "Para contar elementos",
+        "Não é necessário",
+      ],
+      answer: 1,
+      explanation:
+        "Ao tirar o menor (que veio da lista i), você precisa empurrar o próximo da lista i. Guardar a origem (e o índice) permite repor a cabeça certa.",
+    },
+    {
+      question: "Por que o k-way merge com heap é O(N log K)?",
+      options: [
+        "Porque o heap tem N elementos",
+        "Porque o heap tem no máximo K elementos (uma cabeça por lista); cada um dos N elementos entra/sai uma vez, a O(log K)",
+        "Porque ordena tudo no fim",
+        "Porque K = N",
+      ],
+      answer: 1,
+      explanation:
+        "O heap nunca passa de K. N inserções/remoções a O(log K) cada → O(N log K). Melhor que O(N·K) (comparar K cabeças) e que O(N log N) quando K ≪ N.",
+    },
+    {
+      question:
+        "O Meeting Rooms II (seção Intervalos) tem uma solução com heap. Qual?",
+      options: [
+        "Heap dos inícios das reuniões",
+        "Min-heap dos horários de FIM das reuniões em curso: para cada nova reunião, se o menor fim já passou, reaproveita a sala; o tamanho do heap é o nº de salas",
+        "Ordenar e contar duplicatas",
+        "Não há solução com heap",
+      ],
+      answer: 1,
+      explanation:
+        "O heap dos fins permite checar em O(log n) se alguma sala vagou. É a mesma resposta da varredura de eventos, com a ferramenta desta seção — o heap revisita problemas antigos.",
+    },
+  ]}
+/>
+
+## Resumo
+
+- **k-way merge**: o próximo menor é o mínimo das K cabeças → **min-heap** de
+  tamanho K, guardando a origem de cada elemento.
+- **O(N log K)** — aproveita que cada fonte já está ordenada (melhor que
+  concatenar+ordenar quando K ≪ N).
+- O heap **revisita** Merge k Lists e Meeting Rooms II com uma solução limpa.
+
+Próxima aula: equilibrar duas metades para achar a **mediana** de um fluxo —
+dois heaps.
