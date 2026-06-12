@@ -4,6 +4,7 @@ import { useRef } from "react";
 import Link from "next/link";
 import { progressStore, useProgress } from "@/lib/progress";
 import { examLabel, useCourseProgress } from "@/lib/useCourseProgress";
+import { CONTENT_EN, pick } from "@/lib/content-en";
 import { t, type Locale } from "@/lib/i18n";
 
 export default function ProfileView({ locale }: { locale: Locale }) {
@@ -140,7 +141,9 @@ export default function ProfileView({ locale }: { locale: Locale }) {
             className="block rounded-xl border border-zinc-200 p-4 transition hover:border-emerald-500 dark:border-zinc-800 dark:hover:border-emerald-500"
           >
             <div className="flex items-center justify-between">
-              <h3 className="font-semibold">{section.title}</h3>
+              <h3 className="font-semibold">
+                {pick(locale, section.title, CONTENT_EN[section.slug]?.title)}
+              </h3>
               <span className="font-mono text-sm text-zinc-400">
                 {stats.percent}%
               </span>

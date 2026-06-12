@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import type { ComponentType } from "react";
 import { getLessons, getSection, LESSONS } from "@/lib/sections";
 import { getExam } from "@/lib/exams";
+import { CONTENT_EN, pick } from "@/lib/content-en";
 import { DEFAULT_LOCALE, isLocale, LOCALES, t } from "@/lib/i18n";
 import LessonCompleteButton from "@/components/LessonCompleteButton";
 
@@ -67,6 +68,9 @@ export default async function LessonPage({
   const hasExam = Boolean(getExam(sectionSlug));
 
   const base = `/${locale}/${sectionSlug}`;
+  const en = CONTENT_EN[sectionSlug];
+  const lessonTitle = (l: { slug: string; title: string }) =>
+    pick(locale, l.title, en?.lessons?.[l.slug]?.title);
 
   return (
     <article>
@@ -97,7 +101,7 @@ export default async function LessonPage({
           >
             <span className="text-xs text-zinc-500">← {strings.prevLesson}</span>
             <span className="mt-1 font-medium group-hover:text-emerald-600 dark:group-hover:text-emerald-400">
-              {prev.title}
+              {lessonTitle(prev)}
             </span>
           </Link>
         ) : (
@@ -111,7 +115,7 @@ export default async function LessonPage({
           >
             <span className="text-xs text-zinc-500">{strings.nextLesson} →</span>
             <span className="mt-1 font-medium group-hover:text-emerald-600 dark:group-hover:text-emerald-400">
-              {next.title}
+              {lessonTitle(next)}
             </span>
           </Link>
         ) : isLast && hasExam ? (
@@ -123,7 +127,7 @@ export default async function LessonPage({
               🏁 {strings.goToExam} →
             </span>
             <span className="mt-1 font-medium group-hover:text-amber-600 dark:group-hover:text-amber-400">
-              {section.title}
+              {pick(locale, section.title, en?.title)}
             </span>
           </Link>
         ) : (

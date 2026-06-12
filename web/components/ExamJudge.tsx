@@ -5,6 +5,8 @@ import dynamic from "next/dynamic";
 import type { ExamProblem } from "@/lib/exams";
 import { judgeJavaScript, judgePython, type JudgeResult } from "@/lib/judge";
 import { useExamProblem } from "@/lib/progress";
+import { examProblemEn, pick } from "@/lib/content-en";
+import { t, type Locale, type UIStrings } from "@/lib/i18n";
 import { LanguageToggle, type CourseLanguage } from "./CodeRunner";
 
 const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
@@ -17,21 +19,19 @@ const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
 });
 
 const DIFFICULTY_STYLE = {
-  facil: {
-    label: "Fácil",
-    style:
-      "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400",
-  },
-  medio: {
-    label: "Médio",
-    style:
-      "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400",
-  },
-  dificil: {
-    label: "Difícil",
-    style: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400",
-  },
+  facil: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400",
+  medio: "bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-400",
+  dificil: "bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400",
 } as const;
+
+function difficultyLabel(
+  difficulty: ExamProblem["difficulty"],
+  strings: UIStrings,
+): string {
+  if (difficulty === "facil") return strings.diffEasy;
+  if (difficulty === "medio") return strings.diffMedium;
+  return strings.diffHard;
+}
 
 /** Render mínimo de markdown inline (negrito e código) do enunciado. */
 function InlineMarkdown({ text }: { text: string }) {
@@ -68,10 +68,14 @@ function InlineMarkdown({ text }: { text: string }) {
 export default function ExamJudge({
   section,
   problem,
+  locale,
 }: {
   section: string;
   problem: ExamProblem;
+  locale: Locale;
 }) {
+  const strings = t(locale);
+  const en = examProblemEn(problem.slug);
   const [language, setLanguage] = useState<CourseLanguage>("python");
   const [code, setCode] = useState<Record<CourseLanguage, string>>({
     python: problem.starter.python,
@@ -81,8 +85,6 @@ export default function ExamJudge({
   const [running, setRunning] = useState(false);
   const [showHint, setShowHint] = useState(false);
   const { isPassed, markPassed } = useExamProblem(section, problem.slug);
-
-  const difficulty = DIFFICULTY_STYLE[problem.difficulty];
 
   async function handleRun() {
     setRunning(true);
@@ -122,19 +124,21 @@ export default function ExamJudge({
       <div className="border-b border-zinc-200 bg-zinc-50 px-5 py-4 dark:border-zinc-800 dark:bg-zinc-900">
         <div className="flex flex-wrap items-center gap-2">
           <span
-            className={`rounded-full px-2 py-0.5 text-xs font-medium ${difficulty.style}`}
+            className={`rounded-full px-2 py-0.5 text-xs font-medium ${DIFFICULTY_STYLE[problem.difficulty]}`}
           >
-            {difficulty.label}
+            {difficultyLabel(problem.difficulty, strings)}
           </span>
-          <h3 className="text-lg font-semibold">{problem.title}</h3>
+          <h3 className="text-lg font-semibold">
+            {pick(locale, problem.title, en?.title)}
+          </h3>
           {isPassed && (
             <span className="ml-auto rounded-full bg-emerald-600 px-3 py-0.5 text-xs font-semibold text-white">
-              Aprovado ✓
+              {strings.examApproved}
             </span>
           )}
         </div>
         <div className="mt-2 text-sm">
-          <InlineMarkdown text={problem.statement} />
+          <InlineMarkdown text={pick(locale, problem.statement, en?.statement)} />
         </div>
         <div className="mt-1 flex items-center gap-4 text-xs">
           <a
@@ -143,18 +147,18 @@ export default function ExamJudge({
             rel="noreferrer"
             className="text-sky-600 hover:underline dark:text-sky-400"
           >
-            Ver no LeetCode ↗
+            {strings.seeOnLeetCode}
           </a>
           <button
             onClick={() => setShowHint((v) => !v)}
             className="text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200"
           >
-            {showHint ? "Esconder dica" : "Preciso de uma dica"}
+            {showHint ? strings.hideHint : strings.needHint}
           </button>
         </div>
         {showHint && (
           <p className="mt-2 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
-            💡 {problem.hint}
+            💡 {pick(locale, problem.hint, en?.hint)}
           </p>
         )}
       </div>
@@ -166,7 +170,7 @@ export default function ExamJudge({
           disabled={running}
           className="rounded-md bg-emerald-600 px-4 py-1.5 text-sm font-medium text-white transition hover:bg-emerald-500 disabled:opacity-50"
         >
-          {running ? "Rodando testes…" : "▶ Rodar testes"}
+          {running ? strings.runningTests : strings.runTests}
         </button>
       </div>
 
@@ -194,7 +198,7 @@ export default function ExamJudge({
               {result.error}
             </pre>
           ) : (
-            <TestResults problem={problem} result={result} />
+            <TestResults problem={problem} result={result} strings={strings} />
           )}
         </div>
       )}
@@ -205,9 +209,11 @@ export default function ExamJudge({
 function TestResults({
   problem,
   result,
+  strings,
 }: {
   problem: ExamProblem;
   result: JudgeResult;
+  strings: UIStrings;
 }) {
   const passed = result.results.filter((r) => r.pass).length;
   const total = problem.tests.length;
@@ -228,9 +234,8 @@ function TestResults({
             : "bg-amber-100 text-amber-900 dark:bg-amber-950/60 dark:text-amber-200"
         }`}
       >
-        {allPassed
-          ? `Aprovado! ${passed}/${total} casos passaram. 🎉`
-          : `${passed}/${total} casos passaram.`}
+        {allPassed ? `${strings.examApprovedFull} ` : ""}
+        {`${passed}/${total} ${strings.casesPassedSuffix}.`}
       </p>
       <ul className="space-y-1.5 font-mono text-sm">
         {result.results.map((caseResult, index) => {
@@ -240,18 +245,18 @@ function TestResults({
             hiddenCounter++;
             return (
               <li key={index} className="text-zinc-500">
-                {icon} caso oculto {hiddenCounter}
+                {icon} {strings.hiddenCase} {hiddenCounter}
               </li>
             );
           }
           return (
             <li key={index} className="text-zinc-700 dark:text-zinc-300">
-              {icon} entrada: {previewArgs(test.args)} · esperado:{" "}
-              {JSON.stringify(test.expected)}
+              {icon} {strings.inputWord}: {previewArgs(test.args)} ·{" "}
+              {strings.expectedWord}: {JSON.stringify(test.expected)}
               {!caseResult.pass && (
                 <span className="text-red-500">
                   {" "}
-                  · {caseResult.error ?? `obtido: ${caseResult.got}`}
+                  · {caseResult.error ?? `${strings.gotWord}: ${caseResult.got}`}
                 </span>
               )}
             </li>

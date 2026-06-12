@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getLessons, getSection, SECTIONS } from "@/lib/sections";
 import { getExam } from "@/lib/exams";
 import { sectionExamSlugs, sectionLessonSlugs } from "@/lib/course";
+import { CONTENT_EN, pick } from "@/lib/content-en";
 import { isLocale, LOCALES, t } from "@/lib/i18n";
 import LessonStatus from "@/components/LessonStatus";
 import SectionProgress from "@/components/SectionProgress";
@@ -27,6 +28,7 @@ export default async function SectionPage({
   const strings = t(locale);
   const lessons = getLessons(sectionSlug);
   const exam = getExam(sectionSlug);
+  const en = CONTENT_EN[sectionSlug];
 
   return (
     <div>
@@ -37,10 +39,10 @@ export default async function SectionPage({
         {strings.backToSections}
       </Link>
       <h1 className="mt-3 text-3xl font-bold tracking-tight">
-        {section.title}
+        {pick(locale, section.title, en?.title)}
       </h1>
       <p className="mt-2 max-w-2xl text-zinc-600 dark:text-zinc-400">
-        {section.description}
+        {pick(locale, section.description, en?.description)}
       </p>
 
       {lessons.length > 0 && (
@@ -74,9 +76,15 @@ export default async function SectionPage({
                   <span className="font-mono text-xs text-zinc-400">
                     {String(index + 1).padStart(2, "0")}
                   </span>
-                  <h3 className="mt-1 font-semibold">{lesson.title}</h3>
+                  <h3 className="mt-1 font-semibold">
+                    {pick(locale, lesson.title, en?.lessons?.[lesson.slug]?.title)}
+                  </h3>
                   <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-                    {lesson.description}
+                    {pick(
+                      locale,
+                      lesson.description,
+                      en?.lessons?.[lesson.slug]?.description,
+                    )}
                   </p>
                 </span>
               </Link>
@@ -91,14 +99,11 @@ export default async function SectionPage({
           className="mt-6 block rounded-xl border-2 border-dashed border-amber-400 p-4 transition hover:border-amber-500 hover:shadow-md dark:border-amber-700"
         >
           <span className="font-mono text-xs text-amber-600 dark:text-amber-400">
-            🏁 PROVA FINAL
+            {strings.examBadge}
           </span>
-          <h3 className="mt-1 font-semibold">
-            1 fácil + 1 médio + 1 difícil — problemas inéditos
-          </h3>
+          <h3 className="mt-1 font-semibold">{strings.examCardTitle}</h3>
           <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-            Com casos de teste ocultos, como no LeetCode de verdade. É aqui que
-            você confirma que sai da seção resolvendo qualquer problema do tema.
+            {strings.examCardDesc}
           </p>
         </Link>
       )}

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getSection } from "@/lib/sections";
 import { getExam, EXAMS } from "@/lib/exams";
+import { CONTENT_EN, pick } from "@/lib/content-en";
 import { isLocale, LOCALES, t } from "@/lib/i18n";
 import ExamJudge from "@/components/ExamJudge";
 
@@ -24,6 +25,7 @@ export default async function ExamPage({
   const exam = getExam(sectionSlug);
   if (!section || !exam) notFound();
   const strings = t(locale);
+  const en = CONTENT_EN[sectionSlug];
 
   return (
     <div>
@@ -34,17 +36,19 @@ export default async function ExamPage({
         {strings.backToSection}
       </Link>
       <h1 className="mt-3 text-3xl font-bold tracking-tight">
-        Prova final — {section.title}
+        {strings.examPageTitle} — {pick(locale, section.title, en?.title)}
       </h1>
       <p className="mt-2 max-w-2xl text-zinc-600 dark:text-zinc-400">
-        Três problemas <strong>inéditos</strong> (não vistos nas aulas) para
-        testar se você sai desta seção resolvendo qualquer problema do tema:
-        um fácil, um médio e um difícil. Alguns casos de teste são ocultos —
-        como no LeetCode de verdade. Resolva em Python ou JavaScript.
+        {strings.examPageIntro}
       </p>
 
       {exam.map((problem) => (
-        <ExamJudge key={problem.slug} section={sectionSlug} problem={problem} />
+        <ExamJudge
+          key={problem.slug}
+          section={sectionSlug}
+          problem={problem}
+          locale={locale}
+        />
       ))}
     </div>
   );

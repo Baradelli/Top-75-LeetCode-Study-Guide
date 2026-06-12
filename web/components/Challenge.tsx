@@ -2,9 +2,19 @@
 
 import { Fragment, useState } from "react";
 import dynamic from "next/dynamic";
+import { usePathname } from "next/navigation";
 import { getChallenge } from "@/lib/challenges";
 import { judgeJavaScript, judgePython, type JudgeResult } from "@/lib/judge";
+import { challengeEn, pick } from "@/lib/content-en";
+import { isLocale, t, type Locale } from "@/lib/i18n";
 import { LanguageToggle, type CourseLanguage } from "./CodeRunner";
+
+/** Locale a partir do primeiro segmento da URL (/pt/... ou /en/...). */
+function useLocaleFromPath(): Locale {
+  const pathname = usePathname() ?? "";
+  const seg = pathname.split("/")[1];
+  return isLocale(seg) ? seg : "pt";
+}
 
 const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
   ssr: false,
@@ -50,6 +60,9 @@ function InlineMarkdown({ text }: { text: string }) {
  */
 export default function Challenge({ id }: { id: string }) {
   const challenge = getChallenge(id);
+  const locale = useLocaleFromPath();
+  const strings = t(locale);
+  const en = challengeEn(id);
   const [language, setLanguage] = useState<CourseLanguage>("python");
   const [code, setCode] = useState<Record<CourseLanguage, string>>(() => ({
     python: challenge?.starter.python ?? "",
@@ -107,15 +120,14 @@ export default function Challenge({ id }: { id: string }) {
         <div className="flex items-center gap-2">
           <span className="text-lg">🎯</span>
           <h3 className="font-bold text-sky-900 dark:text-sky-200">
-            Tente primeiro: {challenge.title}
+            {strings.tryFirst}: {pick(locale, challenge.title, en?.title)}
           </h3>
         </div>
         <p className="mt-1 text-sm text-sky-800/80 dark:text-sky-300/80">
-          Antes de ler a teoria, tente resolver. Pode começar pela força bruta,
-          pode errar — a ideia é sentir o problema. A teoria vem logo abaixo.
+          {strings.tryFirstIntro}
         </p>
         <div className="mt-2 text-sm">
-          <InlineMarkdown text={challenge.statement} />
+          <InlineMarkdown text={pick(locale, challenge.statement, en?.statement)} />
         </div>
       </div>
 
@@ -126,7 +138,7 @@ export default function Challenge({ id }: { id: string }) {
           disabled={running}
           className="rounded-md bg-emerald-600 px-4 py-1.5 text-sm font-medium text-white transition hover:bg-emerald-500 disabled:opacity-50"
         >
-          {running ? "Rodando…" : "▶ Rodar testes"}
+          {running ? strings.running : strings.runTests}
         </button>
       </div>
 
@@ -162,9 +174,8 @@ export default function Challenge({ id }: { id: string }) {
                     : "text-amber-600 dark:text-amber-400"
                 }`}
               >
-                {allPassed
-                  ? `Mandou bem! ${passed}/${total} casos passaram. 🎉 Agora veja a teoria por trás.`
-                  : `${passed}/${total} casos passaram. Continue tentando — ou veja a dica/solução.`}
+                {`${passed}/${total} ${strings.casesPassedSuffix}. `}
+                {allPassed ? strings.thenSeeTheory : strings.keepTrying}
               </p>
               <ul className="space-y-1 font-mono text-sm">
                 {result.results.map((r, i) => (
@@ -177,7 +188,7 @@ export default function Challenge({ id }: { id: string }) {
                     {!r.pass && (
                       <span className="text-red-500">
                         {" "}
-                        · {r.error ?? `obtido: ${r.got}`}
+                        · {r.error ?? `${strings.gotWord}: ${r.got}`}
                       </span>
                     )}
                   </li>
@@ -193,26 +204,26 @@ export default function Challenge({ id }: { id: string }) {
           onClick={() => setShowHint((v) => !v)}
           className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
         >
-          {showHint ? "Esconder dica" : "💡 Dica"}
+          {showHint ? strings.hideHint : strings.hintLabel}
         </button>
         <button
           onClick={() => setShowSolution((v) => !v)}
           className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
         >
-          {showSolution ? "Esconder solução" : "👀 Ver solução"}
+          {showSolution ? strings.hideSolution : strings.seeSolution}
         </button>
       </div>
 
       {showHint && (
         <div className="border-t border-zinc-200 bg-amber-50 px-5 py-3 text-sm text-amber-900 dark:border-zinc-800 dark:bg-amber-950/30 dark:text-amber-200">
-          💡 {challenge.hint}
+          💡 {pick(locale, challenge.hint, en?.hint)}
         </div>
       )}
 
       {showSolution && (
         <div className="border-t border-zinc-200 px-5 py-3 dark:border-zinc-800">
           <p className="mb-2 text-sm text-zinc-600 dark:text-zinc-400">
-            {challenge.solutionIdea}
+            {pick(locale, challenge.solutionIdea, en?.solutionIdea)}
           </p>
           <pre className="overflow-x-auto rounded-lg bg-zinc-950 p-4 font-mono text-sm text-zinc-200">
             {language === "python"

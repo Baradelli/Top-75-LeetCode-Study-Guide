@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getLessons, SECTIONS } from "@/lib/sections";
 import { sectionExamSlugs, sectionLessonSlugs } from "@/lib/course";
+import { CONTENT_EN, pick } from "@/lib/content-en";
 import { isLocale, t } from "@/lib/i18n";
 import SectionProgress from "@/components/SectionProgress";
 import CourseProgressBanner from "@/components/CourseProgressBanner";
@@ -32,6 +33,8 @@ export default async function HomePage({
       <ol className="grid gap-4 sm:grid-cols-2">
         {SECTIONS.map((section, index) => {
           const available = section.status === "available";
+          const en = CONTENT_EN[section.slug];
+          const patterns = pick(locale, section.patterns, en?.patterns);
           const card = (
             <div
               className={`h-full rounded-xl border p-5 transition ${
@@ -54,12 +57,14 @@ export default async function HomePage({
                   {available ? strings.available : strings.soon}
                 </span>
               </div>
-              <h3 className="mt-2 text-lg font-semibold">{section.title}</h3>
+              <h3 className="mt-2 text-lg font-semibold">
+                {pick(locale, section.title, en?.title)}
+              </h3>
               <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-                {section.description}
+                {pick(locale, section.description, en?.description)}
               </p>
               <div className="mt-3 flex flex-wrap gap-1">
-                {section.patterns.map((pattern) => (
+                {patterns.map((pattern) => (
                   <span
                     key={pattern}
                     className="rounded-md bg-zinc-100 px-2 py-0.5 text-xs text-zinc-600 dark:bg-zinc-900 dark:text-zinc-400"
