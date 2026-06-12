@@ -1,0 +1,136 @@
+# Reconhecendo problemas de DP
+
+> Chegamos à última e mais temida seção. Mas aqui vai um segredo: você **já fez
+> DP** neste curso. O Kadane (Array) e a recursão em árvores eram programação
+> dinâmica disfarçada. DP é só **recursão que não repete trabalho**.
+
+> Como sempre, cada aula de padrão abre com um **🎯 Tente primeiro**.
+
+## O que é programação dinâmica
+
+DP resolve um problema **quebrando-o em subproblemas menores** e **reusando**
+as respostas desses subproblemas em vez de recalculá-las. Duas condições
+precisam estar presentes:
+
+1. **Subproblemas que se repetem** (overlapping subproblems): o mesmo
+   subproblema aparece muitas vezes.
+2. **Subestrutura ótima**: a resposta do problema se constrói a partir das
+   respostas dos subproblemas.
+
+O exemplo canônico é Fibonacci. A recursão ingênua recalcula os mesmos valores
+um número **exponencial** de vezes:
+
+```text
+                 fib(5)
+            /              \
+        fib(4)            fib(3)
+       /     \           /     \
+   fib(3)   fib(2)   fib(2)   fib(1)     ← fib(3) e fib(2) recalculados!
+```
+
+Rode e veja o desperdício — a versão ingênua faz **milhares** de chamadas; a
+com **memoização** (lembrar o que já calculou) faz algumas dezenas:
+
+<CodeRunner
+  python={`chamadas = [0]
+def fib_lento(n):
+    chamadas[0] += 1
+    if n <= 1:
+        return n
+    return fib_lento(n - 1) + fib_lento(n - 2)
+
+print("fib(20) =", fib_lento(20), "em", chamadas[0], "chamadas")
+
+memo = {}
+chamadas2 = [0]
+def fib_rapido(n):
+    chamadas2[0] += 1
+    if n <= 1:
+        return n
+    if n in memo:
+        return memo[n]                       # já calculado: reusa
+    memo[n] = fib_rapido(n - 1) + fib_rapido(n - 2)
+    return memo[n]
+
+print("fib(20) =", fib_rapido(20), "em", chamadas2[0], "chamadas")`}
+  javascript={`var chamadas = 0;
+function fibLento(n) {
+  chamadas++;
+  if (n <= 1) return n;
+  return fibLento(n - 1) + fibLento(n - 2);
+}
+console.log("fib(20) =", fibLento(20), "em", chamadas, "chamadas");
+
+var memo = {};
+var chamadas2 = 0;
+function fibRapido(n) {
+  chamadas2++;
+  if (n <= 1) return n;
+  if (memo[n] !== undefined) return memo[n];   // já calculado: reusa
+  memo[n] = fibRapido(n - 1) + fibRapido(n - 2);
+  return memo[n];
+}
+console.log("fib(20) =", fibRapido(20), "em", chamadas2, "chamadas");`}
+/>
+
+## Memoização vs tabulação: os dois sabores de DP
+
+Há duas formas de fazer DP, e elas dão a mesma resposta:
+
+| | **Memoização** (top-down) | **Tabulação** (bottom-up) |
+| --- | --- | --- |
+| Como | recursão + um cache dos resultados | um laço preenchendo uma tabela `dp[]` |
+| Direção | do problema grande para os pequenos | dos pequenos para o grande |
+| Vantagem | mais perto da recursão natural | sem pilha de recursão; fácil otimizar espaço |
+
+A maioria das aulas usará **tabulação** (a tabela `dp`), porque ela torna a
+**recorrência** explícita e visível — e dá para ver a tabela preenchendo.
+
+## O método para resolver qualquer DP
+
+Diante de um problema de DP, responda três perguntas:
+
+1. **O que é o estado?** O que `dp[i]` (ou `dp[i][j]`) significa? (ex.: "o
+   máximo usando os primeiros i elementos".)
+2. **Qual a recorrência?** Como `dp[i]` se constrói a partir de estados
+   menores? (ex.: `dp[i] = max(dp[i-1], ...)`.)
+3. **Quais os casos-base?** Os valores iniciais que não dependem de ninguém.
+
+Definidos esses três, o código quase se escreve sozinho.
+
+## Big-O em DP: estados × custo por estado
+
+Aqui está o aprofundamento de Big-O da seção, e o atalho mais útil para
+estimar a complexidade de uma DP:
+
+> **Tempo ≈ (número de estados) × (custo para calcular cada estado).**
+
+- DP 1D com recorrência O(1): `n` estados × O(1) = **O(n)**.
+- DP 2D (duas strings de tamanhos m e n): `m·n` estados × O(1) = **O(m·n)**.
+- Coin change: `amount` estados × O(moedas) por estado = **O(amount ·
+  moedas)**.
+
+E o **espaço** é o tamanho da tabela — frequentemente dá para reduzir (se
+`dp[i]` só depende de `dp[i-1]`, guardam-se duas variáveis em vez do array
+inteiro, caindo para O(1)). É por isso que memoização troca tempo exponencial
+por polinomial: ela limita o trabalho ao **número de estados distintos**.
+
+## Os problemas da seção
+
+- Climbing Stairs, House Robber → *DP 1D, incluir/excluir*
+- Coin Change, Combination Sum IV → *knapsack*
+- Unique Paths → *DP em grid*
+- Longest Common Subsequence, LIS, Word Break, Decode Ways → *DP em
+  sequências/strings*
+
+## Resumo
+
+- DP = recursão **sem repetir trabalho**; precisa de subproblemas repetidos +
+  subestrutura ótima.
+- **Memoização** (recursão + cache) e **tabulação** (laço preenchendo `dp`)
+  dão o mesmo resultado.
+- Método: defina **estado**, **recorrência** e **casos-base**.
+- **Tempo ≈ estados × custo por estado**; espaço é a tabela (muitas vezes
+  redutível).
+
+Próxima aula: a recorrência mais simples de todas — **DP 1D**.

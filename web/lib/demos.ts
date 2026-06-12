@@ -1425,6 +1425,110 @@ console.log(ordem);`,
       scalarVars: ["indeg", "ordem"],
     },
   },
+
+  // ------------------------------------------------------------------- DP ---
+  "climb-stairs": {
+    python: `n = 6
+dp = [0] * (n + 1)
+dp[0] = 1        # 1 jeito de ficar no chão
+dp[1] = 1        # 1 jeito de chegar ao degrau 1
+i = 2
+while i <= n:
+    dp[i] = dp[i - 1] + dp[i - 2]   # veio de 1 ou de 2 degraus atrás
+    i = i + 1
+print(dp[n])`,
+    javascript: `var n = 6;
+var dp = [];
+for (var k = 0; k <= n; k++) dp.push(0);
+dp[0] = 1;       // 1 jeito de ficar no chão
+dp[1] = 1;       // 1 jeito de chegar ao degrau 1
+var i = 2;
+while (i <= n) {
+  dp[i] = dp[i - 1] + dp[i - 2];   // veio de 1 ou de 2 degraus atrás
+  i = i + 1;
+}
+console.log(dp[n]);`,
+    array: {
+      arrayVar: "dp",
+      pointerVars: ["i"],
+      scalarVars: ["n"],
+    },
+  },
+
+  "coin-change": {
+    python: `moedas = [1, 2, 5]
+amount = 6
+INF = amount + 1            # "impossível" (nunca usa mais que amount moedas)
+dp = [INF] * (amount + 1)
+dp[0] = 0                   # 0 moedas para formar 0
+a = 1
+while a <= amount:
+    for m in moedas:
+        if m <= a and dp[a - m] + 1 < dp[a]:
+            dp[a] = dp[a - m] + 1     # usar a moeda m
+    a = a + 1
+resultado = dp[amount] if dp[amount] != INF else -1
+print(resultado)`,
+    javascript: `var moedas = [1, 2, 5];
+var amount = 6;
+var INF = amount + 1;       // "impossível"
+var dp = [];
+for (var k = 0; k <= amount; k++) dp.push(INF);
+dp[0] = 0;                  // 0 moedas para formar 0
+var a = 1;
+while (a <= amount) {
+  for (var j = 0; j < moedas.length; j++) {
+    var m = moedas[j];
+    if (m <= a && dp[a - m] + 1 < dp[a]) {
+      dp[a] = dp[a - m] + 1;   // usar a moeda m
+    }
+  }
+  a = a + 1;
+}
+var resultado = dp[amount] !== INF ? dp[amount] : -1;
+console.log(resultado);`,
+    array: {
+      arrayVar: "dp",
+      pointerVars: ["a"],
+      scalarVars: ["amount"],
+    },
+  },
+
+  "unique-paths": {
+    python: `m = 3
+n = 4
+# dp[r][c] = nº de caminhos até a célula (r,c)
+dp = [[1] * n for _ in range(m)]   # 1ª linha e 1ª coluna: só 1 caminho
+r = 1
+c = 1
+while r < m:
+    c = 1
+    while c < n:
+        dp[r][c] = dp[r - 1][c] + dp[r][c - 1]   # vem de cima ou da esquerda
+        c = c + 1
+    r = r + 1
+print(dp[m - 1][n - 1])`,
+    javascript: `var m = 3;
+var n = 4;
+// dp[r][c] = nº de caminhos até a célula (r,c)
+var dp = [];
+for (var i = 0; i < m; i++) { var row = []; for (var j = 0; j < n; j++) row.push(1); dp.push(row); }
+var r = 1;
+var c = 1;
+while (r < m) {
+  c = 1;
+  while (c < n) {
+    dp[r][c] = dp[r - 1][c] + dp[r][c - 1];   // vem de cima ou da esquerda
+    c = c + 1;
+  }
+  r = r + 1;
+}
+console.log(dp[m - 1][n - 1]);`,
+    grid: {
+      gridVar: "dp",
+      cursor: { row: "r", col: "c" },
+    },
+  },
 };
 
 export type DemoId = keyof typeof DEMOS;

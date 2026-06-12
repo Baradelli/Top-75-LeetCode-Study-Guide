@@ -1,0 +1,128 @@
+# Padrão 1: DP 1D (a recorrência)
+
+> A forma mais simples de DP: uma tabela **unidimensional** `dp[]`, onde cada
+> entrada se constrói a partir de algumas anteriores. Dominar essa recorrência
+> é a base de tudo que vem depois.
+
+<Challenge id="climb-stairs" />
+
+> Tentou? Se você tentou recursão pura (`formas(n-1) + formas(n-2)`), funciona
+> mas recalcula os mesmos valores — exponencial. A teoria abaixo mostra como
+> preencher uma tabela de baixo para cima, em O(n).
+
+## A teoria: construir a partir das respostas anteriores
+
+No Climbing Stairs, para chegar ao degrau `i` você deu um último passo de 1
+(vindo de `i-1`) ou de 2 (vindo de `i-2`). Logo o número de formas de chegar a
+`i` é a **soma** das formas de chegar a esses dois:
+
+```text
+dp[i] = dp[i-1] + dp[i-2]
+casos-base: dp[0] = 1, dp[1] = 1
+```
+
+É a recorrência de Fibonacci! Em vez da recursão exponencial, preencha a tabela
+**dos casos-base para cima** — cada `dp[i]` usa valores já calculados. Veja a
+tabela `dp` preenchendo, com o cursor `i` lendo de `i-1` e `i-2`:
+
+<TraceDemo id="climb-stairs" />
+
+### Por que é O(n) — e como cair para O(1) de espaço
+
+São `n` estados (`dp[0..n]`), cada um calculado em O(1) (uma soma) →
+**O(n) de tempo**. A tabela ocupa O(n) de espaço, **mas** repare: `dp[i]` só
+depende dos **dois últimos** valores. Então dá para jogar fora o array e
+guardar só duas variáveis — **O(1) de espaço**:
+
+```text
+anterior, atual = 1, 1
+repita n-1 vezes:
+    anterior, atual = atual, anterior + atual
+```
+
+Essa redução ("só preciso dos últimos k valores") é um truque recorrente em
+DP 1D. Sempre olhe **de quantos estados anteriores** a recorrência depende.
+
+## A forma de toda DP 1D
+
+O Climbing Stairs é o molde. Muitos problemas 1D seguem a mesma estrutura,
+mudando só a recorrência:
+
+| Problema | dp[i] significa | Recorrência |
+| --- | --- | --- |
+| Climbing Stairs | formas de chegar ao degrau i | `dp[i-1] + dp[i-2]` |
+| House Robber | máximo roubando até a casa i | `max(dp[i-1], nums[i] + dp[i-2])` |
+| Min Cost Climbing | custo mínimo até o degrau i | `cost[i] + min(dp[i-1], dp[i-2])` |
+| Decode Ways | formas de decodificar até i | soma conforme 1 ou 2 dígitos válidos |
+
+Todas: um estado por posição, recorrência olhando para trás, casos-base no
+início. O segredo é descobrir **o que `dp[i]` significa** e **de quais
+anteriores ele depende**.
+
+<Quiz
+  title="Quiz de fixação"
+  questions={[
+    {
+      question:
+        "Por que a recursão ingênua do Climbing Stairs é lenta, e a DP resolve isso?",
+      options: [
+        "A recursão está errada",
+        "A recursão recalcula os mesmos subproblemas (formas(i)) muitas vezes — exponencial; a DP guarda cada resposta uma vez e a reusa — O(n)",
+        "A DP usa mais memória",
+        "Não há diferença",
+      ],
+      answer: 1,
+      explanation:
+        "formas(i) reaparece em vários ramos da recursão. Memoizar ou tabular calcula cada estado uma única vez, trocando tempo exponencial por O(n).",
+    },
+    {
+      question: "Qual a recorrência do Climbing Stairs e por quê?",
+      options: [
+        "dp[i] = dp[i-1] (só um caminho)",
+        "dp[i] = dp[i-1] + dp[i-2], porque ao degrau i se chega dando um último passo de 1 (de i-1) ou de 2 (de i-2)",
+        "dp[i] = i",
+        "dp[i] = 2 * dp[i-1]",
+      ],
+      answer: 1,
+      explanation:
+        "O último passo veio de i-1 ou i-2; somam-se as formas de chegar a cada um. É a recorrência de Fibonacci.",
+    },
+    {
+      question:
+        "Como o Climbing Stairs pode usar apenas O(1) de espaço?",
+      options: [
+        "Não pode, precisa do array",
+        "Porque dp[i] só depende dos DOIS últimos valores — basta guardar duas variáveis em vez do array inteiro",
+        "Usando recursão",
+        "Comprimindo o array",
+      ],
+      answer: 1,
+      explanation:
+        "Quando a recorrência olha só k posições atrás, você mantém k variáveis. Aqui k=2, então duas variáveis bastam: O(1) de espaço.",
+    },
+    {
+      question:
+        "Qual é o método para resolver uma DP 1D nova?",
+      options: [
+        "Tentar valores aleatórios",
+        "Definir o que dp[i] significa, achar a recorrência (de quais anteriores depende) e os casos-base",
+        "Sempre usar recursão pura",
+        "Ordenar a entrada",
+      ],
+      answer: 1,
+      explanation:
+        "Estado + recorrência + casos-base. Com esses três definidos, o laço que preenche a tabela sai naturalmente.",
+    },
+  ]}
+/>
+
+## Resumo
+
+- DP 1D: tabela `dp[]` onde cada entrada se constrói das anteriores.
+- Climbing Stairs: `dp[i] = dp[i-1] + dp[i-2]` (Fibonacci), casos-base
+  `dp[0]=dp[1]=1`.
+- **O(n)** de tempo; **O(1)** de espaço quando só os últimos k valores
+  importam.
+- Molde geral: defina o significado de `dp[i]`, a recorrência e os casos-base.
+
+Próxima aula: quando cada item traz uma **decisão** — incluir ou excluir.

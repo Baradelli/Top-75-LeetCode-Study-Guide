@@ -880,6 +880,87 @@ Exemplo: \`"hit"\` → \`"cog"\`, lista \`["hot","dot","dog","lot","log","cog"]\
       hint: "Caminho MAIS CURTO ⇒ BFS — mas o grafo é IMPLÍCITO: dois palavras são vizinhas se diferem em exatamente uma letra. A partir de beginWord, gere todas as variações de uma letra; as que estão na wordList e não foram vistas entram na fila (nível = comprimento). O primeiro a alcançar endWord dá a resposta.",
     },
   ],
+
+  "dynamic-programming": [
+    {
+      slug: "min-cost-climbing-stairs",
+      title: "Min Cost Climbing Stairs",
+      difficulty: "facil",
+      leetcodeUrl: "https://leetcode.com/problems/min-cost-climbing-stairs/",
+      statement: `Cada degrau \`i\` tem um custo \`cost[i]\`. Você pode subir 1 ou 2 degraus por vez, e começar do degrau 0 ou do 1. Retorne o **custo mínimo** para chegar ao topo (além do último degrau).
+
+Exemplo: \`[10,15,20]\` → \`15\` (começa no degrau 1, paga 15, e sobe 2 ao topo).`,
+      functionName: { python: "min_cost_climbing_stairs", javascript: "minCostClimbingStairs" },
+      starter: {
+        python: `def min_cost_climbing_stairs(cost):
+    # custo mínimo para chegar ao topo
+    pass`,
+        javascript: `function minCostClimbingStairs(cost) {
+  // custo mínimo para chegar ao topo
+}`,
+      },
+      tests: [
+        { args: [[10, 15, 20]], expected: 15 },
+        { args: [[1, 100, 1, 1, 1, 100, 1, 1, 100, 1]], expected: 6 },
+        { args: [[0, 0]], expected: 0 },
+        { args: [[1, 2]], expected: 1, hidden: true },
+        { args: [[10, 15]], expected: 10, hidden: true },
+      ],
+      hint: "Variante do Climbing Stairs com custo. dp[i] = custo mínimo para CHEGAR ao degrau i = cost[i] + min(dp[i-1], dp[i-2]). O topo é uma posição além do último degrau: a resposta é min(dp[n-1], dp[n-2]). Guardar dois valores basta (O(1) de espaço).",
+    },
+    {
+      slug: "partition-equal-subset-sum",
+      title: "Partition Equal Subset Sum",
+      difficulty: "medio",
+      leetcodeUrl: "https://leetcode.com/problems/partition-equal-subset-sum/",
+      statement: `Dado um array \`nums\` de inteiros positivos, retorne \`true\` se ele pode ser **dividido em dois subconjuntos com a mesma soma**.
+
+Exemplo: \`[1,5,11,5]\` → \`true\` (\`[1,5,5]\` e \`[11]\`, ambos somam 11).`,
+      functionName: { python: "can_partition", javascript: "canPartition" },
+      starter: {
+        python: `def can_partition(nums):
+    # dá para dividir em dois subconjuntos de soma igual?
+    pass`,
+        javascript: `function canPartition(nums) {
+  // dá para dividir em dois subconjuntos de soma igual?
+}`,
+      },
+      tests: [
+        { args: [[1, 5, 11, 5]], expected: true },
+        { args: [[1, 2, 3, 5]], expected: false },
+        { args: [[2, 2]], expected: true },
+        { args: [[1, 2, 5]], expected: false, hidden: true },
+        { args: [[3, 3, 3, 4, 5]], expected: true, hidden: true },
+      ],
+      hint: "Se a soma total for ímpar, é impossível. Senão, o problema vira: 'existe um subconjunto que soma total/2?' — um knapsack 0/1 booleano. dp[v] = dá para formar a soma v? Para cada número, percorra as somas de cima para baixo (cada número usado uma vez) marcando dp[v] = dp[v] ou dp[v - num].",
+    },
+    {
+      slug: "edit-distance",
+      title: "Edit Distance",
+      difficulty: "dificil",
+      leetcodeUrl: "https://leetcode.com/problems/edit-distance/",
+      statement: `Dadas duas palavras \`word1\` e \`word2\`, retorne o **número mínimo de operações** (inserir, remover ou substituir um caractere) para transformar uma na outra.
+
+Exemplo: \`"horse"\` → \`"ros"\` → \`3\` (remove 'h', substitui 'r'→'r'… → na prática: rose, ros... 3 operações).`,
+      functionName: { python: "min_distance", javascript: "minDistance" },
+      starter: {
+        python: `def min_distance(word1, word2):
+    # mínimo de inserções/remoções/substituições
+    pass`,
+        javascript: `function minDistance(word1, word2) {
+  // mínimo de inserções/remoções/substituições
+}`,
+      },
+      tests: [
+        { args: ["horse", "ros"], expected: 3 },
+        { args: ["intention", "execution"], expected: 5 },
+        { args: ["", "abc"], expected: 3 },
+        { args: ["abc", "abc"], expected: 0, hidden: true },
+        { args: ["abc", "yabd"], expected: 2, hidden: true },
+      ],
+      hint: "DP 2D: dp[i][j] = operações para transformar os primeiros i chars de word1 nos primeiros j de word2. Se os caracteres casam, dp[i][j] = dp[i-1][j-1]. Senão, 1 + min de: substituir (dp[i-1][j-1]), remover (dp[i-1][j]), inserir (dp[i][j-1]). As bordas: transformar em/de string vazia custa o comprimento.",
+    },
+  ],
 };
 
 export function getExam(section: string): ExamProblem[] | undefined {

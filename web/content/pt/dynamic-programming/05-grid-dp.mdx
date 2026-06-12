@@ -1,0 +1,121 @@
+# Padrão 4: DP em grid
+
+> Quando a DP tem **duas dimensões**, a tabela vira uma **grade**: `dp[r][c]`.
+> Cada célula se constrói a partir de células vizinhas já calculadas — e ver a
+> tabela se preenchendo deixa a recorrência óbvia.
+
+<Challenge id="unique-paths" />
+
+> Tentou? Contar todos os caminhos por força bruta (recursão sem cache) é
+> exponencial. A teoria abaixo preenche uma tabela 2D em O(m·n).
+
+## A teoria: cada célula vem das vizinhas
+
+No *Unique Paths*, o robô só se move para **baixo** ou para a **direita**.
+Então, para chegar à célula `(r, c)`, ele veio **de cima** `(r-1, c)` ou **da
+esquerda** `(r, c-1)`. O número de caminhos até `(r, c)` é a soma dos caminhos
+até essas duas:
+
+```text
+dp[r][c] = dp[r-1][c] + dp[r][c-1]
+casos-base: 1ª linha e 1ª coluna = 1 (só há um caminho em linha reta)
+```
+
+Preencha a tabela linha por linha; cada célula usa a de cima e a da esquerda,
+que já foram calculadas. Veja o grid `dp` se preenchendo, com o cursor na
+célula atual:
+
+<TraceDemo id="unique-paths" />
+
+A resposta é `dp[m-1][n-1]` — o canto inferior direito.
+
+### Por que é O(m·n)?
+
+São `m × n` células (estados), cada uma calculada em O(1) (uma soma) →
+**O(m·n) de tempo**, O(m·n) de espaço. De novo o "estados × custo": aqui o
+número de estados é bidimensional. E, como cada linha só depende da anterior,
+dá para reduzir o espaço a **O(n)** (guardar só uma linha) — a mesma ideia de
+"só preciso dos últimos estados" da DP 1D.
+
+## A forma de toda DP em grid
+
+Muitos problemas 2D seguem este molde, mudando só a recorrência e a operação:
+
+| Problema | dp[r][c] significa | Recorrência |
+| --- | --- | --- |
+| Unique Paths | caminhos até (r,c) | `dp[r-1][c] + dp[r][c-1]` |
+| Minimum Path Sum | menor soma até (r,c) | `grid[r][c] + min(cima, esquerda)` |
+| Maximal Square | lado do maior quadrado em (r,c) | `1 + min(cima, esquerda, diagonal)` se '1' |
+
+O método é o mesmo das outras DPs: **o que `dp[r][c]` significa**, **de quais
+células vizinhas depende** e **os casos-base** (geralmente a primeira linha
+e/ou coluna). A diferença é só a dimensão extra.
+
+> Conexão com a seção Matriz: lá você preencheu grids com travessias (espiral,
+> DFS); aqui o grid é uma **tabela de respostas** que se constrói por
+> recorrência. Mesma estrutura 2D, uso diferente.
+
+<Quiz
+  title="Quiz de fixação"
+  questions={[
+    {
+      question: "No Unique Paths, qual a recorrência e por quê?",
+      options: [
+        "dp[r][c] = dp[r-1][c-1] (só diagonal)",
+        "dp[r][c] = dp[r-1][c] + dp[r][c-1], porque à célula (r,c) se chega vindo de cima ou da esquerda (os únicos movimentos permitidos)",
+        "dp[r][c] = r * c",
+        "dp[r][c] = 1 sempre",
+      ],
+      answer: 1,
+      explanation:
+        "Como o robô só vai para baixo ou direita, os caminhos até (r,c) são a soma dos caminhos até a célula de cima e a da esquerda.",
+    },
+    {
+      question: "Quais são os casos-base do Unique Paths?",
+      options: [
+        "Tudo zero",
+        "A primeira linha e a primeira coluna valem 1 — há um único caminho em linha reta até cada uma dessas células",
+        "Só dp[0][0] = 1",
+        "A diagonal vale 1",
+      ],
+      answer: 1,
+      explanation:
+        "Para chegar a qualquer célula da borda superior ou esquerda só há um caminho (sempre reto), então essas células iniciam com 1.",
+    },
+    {
+      question: "Por que o Unique Paths é O(m·n) de tempo?",
+      options: [
+        "Porque é recursivo",
+        "Porque há m·n células (estados) e cada uma é calculada em O(1) — estados × custo por estado",
+        "Porque ordena o grid",
+        "Porque é O(n²)",
+      ],
+      answer: 1,
+      explanation:
+        "Cada célula da tabela é preenchida uma vez com uma soma O(1). Total = número de células = m·n. (O espaço pode cair para O(n) guardando só uma linha.)",
+    },
+    {
+      question:
+        "'Menor soma de caminho do topo-esquerda ao fundo-direita num grid de custos.' Como adaptar?",
+      options: [
+        "Não dá com DP",
+        "Mesma forma 2D: dp[r][c] = grid[r][c] + min(dp[r-1][c], dp[r][c-1]) — troca-se 'somar caminhos' por 'somar o custo e minimizar'",
+        "Usar BFS",
+        "Ordenar o grid",
+      ],
+      answer: 1,
+      explanation:
+        "É o molde de DP em grid com outra operação: em vez de contar caminhos, acumula-se o custo da célula e pega-se o mínimo entre cima e esquerda.",
+    },
+  ]}
+/>
+
+## Resumo
+
+- **DP em grid**: tabela 2D `dp[r][c]`, cada célula vinda das vizinhas já
+  calculadas.
+- Unique Paths: `dp[r][c] = dp[r-1][c] + dp[r][c-1]`, bordas = 1.
+- **O(m·n)** de tempo; espaço redutível a O(n) (uma linha).
+- Molde igual ao das outras DPs, com uma dimensão a mais.
+
+Próxima aula: comparar **duas sequências** numa tabela 2D — a DP de strings.

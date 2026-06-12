@@ -1,0 +1,159 @@
+# Síntese: qual padrão usar?
+
+> Cinco padrões de DP cobertos — e esta é a última seção do curso. Vamos
+> fechar com a árvore de decisão de DP e, depois, um olhar sobre tudo que você
+> construiu.
+
+## A árvore de decisão de DP
+
+```text
+Reconheça a DP: há subproblemas que se REPETEM e a resposta se constrói dos menores?
+
+1. Como modelar o estado?
+   ├── uma posição numa sequência          → dp[i] (DP 1D)
+   ├── um valor-alvo a compor com itens      → dp[a] (knapsack)
+   ├── uma célula num grid                   → dp[r][c] (DP em grid)
+   └── prefixos de DUAS sequências           → dp[i][j] (DP de strings)
+
+2. Qual a recorrência (como dp se constrói dos estados menores)?
+   ├── somar/contar caminhos                 → dp[i-1] + dp[i-2] / soma
+   ├── decidir incluir ou excluir            → max(excluir, incluir)
+   ├── minimizar com itens reutilizáveis     → min(dp[a-item] + 1)
+   └── comparar últimos elementos            → casam? diagonal : vizinhos
+
+3. Casos-base e ordem de preenchimento (dos menores para o maior).
+```
+
+E os reflexos da seção: **tempo ≈ estados × custo por estado**; quando a
+recorrência olha só os últimos k estados, **reduza o espaço**; e, antes de
+partir para DP, pergunte se um **guloso** já resolve.
+
+## O mapa completo da seção
+
+| Padrão | Estado | Tempo |
+| --- | --- | --- |
+| DP 1D | dp[i] (posição) | O(n) |
+| Incluir/excluir | dp[i] = max(pular, pegar) | O(n) |
+| Knapsack | dp[a] (valor-alvo) | O(alvo × itens) |
+| DP em grid | dp[r][c] (célula) | O(m·n) |
+| DP em sequências | dp[i][j] (prefixos) | O(m·n) |
+
+A ideia-mãe: **DP é recursão + memória**. Defina o estado, a recorrência e os
+casos-base, e o resto é preencher uma tabela. O que parecia o tema mais
+assustador é, no fundo, o método mais sistemático do curso.
+
+## Quiz da seção
+
+Enunciados que você **não viu** nas aulas. Identifique o padrão e o porquê. 6+
+acertos: pronto para a prova final do curso.
+
+<Quiz
+  title="Quiz da seção: Programação Dinâmica"
+  questions={[
+    {
+      question:
+        "'Custo mínimo para subir uma escada, onde cada degrau cobra um custo (passos de 1 ou 2).' Qual padrão?",
+      options: [
+        "DP em grid",
+        "DP 1D: dp[i] = cost[i] + min(dp[i-1], dp[i-2]) — variante do Climbing Stairs com custo",
+        "Knapsack",
+        "Greedy",
+      ],
+      answer: 1,
+      explanation:
+        "Uma sequência de degraus com recorrência olhando 1 e 2 atrás é DP 1D. Só muda a operação: somar o custo e minimizar. (É a prova fácil!)",
+    },
+    {
+      question:
+        "'Dividir um array em dois subconjuntos de soma igual.' Qual padrão?",
+      options: [
+        "DP em grid",
+        "Knapsack 0/1 booleano: alvo = soma/2; dp[v] = 'dá para formar v?'; cada número usado no máximo uma vez",
+        "DP de strings",
+        "Incluir/excluir 1D simples",
+      ],
+      answer: 1,
+      explanation:
+        "Reduz a 'existe subconjunto que soma metade?' — um knapsack 0/1 sobre o valor-alvo. Diferente do coin change (ilimitado), cada número entra uma vez só. (Prova média!)",
+    },
+    {
+      question:
+        "'Distância de edição: mínimo de inserções/remoções/substituições para transformar uma string em outra.' Qual padrão?",
+      options: [
+        "DP 1D",
+        "DP de sequências 2D: dp[i][j] sobre os prefixos; casam → diagonal; senão 1 + min(substituir, remover, inserir)",
+        "Knapsack",
+        "Greedy",
+      ],
+      answer: 1,
+      explanation:
+        "Comparar prefixos de duas strings é DP 2D. As três operações correspondem aos três vizinhos (diagonal, cima, esquerda). (É a prova difícil!)",
+    },
+    {
+      question:
+        "'Maior subsequência crescente num array.' 1D ou 2D, e por quê?",
+      options: [
+        "2D, compara com outro array",
+        "1D: é uma ÚNICA sequência; dp[i] olha para todas as posições anteriores j<i com nums[j]<nums[i] e estende a melhor",
+        "Knapsack",
+        "Grid",
+      ],
+      answer: 1,
+      explanation:
+        "Há só uma sequência, então o estado é 1D (dp[i] = maior subseq. crescente terminando em i). 2D é quando se relacionam DUAS sequências.",
+    },
+    {
+      question:
+        "'De quantas formas decodificar uma string de dígitos em letras (A=1..Z=26)?' Qual padrão?",
+      options: [
+        "Knapsack",
+        "DP 1D: dp[i] = formas de decodificar até i, somando o caso de 1 dígito (se válido) e o de 2 dígitos (se 10–26)",
+        "DP em grid",
+        "Greedy",
+      ],
+      answer: 1,
+      explanation:
+        "Cada posição decide entre consumir 1 ou 2 dígitos (se formarem um código válido). dp[i] soma as formas vindas de i-1 e i-2 — DP 1D no estilo Fibonacci com condições.",
+    },
+    {
+      question:
+        "Qual a forma mais rápida de estimar a complexidade de tempo de uma DP?",
+      options: [
+        "Contar os loops",
+        "Número de estados × custo para calcular cada estado (ex.: amount estados × O(moedas) = O(amount·moedas))",
+        "Sempre O(n²)",
+        "Medir em segundos",
+      ],
+      answer: 1,
+      explanation:
+        "Cada estado é calculado uma vez (graças à memória). Multiplicar o número de estados pelo custo de cada um dá o tempo total — o atalho central da seção.",
+    },
+  ]}
+/>
+
+## Você terminou o curso 🎉
+
+Se você chegou até aqui, percorreu **todos os tipos** de problema do Top 75:
+
+- **Fundamentos** (Big-O) e os padrões de **Array** e **String** — a base.
+- **Binary**, **Lista Ligada**, **Matriz**, **Intervalos** — estruturas e
+  técnicas.
+- **Árvores**, **Heap**, **Grafos** — recursão e estruturas avançadas.
+- **Programação Dinâmica** — onde tudo se junta.
+
+E mais importante que os problemas: você treinou a **forma de pensar** —
+resolver no braço, achar o desperdício da força bruta, reconhecer o padrão e
+justificar a complexidade. Repare como os padrões conversam entre si: o hash
+map do Array reaparece em String e Grafos; o DFS/BFS atravessa Matriz, Árvore e
+Grafo; o Kadane já era DP. **Não eram 75 problemas isolados — eram uns 20
+padrões reaproveitados.**
+
+## A prova final
+
+A prova desta seção tem **três problemas inéditos** — Min Cost Climbing Stairs
+(fácil), Partition Equal Subset Sum (médio) e Edit Distance (difícil) — com
+casos ocultos. Depois dela, o melhor próximo passo é abrir o LeetCode e
+resolver problemas **sem rede**: agora você tem o mapa.
+
+**Boa prova — e parabéns por completar o curso!** Volte para a página da seção
+e clique em "Prova final".

@@ -1,6 +1,6 @@
 # Plano — Curso Interativo de LeetCode e Algoritmos
 
-> Status: "Comece aqui" + Fundamentos + Array + String + Binary + Linked List + Matrix + Interval + Tree + Heap + Graph completas (attempt-first). Graph trouxe o GraphTraceVisualizer (layout circular, setas em dirigidos). Falta só: Dynamic Programming (a última e mais difícil). Última atualização: 2026-06-10.
+> Status: CURSO COMPLETO em PT-BR. Todas as seções no formato attempt-first: Comece aqui + Fundamentos (Big-O) + Array + String + Binary + Linked List + Matrix + Interval + Tree + Heap + Graph + Dynamic Programming. Cada seção de padrão tem aulas (teoria → exemplos), desafios "tente primeiro", visualizações trace & replay, quizzes e prova final (fácil/médio/difícil inéditos no LocalJudge). Visualizadores: array, string, bits, lista ligada, grid, árvore (SVG), intervalos, heap, grafo (SVG). Próximos passos sugeridos: visualização de progresso/perfil aprimorada, tradução EN, responsividade mobile, deploy. Última atualização: 2026-06-10.
 
 ## 1. Visão
 

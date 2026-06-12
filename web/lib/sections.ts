@@ -132,7 +132,7 @@ export const SECTIONS: Section[] = [
       "Incluir/excluir",
       "DP em strings",
     ],
-    status: "soon",
+    status: "available",
   },
 ];
 
@@ -548,6 +548,50 @@ export const LESSONS: Record<string, Lesson[]> = {
       title: "Síntese: qual padrão usar?",
       description:
         "A árvore de decisão da seção Grafos e o quiz geral antes da prova final.",
+    },
+  ],
+  "dynamic-programming": [
+    {
+      slug: "01-introducao",
+      title: "Reconhecendo problemas de DP",
+      description:
+        "Subproblemas que se repetem, memoização vs tabulação e a complexidade estados × custo.",
+    },
+    {
+      slug: "02-1d-dp",
+      title: "Padrão 1: DP 1D (a recorrência)",
+      description:
+        "Construir uma resposta a partir das anteriores — climbing stairs e a base de tudo.",
+    },
+    {
+      slug: "03-decisao",
+      title: "Padrão 2: Incluir ou excluir",
+      description:
+        "Em cada item, decidir pegar ou pular — house robber e a fronteira entre greedy e DP.",
+    },
+    {
+      slug: "04-knapsack",
+      title: "Padrão 3: Knapsack (coin change)",
+      description:
+        "Compor um alvo a partir de itens reutilizáveis — o coin change e o knapsack ilimitado.",
+    },
+    {
+      slug: "05-grid-dp",
+      title: "Padrão 4: DP em grid",
+      description:
+        "Preencher uma tabela 2D onde cada célula depende das vizinhas — unique paths.",
+    },
+    {
+      slug: "06-sequencias",
+      title: "Padrão 5: DP em sequências e strings",
+      description:
+        "Comparar duas sequências numa tabela 2D — LCS, e a família de DP em strings.",
+    },
+    {
+      slug: "07-sintese",
+      title: "Síntese: qual padrão usar?",
+      description:
+        "A árvore de decisão da seção (e do curso) e o quiz geral antes da prova final.",
     },
   ],
 };

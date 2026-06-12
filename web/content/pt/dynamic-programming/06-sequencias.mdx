@@ -1,0 +1,104 @@
+# Padrão 5: DP em sequências e strings
+
+> Comparar **duas sequências** (duas strings, dois arrays) é uma família
+> clássica de DP: uma tabela 2D `dp[i][j]` que relaciona um prefixo de cada
+> uma. É o coração de problemas como subsequência comum, distância de edição e
+> diff de arquivos.
+
+<Challenge id="longest-common-subsequence" />
+
+> Tentou? Comparar todas as subsequências possíveis é exponencial. A teoria
+> abaixo usa uma tabela 2D que cresce caractere a caractere, em O(m·n).
+
+## A teoria: dp[i][j] sobre dois prefixos
+
+Defina `dp[i][j]` = a resposta considerando os **primeiros `i` caracteres** de
+`text1` e os **primeiros `j`** de `text2`. A recorrência olha o último
+caractere de cada prefixo:
+
+```text
+se text1[i-1] == text2[j-1]:        # os últimos casam
+    dp[i][j] = dp[i-1][j-1] + 1     # usa esse par e resolve o resto
+senão:                              # não casam: descarte um dos dois
+    dp[i][j] = max(dp[i-1][j], dp[i][j-1])
+casos-base: dp[0][*] = dp[*][0] = 0  (prefixo vazio)
+```
+
+A intuição: se os últimos caracteres são iguais, eles fazem parte da
+subsequência comum (some 1 e resolva o resto na diagonal). Se diferem, a melhor
+LCS ignora o último de uma das strings — pegue o melhor dos dois casos. A
+tabela é preenchida como um grid (DP 2D da aula anterior):
+
+```text
+        ""  a  c  e
+   ""    0  0  0  0
+   a     0  1  1  1
+   b     0  1  1  1
+   c     0  1  2  2
+   d     0  1  2  2
+   e     0  1  2  3   ← dp[5][3] = 3 = LCS("abcde","ace")
+```
+
+### Por que é O(m·n)?
+
+São `(m+1) × (n+1)` estados, cada um O(1) → **O(m·n)** de tempo e espaço (o
+espaço cai para O(n) guardando duas linhas). É a forma 2D do "estados × custo".
+
+## A família de DP em sequências
+
+Tudo muda só a recorrência sobre `dp[i][j]`:
+
+| Problema | dp[i][j] | Quando casam / não casam |
+| --- | --- | --- |
+| Longest Common Subsequence | LCS dos prefixos | casam: diagonal+1; senão max(cima, esq) |
+| Edit Distance | mín. edições | casam: diagonal; senão 1 + min(3 vizinhos) |
+| Longest Increasing Subsequence | (1D) maior subseq. crescente até i | `max(dp[j])+1` para `j < i` com `nums[j] < nums[i]` |
+| Word Break | (1D) dá p/ quebrar s[0..i]? | algum corte j com dp[j] e s[j..i] no dicionário |
+
+Note que **LIS** e **Word Break** são DP **1D** sobre uma única sequência (cada
+posição olha para posições anteriores), enquanto LCS e Edit Distance são **2D**
+(comparam duas sequências). O sinal: **duas sequências para relacionar → tabela
+2D**; **uma sequência com escolhas olhando para trás → tabela 1D**.
+
+<CodeRunner
+  python={`# Longest Increasing Subsequence (DP 1D, O(n^2))
+def lis(nums):
+    if not nums:
+        return 0
+    dp = [1] * len(nums)            # toda posição é uma subseq. de tamanho >= 1
+    for i in range(len(nums)):
+        for j in range(i):
+            if nums[j] < nums[i]:
+                dp[i] = max(dp[i], dp[j] + 1)   # estende a melhor que cabe
+    return max(dp)
+
+print(lis([10, 9, 2, 5, 3, 7, 101, 18]))   # 4  (2,3,7,101 ou 2,3,7,18)
+print(lis([0, 1, 0, 3, 2, 3]))              # 4`}
+  javascript={`// Longest Increasing Subsequence (DP 1D, O(n^2))
+function lis(nums) {
+  if (nums.length === 0) return 0;
+  var dp = [];
+  for (var k = 0; k < nums.length; k++) dp.push(1);
+  for (var i = 0; i < nums.length; i++) {
+    for (var j = 0; j < i; j++) {
+      if (nums[j] < nums[i]) dp[i] = Math.max(dp[i], dp[j] + 1);
+    }
+  }
+  var melhor = 0;
+  for (var m = 0; m < dp.length; m++) melhor = Math.max(melhor, dp[m]);
+  return melhor;
+}
+
+console.log(lis([10, 9, 2, 5, 3, 7, 101, 18])); // 4
+console.log(lis([0, 1, 0, 3, 2, 3]));           // 4`}
+/>
+
+## Resumo
+
+- **DP em duas sequências**: tabela 2D `dp[i][j]` sobre os prefixos; a
+  recorrência olha os últimos caracteres (casam → diagonal; senão → vizinhos).
+- LCS: casam → `dp[i-1][j-1]+1`; senão → `max(dp[i-1][j], dp[i][j-1])`. O(m·n).
+- **Uma** sequência com escolhas para trás → DP **1D** (LIS, Word Break);
+  **duas** sequências → DP **2D** (LCS, Edit Distance).
+
+Última parada: a **síntese** da seção — e o fecho do curso inteiro.

@@ -1,0 +1,146 @@
+# Padrão 2: Incluir ou excluir
+
+> Uma família enorme de DPs se resume a uma decisão repetida: em cada item,
+> **pegar ou pular?** A resposta ótima é o melhor entre as duas escolhas — e
+> essa é a essência da DP de decisão.
+
+<Challenge id="house-robber" />
+
+> Tentou? A regra "não pode roubar casas adjacentes" cria a decisão: se roubo a
+> casa i, não posso ter roubado a i-1. A teoria abaixo transforma isso numa
+> recorrência simples.
+
+## A teoria: o melhor entre pegar e pular
+
+No House Robber, ao chegar na casa `i`, há duas opções:
+
+- **Pular** a casa `i`: o melhor continua sendo o que você tinha até `i-1`.
+- **Roubar** a casa `i`: ganha `nums[i]`, mas o melhor anterior permitido é o
+  de **`i-2`** (não pode a adjacente `i-1`).
+
+A resposta para `i` é o **máximo** dessas duas escolhas:
+
+```text
+dp[i] = max(dp[i-1],            # pular
+            nums[i] + dp[i-2])  # roubar
+```
+
+É o mesmo formato 1D da aula anterior, mas agora a recorrência exprime uma
+**decisão** (max entre incluir e excluir). E, como só depende de `i-1` e
+`i-2`, dá para fazer com **O(1) de espaço** (dois acumuladores). Note o eco do
+**Kadane** (Array): "estender ou recomeçar" também era uma decisão local — DP
+sempre esteve por perto.
+
+## House Robber II: a casa em círculo
+
+E se as casas formam um **círculo** (a primeira e a última são adjacentes)?
+A sacada é reduzir ao problema que você já resolveu: ou você **não rouba a
+primeira casa**, ou **não rouba a última** — então rode o House Robber linear
+**duas vezes** (em `nums[0..n-2]` e em `nums[1..n-1]`) e pegue o maior. Reusar
+a solução linear como peça é um padrão poderoso.
+
+## Greedy vs DP: a fronteira (Jump Game)
+
+Nem todo problema de decisão precisa de DP — às vezes um **guloso** basta, e é
+mais barato. O *Jump Game* ("dá para chegar ao fim, dado que cada posição diz
+o salto máximo?") tem uma DP natural, mas um guloso O(n)/O(1) resolve:
+percorra rastreando **a posição mais distante alcançável**; se ela nunca fica
+para trás da posição atual, dá para chegar.
+
+<CodeRunner
+  python={`def pode_pular(nums):
+    mais_longe = 0
+    for i in range(len(nums)):
+        if i > mais_longe:
+            return False                 # não alcançou esta posição
+        mais_longe = max(mais_longe, i + nums[i])
+    return True
+
+print(pode_pular([2, 3, 1, 1, 4]))   # True
+print(pode_pular([3, 2, 1, 0, 4]))   # False (trava no índice 3)`}
+  javascript={`function podePular(nums) {
+  var maisLonge = 0;
+  for (var i = 0; i < nums.length; i++) {
+    if (i > maisLonge) return false;     // não alcançou esta posição
+    maisLonge = Math.max(maisLonge, i + nums[i]);
+  }
+  return true;
+}
+
+console.log(podePular([2, 3, 1, 1, 4])); // true
+console.log(podePular([3, 2, 1, 0, 4])); // false`}
+/>
+
+> Quando preferir guloso a DP? Quando uma **escolha local ótima leva à global**
+> (e dá para provar, como no argumento de troca da seção Intervalos). Quando
+> não dá — quando você precisa **comparar várias escolhas e lembrar
+> resultados** —, é DP. Na dúvida, DP é a rede de segurança: sempre funciona,
+> ainda que às vezes faça mais trabalho que um guloso.
+
+<Quiz
+  title="Quiz de fixação"
+  questions={[
+    {
+      question: "Qual a recorrência do House Robber e o que cada parte significa?",
+      options: [
+        "dp[i] = dp[i-1] + nums[i]",
+        "dp[i] = max(dp[i-1], nums[i] + dp[i-2]): pular a casa i (fica com dp[i-1]) ou roubá-la (nums[i] + o melhor até i-2, pulando a adjacente)",
+        "dp[i] = nums[i]",
+        "dp[i] = max(nums)",
+      ],
+      answer: 1,
+      explanation:
+        "É a decisão incluir/excluir: roubar i exige pular i-1 (daí dp[i-2]); não roubar mantém dp[i-1]. O máximo das duas é a resposta.",
+    },
+    {
+      question:
+        "No House Robber II (casas em CÍRCULO), como reusar a solução linear?",
+      options: [
+        "Não dá para reusar",
+        "Rode o House Robber linear duas vezes — uma sem a primeira casa, outra sem a última (pois são adjacentes) — e pegue o maior",
+        "Dobre o array",
+        "Ordene as casas",
+      ],
+      answer: 1,
+      explanation:
+        "O círculo só proíbe roubar a primeira E a última juntas. Excluindo uma delas em cada execução e tomando o máximo, reduz-se ao problema linear já resolvido.",
+    },
+    {
+      question:
+        "O Jump Game tem solução gulosa O(n). Quando um guloso pode substituir a DP?",
+      options: [
+        "Sempre",
+        "Quando uma escolha local ótima comprovadamente leva à solução global (não é preciso comparar/lembrar muitas alternativas)",
+        "Nunca, DP é sempre necessária",
+        "Quando o array é pequeno",
+      ],
+      answer: 1,
+      explanation:
+        "Se a melhor decisão local garante o ótimo global (como rastrear o mais longe alcançável), o guloso basta. Quando é preciso comparar várias escolhas e reusar resultados, é DP.",
+    },
+    {
+      question:
+        "Que padrão de uma seção anterior já era, na verdade, uma DP de decisão?",
+      options: [
+        "Busca binária",
+        "O Kadane (Array): 'estender o subarray atual ou recomeçar' é exatamente uma decisão local entre duas opções, com a melhor resposta acumulada",
+        "Sliding window",
+        "Union-Find",
+      ],
+      answer: 1,
+      explanation:
+        "Kadane decide a cada posição entre 'estender' e 'recomeçar' — uma DP 1D de decisão com O(1) de espaço. Você já fazia DP sem o nome.",
+    },
+  ]}
+/>
+
+## Resumo
+
+- DP de decisão: em cada item, **incluir ou excluir** → `dp[i] = max(excluir,
+  incluir)`.
+- House Robber: `max(dp[i-1], nums[i] + dp[i-2])`, O(n)/O(1).
+- House Robber II: rode o linear duas vezes (sem a 1ª / sem a última).
+- **Greedy vs DP**: guloso quando a escolha local garante o ótimo; DP quando
+  precisa comparar e lembrar.
+
+Próxima aula: compor um alvo a partir de itens reutilizáveis — **knapsack**.

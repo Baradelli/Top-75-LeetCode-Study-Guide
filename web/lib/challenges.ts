@@ -28,6 +28,245 @@ export interface Challenge {
 }
 
 export const CHALLENGES: Record<string, Challenge> = {
+  "climb-stairs": {
+    title: "Climbing Stairs",
+    statement: `Você sobe uma escada de \`n\` degraus dando passos de **1 ou 2** degraus por vez. De quantas maneiras distintas dá para chegar ao topo?
+
+Exemplo: \`n = 3\` → \`3\` (1+1+1, 1+2, 2+1).`,
+    functionName: { python: "climb_stairs", javascript: "climbStairs" },
+    starter: {
+      python: `def climb_stairs(n):
+    # de quantas formas chegar ao degrau n?
+    pass`,
+      javascript: `function climbStairs(n) {
+  // de quantas formas chegar ao degrau n?
+}`,
+    },
+    tests: [
+      { args: [2], expected: 2 },
+      { args: [3], expected: 3 },
+      { args: [5], expected: 8 },
+      { args: [1], expected: 1 },
+      { args: [10], expected: 89 },
+    ],
+    hint: "Para chegar ao degrau i, você veio do degrau i-1 (passo de 1) ou do i-2 (passo de 2). Logo formas(i) = formas(i-1) + formas(i-2) — é Fibonacci! Comece dos casos-base (degrau 0 e 1) e suba preenchendo.",
+    solution: {
+      python: `def climb_stairs(n):
+    if n <= 2:
+        return n
+    anterior, atual = 1, 2     # formas de chegar aos degraus 1 e 2
+    for _ in range(3, n + 1):
+        anterior, atual = atual, anterior + atual
+    return atual`,
+      javascript: `function climbStairs(n) {
+  if (n <= 2) return n;
+  var anterior = 1, atual = 2;   // formas de chegar aos degraus 1 e 2
+  for (var i = 3; i <= n; i++) {
+    var prox = anterior + atual;
+    anterior = atual;
+    atual = prox;
+  }
+  return atual;
+}`,
+    },
+    solutionIdea:
+      "formas(i) = formas(i-1) + formas(i-2) (Fibonacci). Guardando só os dois últimos: O(n) tempo, O(1) espaço.",
+  },
+
+  "house-robber": {
+    title: "House Robber",
+    statement: `Casas em fila, cada uma com um valor em \`nums\`. Você não pode roubar **duas casas adjacentes**. Retorne o **máximo** que dá para roubar.
+
+Exemplo: \`[2,7,9,3,1]\` → \`12\` (roubar as casas 2, 9 e 1 → 2+9+1).`,
+    functionName: { python: "rob", javascript: "rob" },
+    starter: {
+      python: `def rob(nums):
+    # máximo sem roubar casas adjacentes
+    pass`,
+      javascript: `function rob(nums) {
+  // máximo sem roubar casas adjacentes
+}`,
+    },
+    tests: [
+      { args: [[2, 7, 9, 3, 1]], expected: 12 },
+      { args: [[2, 1, 1, 2]], expected: 4 },
+      { args: [[5]], expected: 5 },
+      { args: [[]], expected: 0 },
+      { args: [[2, 100, 9, 3, 100]], expected: 200 },
+    ],
+    hint: "Em cada casa, DECIDA: roubar (valor + melhor até a casa i-2, pois não pode a adjacente) ou pular (melhor até i-1). dp[i] = max(dp[i-1], nums[i] + dp[i-2]). É o padrão 'incluir ou excluir'.",
+    solution: {
+      python: `def rob(nums):
+    pular, roubar = 0, 0    # melhor sem a casa atual, melhor com ela
+    for x in nums:
+        # ao chegar numa casa: ou pulo (mantenho 'roubar' anterior)
+        # ou roubo (x + 'pular' anterior, que exclui a adjacente)
+        pular, roubar = roubar, max(roubar, pular + x)
+    return roubar`,
+      javascript: `function rob(nums) {
+  var pular = 0, roubar = 0;   // melhor sem a casa atual, melhor com ela
+  for (var i = 0; i < nums.length; i++) {
+    var novoRoubar = Math.max(roubar, pular + nums[i]);
+    pular = roubar;
+    roubar = novoRoubar;
+  }
+  return roubar;
+}`,
+    },
+    solutionIdea:
+      "Incluir/excluir: dp[i] = max(dp[i-1], nums[i] + dp[i-2]). Dois acumuladores → O(n) tempo, O(1) espaço.",
+  },
+
+  "coin-change": {
+    title: "Coin Change",
+    statement: `Dadas moedas de valores \`coins\` (quantidade ilimitada de cada) e um \`amount\`, retorne o **menor número de moedas** que soma exatamente \`amount\`, ou \`-1\` se for impossível.
+
+Exemplo: \`coins = [1,2,5]\`, \`amount = 11\` → \`3\` (5+5+1).`,
+    functionName: { python: "coin_change", javascript: "coinChange" },
+    starter: {
+      python: `def coin_change(coins, amount):
+    # menor número de moedas para somar amount (ou -1)
+    pass`,
+      javascript: `function coinChange(coins, amount) {
+  // menor número de moedas para somar amount (ou -1)
+}`,
+    },
+    tests: [
+      { args: [[1, 2, 5], 11], expected: 3 },
+      { args: [[2], 3], expected: -1 },
+      { args: [[1], 0], expected: 0 },
+      { args: [[1, 3, 4, 5], 7], expected: 2 },
+      { args: [[2, 5, 10, 1], 27], expected: 4 },
+    ],
+    hint: "dp[a] = menor nº de moedas para formar o valor a. Para cada valor a de 1 até amount, tente cada moeda m ≤ a: dp[a] = min(dp[a], dp[a - m] + 1). Como cada moeda é ilimitada, isto é o 'knapsack ilimitado'. Inicialize dp com um valor 'infinito'.",
+    solution: {
+      python: `def coin_change(coins, amount):
+    INF = amount + 1
+    dp = [INF] * (amount + 1)
+    dp[0] = 0                       # 0 moedas para formar 0
+    for a in range(1, amount + 1):
+        for m in coins:
+            if m <= a:
+                dp[a] = min(dp[a], dp[a - m] + 1)
+    return dp[amount] if dp[amount] != INF else -1`,
+      javascript: `function coinChange(coins, amount) {
+  var INF = amount + 1;
+  var dp = [];
+  for (var k = 0; k <= amount; k++) dp.push(INF);
+  dp[0] = 0;                        // 0 moedas para formar 0
+  for (var a = 1; a <= amount; a++) {
+    for (var j = 0; j < coins.length; j++) {
+      var m = coins[j];
+      if (m <= a) dp[a] = Math.min(dp[a], dp[a - m] + 1);
+    }
+  }
+  return dp[amount] !== INF ? dp[amount] : -1;
+}`,
+    },
+    solutionIdea:
+      "Knapsack ilimitado: dp[a] = min sobre moedas de dp[a-m]+1. O(amount × moedas) tempo, O(amount) espaço.",
+  },
+
+  "unique-paths": {
+    title: "Unique Paths",
+    statement: `Um robô está no canto superior esquerdo de um grid \`m × n\` e quer chegar ao canto inferior direito, movendo-se só para **baixo** ou para a **direita**. Quantos caminhos distintos existem?
+
+Exemplo: \`m = 3\`, \`n = 7\` → \`28\`.`,
+    functionName: { python: "unique_paths", javascript: "uniquePaths" },
+    starter: {
+      python: `def unique_paths(m, n):
+    # quantos caminhos do topo-esquerda ao fundo-direita?
+    pass`,
+      javascript: `function uniquePaths(m, n) {
+  // quantos caminhos do topo-esquerda ao fundo-direita?
+}`,
+    },
+    tests: [
+      { args: [3, 7], expected: 28 },
+      { args: [3, 2], expected: 3 },
+      { args: [1, 1], expected: 1 },
+      { args: [3, 3], expected: 6 },
+      { args: [7, 3], expected: 28 },
+    ],
+    hint: "DP em grid: dp[r][c] = caminhos até a célula (r,c). A primeira linha e a primeira coluna têm 1 caminho cada (só dá para vir em linha reta). Para o resto: dp[r][c] = dp[r-1][c] + dp[r][c-1] (veio de cima ou da esquerda).",
+    solution: {
+      python: `def unique_paths(m, n):
+    dp = [[1] * n for _ in range(m)]   # 1ª linha/coluna = 1
+    for r in range(1, m):
+        for c in range(1, n):
+            dp[r][c] = dp[r - 1][c] + dp[r][c - 1]
+    return dp[m - 1][n - 1]`,
+      javascript: `function uniquePaths(m, n) {
+  var dp = [];
+  for (var i = 0; i < m; i++) { var row = []; for (var j = 0; j < n; j++) row.push(1); dp.push(row); }
+  for (var r = 1; r < m; r++) {
+    for (var c = 1; c < n; c++) {
+      dp[r][c] = dp[r - 1][c] + dp[r][c - 1];
+    }
+  }
+  return dp[m - 1][n - 1];
+}`,
+    },
+    solutionIdea:
+      "DP 2D: dp[r][c] = dp[r-1][c] + dp[r][c-1], com bordas = 1. O(m·n) tempo, O(m·n) espaço.",
+  },
+
+  "longest-common-subsequence": {
+    title: "Longest Common Subsequence",
+    statement: `Dadas duas strings \`text1\` e \`text2\`, retorne o comprimento da **maior subsequência comum** (caracteres na mesma ordem, não necessariamente contíguos).
+
+Exemplo: \`"abcde"\` e \`"ace"\` → \`3\` (a subsequência "ace").`,
+    functionName: {
+      python: "longest_common_subsequence",
+      javascript: "longestCommonSubsequence",
+    },
+    starter: {
+      python: `def longest_common_subsequence(text1, text2):
+    # comprimento da maior subsequência comum
+    pass`,
+      javascript: `function longestCommonSubsequence(text1, text2) {
+  // comprimento da maior subsequência comum
+}`,
+    },
+    tests: [
+      { args: ["abcde", "ace"], expected: 3 },
+      { args: ["abc", "abc"], expected: 3 },
+      { args: ["abc", "def"], expected: 0 },
+      { args: ["bsbininm", "jmjkbkjkv"], expected: 1 },
+      { args: ["ezupkr", "ubmrapg"], expected: 2 },
+    ],
+    hint: "DP 2D: dp[i][j] = LCS dos primeiros i chars de text1 e j de text2. Se text1[i-1] == text2[j-1], os caracteres casam: dp[i][j] = dp[i-1][j-1] + 1. Senão, pule um dos dois: dp[i][j] = max(dp[i-1][j], dp[i][j-1]).",
+    solution: {
+      python: `def longest_common_subsequence(text1, text2):
+    m, n = len(text1), len(text2)
+    dp = [[0] * (n + 1) for _ in range(m + 1)]
+    for i in range(1, m + 1):
+        for j in range(1, n + 1):
+            if text1[i - 1] == text2[j - 1]:
+                dp[i][j] = dp[i - 1][j - 1] + 1    # casaram
+            else:
+                dp[i][j] = max(dp[i - 1][j], dp[i][j - 1])
+    return dp[m][n]`,
+      javascript: `function longestCommonSubsequence(text1, text2) {
+  var m = text1.length, n = text2.length;
+  var dp = [];
+  for (var i = 0; i <= m; i++) { var row = []; for (var j = 0; j <= n; j++) row.push(0); dp.push(row); }
+  for (var a = 1; a <= m; a++) {
+    for (var b = 1; b <= n; b++) {
+      if (text1[a - 1] === text2[b - 1]) {
+        dp[a][b] = dp[a - 1][b - 1] + 1;    // casaram
+      } else {
+        dp[a][b] = Math.max(dp[a - 1][b], dp[a][b - 1]);
+      }
+    }
+  }
+  return dp[m][n];
+}`,
+    },
+    solutionIdea:
+      "DP 2D em strings: casam → diagonal+1; senão → max(cima, esquerda). O(m·n) tempo e espaço.",
+  },
+
   "connected-components": {
     title: "Number of Connected Components",
     statement: `Há \`n\` nós (numerados de \`0\` a \`n-1\`) e uma lista de \`edges\` (arestas não-dirigidas). Retorne o **número de componentes conexos** (grupos de nós ligados entre si).
